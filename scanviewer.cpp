@@ -1,25 +1,21 @@
 /*****************************
- HW7.cpp
- James Watson, 2018 October
- SDL Demo
+ scanviewer.cpp
+ James Watson, 2018 November
+ View scan data from the robot
  ****************************/ 
 /*
 ~~ DEV PLAN ~~
-[Y] Re-implement HW6: GLUT --> SDL
-	[Y] Implement the loop from the SDL example
-		[Y] Add components
-		[Y] Move 'idle' state updates to the main loop
-		[Y] Remove GLUT calls
-			[Y] Key press handlers
-			[Y] Writing text to screen
-	[Y] Verify same behavior
-		[Y] Verify framerate
-		[Y] Adjust timing - NOTE: Movespeed still seems to be tied to framerate, may need to investiage
-[ ] Migrate to Repo
-[ ] Create an illuminated robot
-	[ ] Pick shiny material props for the arm beams
-[ ] Robot IK
-[ ] Camera at robot gripper
+[Y] Migrate to Repo
+[ ] Gut program
+[ ] Re-implement robot & Animate , Create an illuminated robot
+    [ ] Pick shiny material props for the arm beams
+    [ ] Camera at robot gripper
+[ ] Display Scan Data
+    [ ] Get scans working on the robot
+    [ ] Determine file format
+    [ ] Load files
+
+{ } Robot IK
 
 {N} Agents with trails , Boid-like - YAGNI
 */

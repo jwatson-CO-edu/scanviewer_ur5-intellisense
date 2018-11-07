@@ -2,7 +2,7 @@
 
 # ~ Project Setup ~
 cmake_minimum_required( VERSION 3.0 ) # 3.0 is required for Eigen # 2.6
-project( HW7 )
+project( scanviewer )
 
 message( "" )
 message( "##### Project: ${PROJECT_NAME} #####" )

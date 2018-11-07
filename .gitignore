@@ -157,3 +157,19 @@ HW07/eigen/unsupported/Eigen/CXX11/src/TensorSymmetry/util/Open Notebook.onetoc2
 HW07/eigen/unsupported/Eigen/src/SpecialFunctions/arch/GPU/Open Notebook.onetoc2
 */*/*/*/*/*/*/*/*/*.onetoc*
 Open Notebook.onetoc2
+eigen/.hg
+eigen/.hg/00changelog.i
+eigen/.hg/branch
+eigen/.hg/cache
+eigen/.hg/dirstate
+eigen/.hg/hgrc
+eigen/.hg/Open Notebook.onetoc2
+eigen/.hg/requires
+eigen/.hg/store
+eigen/.hg/undo.bookmarks
+eigen/.hg/undo.branch
+eigen/.hg/undo.desc
+eigen/.hg/undo.dirstate
+build
+cpp_helpers/.git/
+cpp_helpers/.git

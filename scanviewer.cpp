@@ -6,10 +6,16 @@
 /*
 ~~ DEV PLAN ~~
 [Y] Migrate to Repo
-[ ] Gut program
+[Y] Clean program
+	[Y] Remove GLUT remnants
+	[Y] Remove Spare Parts
 [ ] Re-implement robot & Animate , Create an illuminated robot
+	[ ] Correct Errors
+	[ ] Create a UR5 class , This should emulate the the homework assignment
     [ ] Pick shiny material props for the arm beams
     [ ] Camera at robot gripper
+[ ] Troubleshoot hearbeat
+[ ] Gut non-robot code
 [ ] Display Scan Data
     [ ] Get scans working on the robot
     [ ] Determine file format
@@ -74,9 +80,9 @@ int   VIEW_DEG_INCR =    5; // ----- View angle change for every key press
 int   th /* ---- */ = DFLT_THETA; // Azimuth of view angle
 int   ps /* ---- */ = DFLT_PSI; // - Elevation of view angle
 int   fov /* --- */ = 55; // ------- Field of view (for perspective)
-vec3e eyeLoc{0,0,0}; // ------------ Camera location (world frame)
-vec3e lookPt{0,0,0}; // ------------ Focus of camera (world frame)
-vec3e upVctr{0,0,0}; // ------------ Direction of "up"
+vec3e eyeLoc{ 0 , 0 , 0 }; // ------ Camera location (world frame)
+vec3e lookPt{ 0 , 0 , 0 }; // ------ Focus of camera (world frame)
+vec3e upVctr{ 0 , 0 , 0 }; // ------ Direction of "up"
 vec3e lookDr; // ------------------- Direction that the camera is looking (not always used)
 
 // ~~ Scene ~~
@@ -110,7 +116,6 @@ bool ANIMATBEAMS = true;
 
 // ~~ Geometry ~~
 float AXESSCALE     =   0.17;
-int   BALL_ANG_INCR =  10;
 
 
 // ___ END GLOBAL ___
@@ -120,35 +125,7 @@ int   BALL_ANG_INCR =  10;
 
 // === FUNCTIONS ===========================================================================================================================
 
-static void light_ball( float x , float y , float z , float r ,
-						int emission , float shiny ){
-	// Draw a glowing white ball at (x,y,z) radius (r)
-	// Author: Willem A. (Vlakkies) Schreüder  
-	int th , ph;
-	float yellow[] = { 1.0f , 1.0f , 0.0f , 1.0f };
-	float Emission[] = { 0.0f , 0.0f , 0.01f * emission , 1.0f };
-	//  Save transformation
-	glPushMatrix();
-	//  Offset, scale and rotate
-	glTranslated( x , y , z );
-	glScaled( r , r , r );
-	//  White ball
-	glColor3f( 1 , 1 , 1 );
-	glMaterialf( GL_FRONT_AND_BACK , GL_SHININESS , shiny );
-	glMaterialfv( GL_FRONT_AND_BACK , GL_SPECULAR , yellow );
-	glMaterialfv( GL_FRONT_AND_BACK , GL_EMISSION , Emission );
-	//  Bands of latitude
-	for( ph =- 90 ; ph < 90 ; ph += BALL_ANG_INCR ){
-		glBegin( GL_QUAD_STRIP );
-		for( th = 0 ; th <= 360 ; th += 2 * BALL_ANG_INCR ){
-			Vertex_sphr( th , ph );
-			Vertex_sphr( th , ph + BALL_ANG_INCR );
-		}
-		glEnd();
-	}
-	//  Undo transofrmations
-	glPopMatrix();
-}
+
 
 // ___ END FUNC ____________________________________________________________________________________________________________________________
 
@@ -172,27 +149,6 @@ std::vector<RibbonBolt*> particles;
 
 
 // === DRAWING =============================================================================================================================
-
-static void Project(){
-	// Set projection
-	// Adapted from code provided by Willem A. (Vlakkies) Schreüder  
-	// NOTE: This function assumes that aspect rario will be computed by 'resize'
-	
-	//  Tell OpenGL we want to manipulate the projection matrix
-	glMatrixMode( GL_PROJECTION );
-	//  Undo previous transformations
-	glLoadIdentity();
-	
-	gluPerspective( fov , // -- Field of view angle, in degrees, in the y direction.
-					w2h , // -- Aspect ratio , the field of view in the x direction. Ratio of x (width) to y (height).
-					dim/4 , //- Specifies the distance from the viewer to the near clipping plane (always positive).
-					4*dim ); // Specifies the distance from the viewer to the far clipping plane (always positive).
-	
-	// Switch back to manipulating the model matrix
-	glMatrixMode( GL_MODELVIEW );
-	// Undo previous transformations
-	glLoadIdentity();
-}
 
 void display( SDL_Window* window ){
 	// Display the scene
@@ -293,7 +249,7 @@ void display( SDL_Window* window ){
 		// 9. Pop
 		glPopMatrix();
 	}
-	
+
 	// 10. draw particles
 	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
 	
@@ -474,7 +430,7 @@ void reshape( int width , int height ){
 	// Set the viewport to the entire window
 	glViewport( 0 , 0 , width , height );
 	// Set projection
-	Project();
+	Project( fov , w2h , dim );
 }
 
 // ___ END INTERACT ________________________________________________________________________________________________________________________
@@ -484,38 +440,6 @@ void reshape( int width , int height ){
 
 double _time_elapsed;
 double _last_time = 0.0;
-
-// ############## OLD GLUT CODE ##################################################
-//~ void idle(){
-	//~ // Simulation updates in between repaints
-	//~ _time_elapsed = glutGet( GLUT_ELAPSED_TIME ) / 1000.0 - _last_time;
-	//~ _time_elapsed = clamp_val( _time_elapsed , 0.0 , 1.0 / 60 );
-	
-	//~ // Update light ball
-	//~ if( BALLMOVAUTO ){  th_ball += _time_elapsed * ballOrbitSpeed;  }
-	//~ th_ball = fmod( th_ball , 360.0f );
-	
-	//~ // Set number of particles active in proportion to emissitivity of the core
-	//~ // Core begins to emit rays at emissitivity >= 50
-	//~ uint numActive = (uint) ( emission > 49 ? ( emission * 1.5 / 5 ) : 0 ); 
-	//~ // Update particles
-	//~ for( uint i = 0 ; i < 20 ; i++ ){
-		//~ if( ANIMATBEAMS ){
-			//~ if( i < numActive ){
-				//~ particles[i]->activate(); 
-				//~ particles[i]->set_emission_intensity( emission );
-				//~ particles[i]->advance( _time_elapsed );
-			//~ }else{
-				//~ particles[i]->deactivate(); 
-			//~ }
-		//~ }else{  particles[i]->deactivate();  }
-	//~ }
-	
-	//~ //  Tell GLUT it is necessary to redisplay the scene
-	//~ glutPostRedisplay();
-	//~ _last_time = glutGet( GLUT_ELAPSED_TIME ) / 1000.0;
-//~ }
-// ;;;;;;;;;;; END GLUD CODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 // ___ END SIM _____________________________________________________________________________________________________________________________
 
@@ -529,29 +453,11 @@ int main( int argc , char* argv[] ){
 	// 0. Start an OGL context
 	int winW , winH;
 	
-	// ############## OLD GLUT CODE ######################
-	//~ // Initialize GLUT and process user parameters
-	//~ glutInit( &argc , argv );
-	
-	//~ // Request double buffered, true color window 
-	//~ glutInitDisplayMode( GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH );
-	
-	//~ // Request 500 x 500 pixel window
-	//~ glutInitWindowSize( 975 , 725 );
-	
-	//~ // Create the window
-	//~ glutCreateWindow( ( "James Watson , " + HWname ).c_str() );
-	// :::::::::: END GLUT :::::::::::::::::::::::::
-	
 	//  Initialize SDL
 	SDL_Init( SDL_INIT_VIDEO );
     SDL_Window*      displayWindow;
     SDL_Renderer*    displayRenderer;
     SDL_RendererInfo displayRendererInfo;
-
-    // SDL_CreateWindowAndRenderer( 800 , 600 , 
-	// 							 SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE , // | SDL_HINT_RENDER_VSYNC , 
-	// 							 &displayWindow , &displayRenderer ); // Used with double-buffered OpenGL contexts, which are the default. 
 
 	displayWindow = SDL_CreateWindow(
         ( "James Watson , " + HWname ).c_str() ,                  // window title
@@ -563,6 +469,8 @@ int main( int argc , char* argv[] ){
     ); 
 
 	displayRenderer = SDL_CreateRenderer( displayWindow , -1 , SDL_RENDERER_PRESENTVSYNC ); 
+	// SDL_GL_SetSwapInterval( 0 ); // Immediate updates
+	SDL_GL_SetSwapInterval( 1 ); // Updates synchronized with the vertical retrace
 
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE , 32 );
 
@@ -596,7 +504,7 @@ int main( int argc , char* argv[] ){
 	
 	// ~~ Init Work ~~
 	
-	// Load textures
+	// ~ Load textures ~
 	txtr1 = LoadTexBMP( "textures/triBrownHuge.bmp" );
 	txtr2 = LoadTexBMP( "textures/triDirtHuge.bmp" );
 	txtr3 = LoadTexBMP( "textures/oldBoxesSml.bmp" );
@@ -604,7 +512,7 @@ int main( int argc , char* argv[] ){
 	txtr5 = LoadTexBMP( "textures/mineralGreen.bmp" );
 	txtr6 = LoadTexBMP( "textures/concrete.bmp" );
 	
-	
+	// ~ Create objects ~
 	icosTest.set_emission_color( RXcolor );
 	icosTest.assign_face_textures_randomly( txtr1 , 100.0f , 1024 , 512 );
 	
@@ -656,28 +564,22 @@ int main( int argc , char* argv[] ){
 						case SDL_WINDOWEVENT_RESIZED:
 							reshape( event.window.data1 , event.window.data2 );
 							break;
-							
 						default:
-							//  Do nothing
+							// Do nothing , Do not notify unhandled events
 							break;
 					}
 					break;
-					
 				case SDL_QUIT:
 					run = 0;
 					break;
-				
 				case SDL_KEYDOWN:
-					//~ run = key( event.key.keysym.sym , 0 , 0 );
 					run = key( event.key );
 					t0 = t + 0.5;  // Wait 1/2 s before repeating
 					break;
-				
 			}
 			
 			//  Repeat key every 50 ms
 			if( t - t0 > 0.05 ){
-				//~ run = key( event.key.keysym.sym , 0 , 0 );
 				run = key( event.key );
 				t0  = t;
 			}
@@ -709,38 +611,11 @@ int main( int argc , char* argv[] ){
 		}
 		
 		// N. Sleep for remainder
-		hb.sleep_remainder();
+		hb.sleep_remainder(); // Not really needed with VSYNC, but just in case
 	}
 	
 	/// _____ END MAIN LOOP ________________________________________________________________________________________________________________
 	
-	
-	// ######################### OLD GLUT CODE ############################
-	//~ // Tell GLUT to call "idle" when there is nothing else to do
-	//~ glutIdleFunc( idle );
-	
-	//~ // Enable z-testing at the full ranger
-	//~ glEnable( GL_DEPTH_TEST );
-	//~ glDepthRange( 0.0f , 1.0f );
-	
-	//~ // Tell GLUT to call "display" when the scene should be drawn
-	//~ glutDisplayFunc( display );
-	
-	//~ // Tell GLUT to call "reshape" when the window is resized
-	//~ glutReshapeFunc( reshape );
-	
-	//~ // Tell GLUT to call "special" when an arrow key is pressed
-	//~ glutSpecialFunc( special );
-	
-	//~ // Tell GLUT to call "key" when a key is pressed
-	//~ glutKeyboardFunc( key );
-	
-	//~ // Check for errors
-	//~ ErrCheck( "main" );
-	
-	//~ //  Pass control to GLUT so it can interact with the user
-	//~ glutMainLoop();
-	// :::::::::::::::::::::::::::: END GLUT ::::::::::::::::::::::::::::::::::
 	
 	//  Return code
 	return 0;
@@ -751,26 +626,6 @@ int main( int argc , char* argv[] ){
 
 /* === SPARE PARTS =========================================================================================================================
 
-~~ CLASS NOTES ~~
-* At discontinuities, lighting normals must be calculated many times for the same point
-* If you start with some unit object and distort it , then you must make sure that the lighting normals distort with it
-* Diffuse Reflections
-	- If the angle of incidence is greater than 90 deg, then there is no light contribution
-* Lighting
-	- You need to define the normals according to the simulated smoothness of the surface, and this can be difficult
-	- In local lighting, objects are oblivious to each other
-	- We must to shadows on their own (end of the class)
-	- If a broad flat surface only has very few vertices, then the lighting will look the same across the entire surface.  
-	  If you want light to be local on the same surface, you must have more vertices/polygons that are sensitive to light distance
-	- Normals must be perpendicular to the underlying surface
-		> You can get away with fewer polygons if your lighting normals are properly representing the simulated surface
-	- glNormal: Specifies the normal that will apply to the following list of vertices
-	- glEnable( GL_LIGHTING )
-	- glEnable( GL_LIGHT0 ) , GL_LIGHT0 to GL_LIGHT7 , Only 8 lights available in the normal OGL pipeline
-	- glColor does not work with all types of lighting, You must use the material properties
-		> Only applies to the ambient and diffuse color
-	- Normal vectors will scale with the transformation, You can ask OGL to renormalize them for you , glEnable( GL_NORMALIZE )
-# DRAW A BALL THAT REPRESENTS THE LIGHT
-# FOR EVERY VERTEX THAT IS DRAWN, YOU MUST SPECIFY A VERTEX
+
 
    ___ END PARTS ___ */

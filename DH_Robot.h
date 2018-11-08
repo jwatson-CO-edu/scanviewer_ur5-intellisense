@@ -16,6 +16,7 @@ Template Version: 2018-07-16
 // ~ Local ~
 #include <Cpp_Helpers.h> // Favorite C++ tricks! I am the author , Source: https://bitbucket.org/jwatson_utah_edu/cpp_helpers/src/master/
 #include "MathGeo.h"
+#include "OGL_utils.h"
 
 // ~~ Shortcuts and Aliases ~~
 
@@ -38,16 +39,15 @@ struct DH_Parameters{
 
 // __ End DH __
 
-
 // == class RobotLink ==
 
 class RobotLink{
 public:
 		
 	// ~~ Con/Destructors ~~
-	RobotLink( float pTheta , const vec3f& pOrigin , 
-			   float pD_dist , float pA_dist , const vec3f& pNextRotnAxis , float pNextRotnAngl , 
-			   void (*pDrawFunc)() );
+	RobotLink( float pTheta , const vec3e& pOrigin , 
+			   float pD_dist , float pA_dist , const vec3e& pNextRotnAxis , float pNextRotnAngl , 
+			   void (*pDrawFunc)(const DH_Parameters& DH) );
 
 	// ~~ Configuration ~~
 	void add_distal( RobotLink* link );
@@ -63,11 +63,11 @@ protected:
 	// ~ Proximal Joint ~
 	float /* ----------- */ theta;
 	// ~ Relative Location ~
-	vec3f /* ----------- */ origin;
+	vec3e /* ----------- */ origin;
 	// ~ Distal Joint ~
 	float /* ----------- */ d_dist;
 	float /* ----------- */ a_dist;
-	vec3f /* ----------- */ nextRotnAxis;
+	vec3e /* ----------- */ nextRotnAxis;
 	float /* ----------- */ nextRotnAngl;
 	// ~ Distal Links ~
 	std::vector<RobotLink*> distalLinks;
@@ -78,6 +78,36 @@ protected:
 };
 
 // __ End RobotLink __
+
+
+// == class UR5_OGL ==
+
+class UR5_OGL{
+public:
+
+	UR5_OGL( const vec3e& baseOrigin );
+
+	// ~~ Members ~~
+
+	// ~ Joint State ~
+	std::vector<float> q    = {   0.0 ,	 0.0 ,	0.0 ,  0.0 ,  0.0 ,	 0.0 }; // deg
+	std::vector<float> qDot = {  30.0 , 30.0 , 30.0 , 30.0 , 30.0 , 30.0 }; // deg/sec
+
+	// ~ Pose ~
+	vec3e basePos; // Position of the base , Lab Frame
+
+protected:
+
+	// ~ Links ~
+	RobotLink* Link1 = nullptr;
+	RobotLink* Link2 = nullptr;
+	RobotLink* Link3 = nullptr;
+	RobotLink* Link4 = nullptr;
+	RobotLink* Link5 = nullptr;
+	RobotLink* Link6 = nullptr;
+};
+
+// __ End UR5_OGL __
 
 // ___ End Classes _________________________________________________________________________________________________________________________
 

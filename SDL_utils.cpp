@@ -23,13 +23,12 @@ SDL_Heartbeat::SDL_Heartbeat( typeF interval ){
 
 // Mark the current time as the beginning of the current interval
 void SDL_Heartbeat::mark_time(){  lastMark_s = (typeF)SDL_GetTicks()/1000.0;  }
-	
 
 void SDL_Heartbeat::sleep_remainder(){
 	// Sleep the remaining time to maintain the interval
 	typeF currTime = SDL_GetTicks() / 1000.0;
 	typeF deltaT = currTime - lastMark_s;
-	if( deltaT < interval_s ){  SDL_Delay( (uint) deltaT * 1000.0 );  }
+	if( deltaT < interval_s ){  SDL_Delay( (uint) ( ( interval_s - deltaT ) * 1000.0 ) );  }
 	mark_time();
 }
 

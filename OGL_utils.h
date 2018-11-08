@@ -83,9 +83,14 @@ void draw_cylinder( const vec3e& origin  , typeF length , typeF radius , uint fa
 					const vec3e& fillClr , float shiny ,
 					uint txtrHandle = 9999 );
 
+void light_ball( float x , float y , float z , float r ,
+                 int emission , float shiny );
+
 void Reverse( void* x , const int n );
 
 unsigned int LoadTexBMP( const char* file );
+
+void Project( float fov , float w2h , float dim );
 
 // ___ End Func ____________________________________________________________________________________________________________________________
 

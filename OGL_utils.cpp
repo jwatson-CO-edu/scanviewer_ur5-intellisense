@@ -342,74 +342,36 @@ void draw_cylinder( const vec3e& origin  , typeF length , typeF radius , uint fa
 	glEnd();
 }
 
-void draw_cylinder( const vec3e& origin  , typeF length , typeF radius , uint facets ,
-					const vec3e& fillClr , const vec3e& lineClr ){
-	// Draw a cylinder of 'length' and 'radius' with the center of one end at 'origin', with an 'axisDir'
-	// OLD VERSION: No normals, calculates excessive circles, Has outlines
-	
-	// 0. Init
-	float radMargin = 1.0 + 2/200.0;
-	float lineWidth = length / 100.0;
-	glLineWidth( 2.0 );
-	
-	// 1. Get cicle coordinates
-	matXe baseCirc = circ_space( radius * 2.0             , facets , vec2e{ origin[0] , origin[1] } );
-	matXe lineCirc = circ_space( radius * 2.0 * radMargin , facets , vec2e{ origin[0] , origin[1] } );
-	// 2. Get bottom circle
-	matXe btmCirc   = pts_XY_at_Z( baseCirc , origin[2] );
-	matXe btmLinOut = pts_XY_at_Z( lineCirc , origin[2] );
-	matXe btmLineIn = pts_XY_at_Z( lineCirc , origin[2] + lineWidth );
-	// 3. Get top circle
-	matXe topCirc   = pts_XY_at_Z( baseCirc , origin[2] + length );
-	matXe topLinOut = pts_XY_at_Z( lineCirc , origin[2] + length);
-	matXe topLineIn = pts_XY_at_Z( lineCirc , origin[2] + length - lineWidth );
-	// 3.5. Set color
-	glClr3e( fillClr );
-	// 4. Paint barrel
-	glBegin( GL_QUAD_STRIP );
-	uint len = baseCirc.size();
-	uint i = 0;
-	for( uint i = 0 ; i < len ; i++ ){
-		glVec3e( btmCirc.row(i) );
-		glVec3e( topCirc.row(i) );
+static int BALL_ANG_INCR =  10;
+
+void light_ball( float x , float y , float z , float r ,
+				 int emission , float shiny ){
+	// Draw a glowing white ball at (x,y,z) radius (r)
+	// Author: Willem A. (Vlakkies) Schreüder  
+	int th , ph;
+	float yellow[] = { 1.0f , 1.0f , 0.0f , 1.0f };
+	float Emission[] = { 0.0f , 0.0f , 0.01f * emission , 1.0f };
+	//  Save transformation
+	glPushMatrix();
+	//  Offset, scale and rotate
+	glTranslated( x , y , z );
+	glScaled( r , r , r );
+	//  White ball
+	glColor3f( 1 , 1 , 1 );
+	glMaterialf( GL_FRONT_AND_BACK , GL_SHININESS , shiny );
+	glMaterialfv( GL_FRONT_AND_BACK , GL_SPECULAR , yellow );
+	glMaterialfv( GL_FRONT_AND_BACK , GL_EMISSION , Emission );
+	//  Bands of latitude
+	for( ph =- 90 ; ph < 90 ; ph += BALL_ANG_INCR ){
+		glBegin( GL_QUAD_STRIP );
+		for( th = 0 ; th <= 360 ; th += 2 * BALL_ANG_INCR ){
+			Vertex_sphr( th , ph );
+			Vertex_sphr( th , ph + BALL_ANG_INCR );
+		}
+		glEnd();
 	}
-	glVec3e( btmCirc.row(0) );
-	glVec3e( topCirc.row(0) );
-	glEnd();
-	// 5. Paint top
-	glBegin( GL_TRIANGLE_FAN );
-	for( i = 0 ; i < len - 1 ; i++ ){  glVec3e( topCirc.row(i) );  }
-	glEnd();
-	// 6. Paint bottom
-	glBegin( GL_TRIANGLE_FAN );
-	for( i = 0 ; i < len - 1 ; i++ ){  glVec3e( btmCirc.row(i) );  }
-	glEnd();
-	// 7. Set line color
-	glClr3e( lineClr );
-	
-	vec3e last;
-	// 8. Paint top border
-	glBegin( GL_LINES );
-	last = topLineIn.row(0);
-	for( uint i = 1 ; i < len ; i++ ){
-		glVec3e( last );
-		glVec3e( topLineIn.row(i) );
-		last = topLineIn.row(i);
-	}
-	glVec3e( last );
-	glVec3e( topLineIn.row(0) );
-	glEnd();
-	// 9. Paint bottom border
-	glBegin( GL_LINES );
-	last = btmLineIn.row(0);
-	for( uint i = 1 ; i < len ; i++ ){
-		glVec3e( last );
-		glVec3e( btmLineIn.row(i) );
-		last = btmLineIn.row(i);
-	}
-	glVec3e( last );
-	glVec3e( btmLineIn.row(0) );
-	glEnd();
+	//  Undo transofrmations
+	glPopMatrix();
 }
 
 void Reverse( void* x , const int n ){
@@ -507,6 +469,103 @@ unsigned int LoadTexBMP( const char* file ){
 	// Return texture name
 	return texture;
 }
+
+void Project( float fov , // -- Field of view angle, in degrees, in the y direction.
+			  float w2h , // -- Aspect ratio , the field of view in the x direction. Ratio of x (width) to y (height).
+			  float dim ){ // - World dimension
+	// Set projection
+	// Adapted from code provided by Willem A. (Vlakkies) Schreüder  
+	// NOTE: This function assumes that aspect rario will be computed by 'resize'
+	
+	//  Tell OpenGL we want to manipulate the projection matrix
+	glMatrixMode( GL_PROJECTION );
+	//  Undo previous transformations
+	glLoadIdentity();
+	
+	gluPerspective( fov , // -- Field of view angle, in degrees, in the y direction.
+					w2h , // -- Aspect ratio , the field of view in the x direction. Ratio of x (width) to y (height).
+					dim/4 , //- Specifies the distance from the viewer to the near clipping plane (always positive).
+					4*dim ); // Specifies the distance from the viewer to the far clipping plane (always positive).
+	
+	// Switch back to manipulating the model matrix
+	glMatrixMode( GL_MODELVIEW );
+	// Undo previous transformations
+	glLoadIdentity();
+}
+
+/// ##### OLD CODE ######################################################################################
+
+void draw_cylinder( const vec3e& origin  , typeF length , typeF radius , uint facets ,
+					const vec3e& fillClr , const vec3e& lineClr ){
+	// Draw a cylinder of 'length' and 'radius' with the center of one end at 'origin', with an 'axisDir'
+	// OLD VERSION: No normals, calculates excessive circles, Has outlines
+	
+	// 0. Init
+	float radMargin = 1.0 + 2/200.0;
+	float lineWidth = length / 100.0;
+	glLineWidth( 2.0 );
+	
+	// 1. Get cicle coordinates
+	matXe baseCirc = circ_space( radius * 2.0             , facets , vec2e{ origin[0] , origin[1] } );
+	matXe lineCirc = circ_space( radius * 2.0 * radMargin , facets , vec2e{ origin[0] , origin[1] } );
+	// 2. Get bottom circle
+	matXe btmCirc   = pts_XY_at_Z( baseCirc , origin[2] );
+	matXe btmLinOut = pts_XY_at_Z( lineCirc , origin[2] );
+	matXe btmLineIn = pts_XY_at_Z( lineCirc , origin[2] + lineWidth );
+	// 3. Get top circle
+	matXe topCirc   = pts_XY_at_Z( baseCirc , origin[2] + length );
+	matXe topLinOut = pts_XY_at_Z( lineCirc , origin[2] + length);
+	matXe topLineIn = pts_XY_at_Z( lineCirc , origin[2] + length - lineWidth );
+	// 3.5. Set color
+	glClr3e( fillClr );
+	// 4. Paint barrel
+	glBegin( GL_QUAD_STRIP );
+	uint len = baseCirc.size();
+	uint i = 0;
+	for( uint i = 0 ; i < len ; i++ ){
+		glVec3e( btmCirc.row(i) );
+		glVec3e( topCirc.row(i) );
+	}
+	glVec3e( btmCirc.row(0) );
+	glVec3e( topCirc.row(0) );
+	glEnd();
+	// 5. Paint top
+	glBegin( GL_TRIANGLE_FAN );
+	for( i = 0 ; i < len - 1 ; i++ ){  glVec3e( topCirc.row(i) );  }
+	glEnd();
+	// 6. Paint bottom
+	glBegin( GL_TRIANGLE_FAN );
+	for( i = 0 ; i < len - 1 ; i++ ){  glVec3e( btmCirc.row(i) );  }
+	glEnd();
+	// 7. Set line color
+	glClr3e( lineClr );
+	
+	vec3e last;
+	// 8. Paint top border
+	glBegin( GL_LINES );
+	last = topLineIn.row(0);
+	for( uint i = 1 ; i < len ; i++ ){
+		glVec3e( last );
+		glVec3e( topLineIn.row(i) );
+		last = topLineIn.row(i);
+	}
+	glVec3e( last );
+	glVec3e( topLineIn.row(0) );
+	glEnd();
+	// 9. Paint bottom border
+	glBegin( GL_LINES );
+	last = btmLineIn.row(0);
+	for( uint i = 1 ; i < len ; i++ ){
+		glVec3e( last );
+		glVec3e( btmLineIn.row(i) );
+		last = btmLineIn.row(i);
+	}
+	glVec3e( last );
+	glVec3e( btmLineIn.row(0) );
+	glEnd();
+}
+
+
 
 // ___ End Func ____________________________________________________________________________________________________________________________
 

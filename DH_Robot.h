@@ -21,10 +21,10 @@ Template Version: 2018-07-16
 // ~~ Shortcuts and Aliases ~~
 
 // ~~ Constants ~~
-float BASEHEIGHT = 0.017;
-vec3e URGREY{ 117/255.0 , 125/255.0 , 130/255.0 };
-vec3e URBLCK{  50/255.0 ,  50/255.0 ,  50/255.0 };
-vec3e URMETL{ 224/255.0 , 224/255.0 , 224/255.0 };
+const float BASEHEIGHT = 0.017;
+const vec3e URGREY{ 117/255.0 , 125/255.0 , 130/255.0 };
+const vec3e URBLCK{  50/255.0 ,  50/255.0 ,  50/255.0 };
+const vec3e URMETL{ 224/255.0 , 224/255.0 , 224/255.0 };
 
 
 // === Classes and Structs =================================================================================================================
@@ -37,12 +37,15 @@ struct DH_Parameters{
 	std::vector<float> theta; 
 };
 
+DH_Parameters copy_dh_params( const DH_Parameters& origParams ); // Copy DH parameters into a new structure
+
 // __ End DH __
 
 // == class RobotLink ==
 
 class RobotLink{
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 		
 	// ~~ Con/Destructors ~~
 	RobotLink( float pTheta , const vec3e& pOrigin , 
@@ -50,31 +53,32 @@ public:
 			   void (*pDrawFunc)(const DH_Parameters& DH) );
 
 	// ~~ Configuration ~~
-	void add_distal( RobotLink* link );
-	bool is_leaf();
+	void add_distal( RobotLink* link ); // Add a child link to this link
+	uint get_num_distal(); // Return the number of distal links attached to this link
+	bool is_leaf(); // Return true if there are no links distal to this, Otherwise return false
 
 	// ~~ Robot Motion ~~
 	void set_theta( float pTheta );
 	
 	// ~~ Drawing ~~
-	void draw();
+	void draw( const DH_Parameters& DH );
 
 protected:
 	// ~ Proximal Joint ~
-	float /* ----------- */ theta;
+	float /* ----------- */ theta = 0.0;
 	// ~ Relative Location ~
 	vec3e /* ----------- */ origin;
 	// ~ Distal Joint ~
-	float /* ----------- */ d_dist;
-	float /* ----------- */ a_dist;
+	float /* ----------- */ d_dist = 0.0;
+	float /* ----------- */ a_dist = 0.0;
 	vec3e /* ----------- */ nextRotnAxis;
-	float /* ----------- */ nextRotnAngl;
+	float /* ----------- */ nextRotnAngl = 0.0;
 	// ~ Distal Links ~
 	std::vector<RobotLink*> distalLinks;
 	// ~ Rendering ~
-	void /* ------------ */ (*drawFunc)();
+	void /* ------------ */ (*drawFunc)(const DH_Parameters& DH);
 	// ~ Bookkeeping ~
-	uint /* ------------ */ index;
+	uint /* ------------ */ index = 0;
 };
 
 // __ End RobotLink __
@@ -84,8 +88,15 @@ protected:
 
 class UR5_OGL{
 public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	UR5_OGL( const vec3e& baseOrigin );
+	// ~~ Functions ~~
+
+	// ~ Con/Destructors ~
+	UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& params );
+
+	// ~ Rendering ~
+	void draw();
 
 	// ~~ Members ~~
 
@@ -97,7 +108,7 @@ public:
 	vec3e basePos; // Position of the base , Lab Frame
 
 protected:
-
+	DH_Parameters params;
 	// ~ Links ~
 	RobotLink* Link1 = nullptr;
 	RobotLink* Link2 = nullptr;

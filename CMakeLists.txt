@@ -80,6 +80,7 @@ set( MATH_GEO_CPP MathGeo.cpp )
 set( UTILS_CPP OGL_utils.cpp )
 set( TOYS_CPP ToyBox.cpp )
 set( SDL_UT_CPP SDL_utils.cpp )
+set( DH_RBT_CPP DH_Robot.cpp )
 
 # ___ END INCLUDE __________________________________________________________________________________________________________________________
 
@@ -111,7 +112,7 @@ message( "Generating build files ..." )
 # ~~~ HOMEWORK 03 ~~~
 
 add_executable( ${PROJECT_NAME} ${PROJECT_NAME}.cpp  
-				${CPP_HELP_CPP} ${MATH_GEO_CPP} ${UTILS_CPP} ${SDL_UT_CPP} ${TOYS_CPP} )
+				${CPP_HELP_CPP} ${MATH_GEO_CPP} ${UTILS_CPP} ${SDL_UT_CPP} ${TOYS_CPP} ${DH_RBT_CPP} )
 
 target_link_libraries( ${PROJECT_NAME} 
 					   m

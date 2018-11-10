@@ -10,20 +10,19 @@
 	[Y] Remove GLUT remnants
 	[Y] Remove Spare Parts
 [ ] Re-implement robot & Animate , Create an illuminated robot
-	[ ] Correct Errors
-	[ ] Create a UR5 class , This should emulate the the homework assignment
+	[Y] Correct Errors
+	[Y] Create a UR5 class , This should emulate the the homework assignment
+	[ ] Test HW3 funtionality
+	[ ] Gut  HW6 elements
     [ ] Pick shiny material props for the arm beams
     [ ] Camera at robot gripper
 [ ] Troubleshoot hearbeat
-[ ] Gut non-robot code
 [ ] Display Scan Data
     [ ] Get scans working on the robot
     [ ] Determine file format
     [ ] Load files
 
 { } Robot IK
-
-{N} Agents with trails , Boid-like - YAGNI
 */
 
 // === INIT ================================================================================================================================
@@ -57,6 +56,7 @@
 #include <Cpp_Helpers.h> // Favorite C++ tricks! I am the author , Source: https://bitbucket.org/jwatson_utah_edu/cpp_helpers/src/master/
 #include "MathGeo.h" // ___ Eigen + Math Utils
 #include "OGL_utils.h" // _ Utility functions for 5229
+#include "DH_Robot.h" // __ UR5 specification and utils
 #include "ToyBox.h" // ____ Objects and Critters for Interesting Times
 #include "SDL_utils.h" // _ Utility functions for SDL2
 
@@ -115,7 +115,7 @@ bool ANIMATBEAMS = true;
 // ~ Enums ~
 
 // ~~ Geometry ~~
-float AXESSCALE     =   0.17;
+float AXESSCALE     =   1.17;
 
 
 // ___ END GLOBAL ___
@@ -140,10 +140,22 @@ float AXESSCALE     =   0.17;
 
 // === VARIABLES & OBJECTS =================================================================================================================
 //						  float rad , const vec3e& cntr , const vec3e& colr , float shiny
-Icosahedron_OGL icosTest{ 0.5 , vec3e{0,0,0} , vec3e{0,1,0} , 5.5 };
+// Icosahedron_OGL icosTest{ 0.5 , vec3e{0,0,0} , vec3e{0,1,0} , 5.5 };
 std::vector<Icosahedron_OGL*> nodules;
 vec3e RXcolor{ 0.0/255 , 204.0/255 , 102.0/255 };
 std::vector<RibbonBolt*> particles;
+
+// = Robot Parameters =
+// Joint:                       0   ,  1      ,  2     ,  3     ,  4      ,   5      ,  6
+std::vector<float> alphaRbt = { 0.0 , 90.0    ,  0.0   ,  0.0   , 90.0    , -90.0    ,  0.0    }; 
+std::vector<float> aRbt     = { 0.0 ,  0.0    , -0.425 , -0.392 ,  0.0    ,   0.0    ,  0.0    }; 
+std::vector<float> dRbt     = { 0.0 ,  0.0892 ,  0.0   ,  0.0   ,  0.1093 ,   0.0948 ,  0.0825 }; 
+std::vector<float> thetaRbt = { 0.0 ,  0.0    ,  0.0   ,  0.0   ,  0.0    ,   0.0    ,  0.0    }; 
+DH_Parameters paramsUR5{ alphaRbt , aRbt , dRbt , thetaRbt };
+// static float BASEHEIGHT = 0.017;
+// _ End Params _
+
+UR5_OGL UR5{ vec3e{0,0,0} , paramsUR5 };
 
 // ___ END VAR _____________________________________________________________________________________________________________________________
 
@@ -219,41 +231,44 @@ void display( SDL_Window* window ){
 						 1.0f };
 	glLightfv( GL_LIGHT1 , GL_DIFFUSE  , virsColr );
 	glLightfv( GL_LIGHT1 , GL_SPECULAR , virsSpec );
-	icosTest.set_emission_intensity( emission );
-	icosTest.draw( shiny );
+	// icosTest.set_emission_intensity( emission );
+	// icosTest.draw( shiny );
 				   
 	// 4. For each of the faces
-	uint len = icosTest.icosGeo.N.rows();
-	float angle;
-	vec3e axis;
-	vec3e zPos{0,0,1};
-	vec3e nrml;
-	for( uint i = 0 ; i < len ; i++ ){
-		// 5. Find the turn to the face
-		nrml  = icosTest.icosGeo.N.row(i);
-		angle = angle_between( nrml , zPos );
-		axis  = zPos.cross( nrml ).normalized();
-		// 6. Push
-		glPushMatrix();
-		// 7. Rotate
-		glRotated( degrees( angle ) , axis(0) , axis(1) , axis(2) );
-		// 8. Draw cylinder 
-		draw_cylinder( vec3e{ 0 , 0 , 0.5 }  , 0.35 , 0.07 , 75 ,
-				       vec3e{ 0.0/255, 102.0/255, 255.0/255 } , shiny ,
-				       txtr6 );
+	// uint len = icosTest.icosGeo.N.rows();
+	// float angle;
+	// vec3e axis;
+	// vec3e zPos{0,0,1};
+	// vec3e nrml;
+	// for( uint i = 0 ; i < len ; i++ ){
+	// 	// 5. Find the turn to the face
+	// 	nrml  = icosTest.icosGeo.N.row(i);
+	// 	angle = angle_between( nrml , zPos );
+	// 	axis  = zPos.cross( nrml ).normalized();
+	// 	// 6. Push
+	// 	glPushMatrix();
+	// 	// 7. Rotate
+	// 	glRotated( degrees( angle ) , axis(0) , axis(1) , axis(2) );
+	// 	// 8. Draw cylinder 
+	// 	draw_cylinder( vec3e{ 0 , 0 , 0.5 }  , 0.35 , 0.07 , 75 ,
+	// 			       vec3e{ 0.0/255, 102.0/255, 255.0/255 } , shiny ,
+	// 			       txtr6 );
 		
-		glTranslated( 0,0,1 );
+	// 	glTranslated( 0,0,1 );
 		
-		nodules[i]->draw( shiny );
+	// 	nodules[i]->draw( shiny );
 		
-		// 9. Pop
-		glPopMatrix();
-	}
+	// 	// 9. Pop
+	// 	glPopMatrix();
+	// }
 
 	// 10. draw particles
 	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
 	
 	glDisable( GL_LIGHTING );
+
+	// N. Draw the robot
+	UR5.draw();
 	
 	// == Status Message ==
 
@@ -513,8 +528,8 @@ int main( int argc , char* argv[] ){
 	txtr6 = LoadTexBMP( "textures/concrete.bmp" );
 	
 	// ~ Create objects ~
-	icosTest.set_emission_color( RXcolor );
-	icosTest.assign_face_textures_randomly( txtr1 , 100.0f , 1024 , 512 );
+	// icosTest.set_emission_color( RXcolor );
+	// icosTest.assign_face_textures_randomly( txtr1 , 100.0f , 1024 , 512 );
 	
 	float lenTravelMin = 0.5f;
 	float lenTravelMax = 2.0f;

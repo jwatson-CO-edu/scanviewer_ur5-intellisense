@@ -86,11 +86,26 @@ void draw_origin( float scale ){
 	//  Label axes
 	glColor3f( 249/255.0 , 255/255.0 , 99/255.0 ); // Text Yellow
 	glRasterPos3d( scale , 0 , 0 ); // Do the next raster operation at the window position corresponding to 3D coords
+	#ifdef TEXTWITHGLUT
 	Print( "X" );
+	#endif
+	#ifdef TEXTWITHSDL2
+	PrintSDL( "X" );
+	#endif
 	glRasterPos3d( 0 , scale , 0 );
+	#ifdef TEXTWITHGLUT
 	Print( "Y" );
+	#endif
+	#ifdef TEXTWITHSDL2
+	PrintSDL( "Y" );
+	#endif
 	glRasterPos3d( 0 , 0 , scale );
+	#ifdef TEXTWITHGLUT
 	Print( "Z" );
+	#endif
+	#ifdef TEXTWITHSDL2
+	PrintSDL( "Z" );
+	#endif
 }
 
 void draw_grid_org_XY( float gridSize , uint xPlusMinus , uint yPlusMinus , 

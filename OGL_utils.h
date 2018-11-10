@@ -15,6 +15,10 @@ Template Version: 2017-09-23
 #define LEN 8192 // ---------- Maximum length of text string
 #define _USE_MATH_DEFINES // - M_PI , etc.
 #define GL_GLEXT_PROTOTYPES // Important for all of your programs
+// ~ Which system support text? ~
+// #define TEXTWITHGLUT
+#define TEXTWITHSDL2
+
 
 // ~~ Imports ~~
 // ~ Standard ~
@@ -36,6 +40,9 @@ Template Version: 2017-09-23
 // ~ Local ~
 #include <Cpp_Helpers.h> // Favorite C++ tricks! I am the author , Source: https://bitbucket.org/jwatson_utah_edu/cpp_helpers/src/master/
 #include "MathGeo.h"
+#include "SDL_utils.h"
+
+
 
 // ~~ Constants ~~
 const uint NUMCYLFACETS = 75;
@@ -65,6 +72,7 @@ void glClr3e( const vec3e& c ); // Set the color with an Eigen vector
 void glTxr2e( const vec2e& v ); // Set a texture vertex with and Eigen vector
 
 void Print( const char* format , ... );
+void Print( string format      , ... );
 
 void draw_origin( float scale );
 

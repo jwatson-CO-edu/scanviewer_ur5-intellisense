@@ -39,6 +39,8 @@ struct DH_Parameters{
 
 DH_Parameters copy_dh_params( const DH_Parameters& origParams ); // Copy DH parameters into a new structure
 
+bool dh_populated( const DH_Parameters& origParams ); // Are there params and are they of equal length?
+
 // __ End DH __
 
 // == class RobotLink ==
@@ -61,7 +63,11 @@ public:
 	void set_theta( float pTheta );
 	
 	// ~~ Drawing ~~
+	bool has_draw_func();
 	void draw( const DH_Parameters& DH );
+
+	// ~~ Member Vars ~~
+	bool enableLinkDraw = false;
 
 protected:
 	// ~ Proximal Joint ~
@@ -103,6 +109,8 @@ public:
 	// ~ Joint State ~
 	std::vector<float> q    = {   0.0 ,	 0.0 ,	0.0 ,  0.0 ,  0.0 ,	 0.0 }; // deg
 	std::vector<float> qDot = {  30.0 , 30.0 , 30.0 , 30.0 , 30.0 , 30.0 }; // deg/sec
+
+	void set_joint_state( const std::vector<float>& qNu );
 
 	// ~ Pose ~
 	vec3e basePos; // Position of the base , Lab Frame

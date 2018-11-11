@@ -12,6 +12,9 @@ Template Version: 2018-06-07
 
 void lnk1_draw( const DH_Parameters& DH ){
 	// Draw Link 1
+
+	bool SHOWDEBUG = true;
+
 	float length   = 0.140;
 	float diameter = 0.120;
 	float zOffset  = 0.015;
@@ -24,10 +27,15 @@ void lnk1_draw( const DH_Parameters& DH ){
 	draw_cylinder( vec3e{ 0,0,0 } , length/2.0f , diameter/2.0f , NUMCYLFACETS , 
 				   URGREY , 0.0f );
 	glPopMatrix();
+
+	if( SHOWDEBUG ) cerr << "Paint link 1 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
 }
 
 void lnk2_draw( const DH_Parameters& DH ){
 	// Draw Link 2
+
+	bool SHOWDEBUG = true;
+
 	float length   = 0.140;
 	float diameter = 0.120;
 	float armDia   = 0.085;
@@ -39,7 +47,6 @@ void lnk2_draw( const DH_Parameters& DH ){
 	draw_cylinder( vec3e{ 0,0,0 } , length , diameter/2.0f , NUMCYLFACETS , 
 				   URGREY , 0.0f );
 	// 2. Horizontal Cylinders
-	
 	
 	glRotated( 90 , 1 , 0 , 0 ); 
 	glTranslated( 0 , length/2.0 , 0 ); 
@@ -55,10 +62,15 @@ void lnk2_draw( const DH_Parameters& DH ){
 	draw_cylinder( vec3e{ 0,-DH.a[2],-length/2.0f } , length , diameter/2.0f , NUMCYLFACETS , 
 				   URGREY , 0.0f );
 	glPopMatrix();
+
+	if( SHOWDEBUG ) cerr << "Paint link 2 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
 }
 
 void lnk3_draw( const DH_Parameters& DH ){
 	// Draw Link 3
+
+	bool SHOWDEBUG = true;
+
 	float length   = 0.090;
 	//~ float bigLen   = 0.140;
 	float diameter = 0.072;
@@ -74,8 +86,6 @@ void lnk3_draw( const DH_Parameters& DH ){
 	draw_cylinder( vec3e{ 0,0, DH.d[3] + zAdjust } , length + xtraHght , diameter/2.0f , NUMCYLFACETS , 
 				   URGREY , 0.0f );
 	// 2. Horizontal Cylinders
-	
-	
 	glRotated( 90 , 1 , 0 , 0 ); 
 	glTranslated( 0 , length/2.0f , 0.0 ); 
 	
@@ -89,10 +99,15 @@ void lnk3_draw( const DH_Parameters& DH ){
 	draw_cylinder( vec3e{ 0 , -DH.a[3] , -length/2.0f } , length , diameter/2.0f , NUMCYLFACETS , 
 				   URGREY , 0.0f );
 	glPopMatrix();
+
+	if( SHOWDEBUG ) cerr << "Paint link 3 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
 }
 
 void lnk4_draw( const DH_Parameters& DH ){
 	// Draw Link 4
+
+	bool SHOWDEBUG = true;
+
 	float length   = 0.090;
 	float diameter = 0.072;
 	
@@ -111,10 +126,15 @@ void lnk4_draw( const DH_Parameters& DH ){
 				   URGREY , 0.0f );
 	
 	glPopMatrix();
+
+	if( SHOWDEBUG ) cerr << "Paint link 4 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
 }
 
 void lnk5_draw( const DH_Parameters& DH ){
 	// Draw Link 5
+
+	bool SHOWDEBUG = true;
+
 	float length   = 0.090;
 	float diameter = 0.072;
 	
@@ -133,10 +153,15 @@ void lnk5_draw( const DH_Parameters& DH ){
 				   URGREY , 0.0f );
 	
 	glPopMatrix();
+
+	if( SHOWDEBUG ) cerr << "Paint link 5 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
 }
 
 void lnk6_draw( const DH_Parameters& DH ){
 	// Draw Link 6
+
+	bool SHOWDEBUG = true;
+
 	float length   = 0.090;
 	float diameter = 0.072;
 	glPushMatrix(); // Transformations apply only to this link
@@ -145,6 +170,8 @@ void lnk6_draw( const DH_Parameters& DH ){
 	draw_cylinder( vec3e{ 0,0, 0.00 } , DH.d[6]-length/2.0f  , diameter/2.0f , NUMCYLFACETS , 
 				   URMETL , 0.0f );
 	glPopMatrix();
+
+	if( SHOWDEBUG ) cerr << "Paint link 6 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
 }
 
 // ___ End Func ____________________________________________________________________________________________________________________________
@@ -162,6 +189,17 @@ DH_Parameters copy_dh_params( const DH_Parameters& origParams ){
 	rtnStruct.alpha = vec_copy( origParams.alpha );
 	rtnStruct.theta = vec_copy( origParams.theta );
 	return rtnStruct;
+}
+
+bool dh_populated( const DH_Parameters& origParams ){
+	// Are there params and are they of equal length?
+	if( !( origParams.a.size() && origParams.d.size() && origParams.alpha.size() && origParams.theta.size() ) )
+		return false;
+	if( !( origParams.a.size() == origParams.d.size() && 
+		   origParams.d.size() == origParams.alpha.size() &&
+		   origParams.alpha.size() == origParams.theta.size() ) )
+		return false;
+	return true;
 }
 
 // __ End DH __
@@ -196,9 +234,11 @@ uint RobotLink::get_num_distal(){
 	return distalLinks.size();
 }
 
-void RobotLink::set_theta( float pTheta ){  theta = pTheta;  } // Set the angle of the joint at the base of the link
+void RobotLink::set_theta( float pTheta ){  theta = fmod( pTheta , 360.0f );  } // Set the angle of the joint at the base of the link
 
-static float AXESSCALE = 1.0;
+static float AXESSCALE = 20.0;
+
+bool RobotLink::has_draw_func(){  return drawFunc;  }
 
 void RobotLink::draw( const DH_Parameters& DH ){
 	// Render the link and all distal links
@@ -209,7 +249,7 @@ void RobotLink::draw( const DH_Parameters& DH ){
 	glRotated( theta , 0 , 0 , 1 ); // ------------------ 2 , end
 	glTranslated( origin[0] , origin[1] , origin[2] ); // 1 , bgn 
 	// 3. Render link
-	drawFunc( DH );
+	if( enableLinkDraw ) drawFunc( DH );
 	// 4. Downstream link transform
 	
 	glTranslated( a_dist , 0 , 0 ); // ------------------------- 1 , bgn 
@@ -226,8 +266,7 @@ void RobotLink::draw( const DH_Parameters& DH ){
 	// 	glGetFloatv( GL_MODELVIEW_MATRIX , OGLmat );  
 	// 	for( uint i = 0 ; i < 16 ; i++ ){  modelMat[i] = OGLmat[i];  }
 	// }
-	
-	
+
 	// 4. For each distal link
 	uint numDistl = distalLinks.size();
 	// 5. Draw the link *relative* to this link!
@@ -250,6 +289,8 @@ vec3e X{1,0,0};
 UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 	// 1. Instantiate the links
 
+	bool SHOWDEBUG = true;
+
 	basePos = baseOrigin;
 	params  = copy_dh_params( pParams );
 
@@ -270,7 +311,7 @@ UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 
 	Link3 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
 	 					   params.d[3] , params.a[3] , X ,  params.alpha[3] , 
-							lnk3_draw );
+						   lnk3_draw );
 
 	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;	
 					
@@ -295,18 +336,54 @@ UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 	cerr << "About to link robot links!" << endl;
 
 	// 2. Set up the link structure: Connect Links
-	Link1->add_distal( Link2 );  cout << "Link 1 has " << Link1->get_num_distal() << " distal links" << endl;
-	Link2->add_distal( Link3 );  cout << "Link 2 has " << Link2->get_num_distal() << " distal links" << endl;
-	Link3->add_distal( Link4 );  cout << "Link 3 has " << Link3->get_num_distal() << " distal links" << endl;
-	Link4->add_distal( Link5 );  cout << "Link 4 has " << Link4->get_num_distal() << " distal links" << endl;
-	Link5->add_distal( Link6 );  cout << "Link 5 has " << Link5->get_num_distal() << " distal links" << endl;
-								 cout << "Link 6 has " << Link6->get_num_distal() << " distal links" << endl;
+	Link1->add_distal( Link2 );  
+	Link2->add_distal( Link3 );  
+	Link3->add_distal( Link4 );  
+	Link4->add_distal( Link5 );  
+	Link5->add_distal( Link6 );  
+								 
+	if( SHOWDEBUG ){
+		cout << "Link 1 has " << Link1->get_num_distal() 
+			 << " distal links. Has draw function?: " << yesno( Link1->has_draw_func() ) << endl;
+		cout << "Link 2 has " << Link2->get_num_distal() 
+			 << " distal links. Has draw function?: " << yesno( Link2->has_draw_func() ) << endl;
+		cout << "Link 3 has " << Link3->get_num_distal() 
+			 << " distal links. Has draw function?: " << yesno( Link3->has_draw_func() ) << endl;
+		cout << "Link 4 has " << Link4->get_num_distal() 
+			 << " distal links. Has draw function?: " << yesno( Link4->has_draw_func() ) << endl;
+		cout << "Link 5 has " << Link5->get_num_distal() 
+			 << " distal links. Has draw function?: " << yesno( Link5->has_draw_func() ) << endl;
+		cout << "Link 6 has " << Link6->get_num_distal() 
+			 << " distal links. Has draw function?: " << yesno( Link6->has_draw_func() ) << endl;
+	}
 }
 
 // ~ Rendering ~
 void UR5_OGL::draw(){
 	// Render the robot
 	Link1->draw( params ); // This will draw all distal links as well
+}
+
+// ~ Joint State ~
+void UR5_OGL::set_joint_state( const std::vector<float>& qNu ){
+	// Check that the new joint state has the correct length and if so set
+
+	bool SHOWDEBUG = true;
+
+	uint qLen = qNu.size();
+	if( qLen == 6 ){
+		q = vec_copy( qNu );
+		if( SHOWDEBUG ) cout << "Joints set to " << q << endl;
+		// 3. Update joints
+		Link1->set_theta( q[0] );
+		Link2->set_theta( q[1] );
+		Link3->set_theta( q[2] );
+		Link4->set_theta( q[3] );
+		Link5->set_theta( q[4] );
+		Link6->set_theta( q[5] );
+	}else{
+		cout << "UR5_OGL::set_joint_state , Got a q vector of size " << qLen << " but expected 6" << endl;
+	}
 }
 
 // __ End UR5_OGL __

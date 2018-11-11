@@ -265,11 +265,18 @@ void display( SDL_Window* window ){
 	// 10. draw particles
 	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
 	
-	glDisable( GL_LIGHTING );
+	
 
 	// N. Draw the robot
 	UR5.draw();
 	
+
+	glDisable( GL_LIGHTING );
+
+	// N. Draw the origin
+	draw_origin( 0.5 );
+
+
 	// == Status Message ==
 
 	// NOTE: Text color MUST be specified before raster position for bitmap text
@@ -426,10 +433,9 @@ bool key( const SDL_KeyboardEvent& event ){
 		// <?> : Keys are nice, I guess!
 			
 		default :
-			printf( "There is no function for this key!\n" );
-		
-
-
+			// printf( "There is no function for this key!\n" );
+			// Do nothing , Do not notify unhandled events
+			break;
 	}
 
 	//  Translate shininess power to value (-1 => 0)
@@ -562,6 +568,8 @@ int main( int argc , char* argv[] ){
 	float t0  = 0.0f;
 	float dt = 1.0f / 60.0f;
 	float _time_elapsed = dt; // This is fixed time for state updates
+
+	std::vector<float> currQ = { 0,0,0,0,0,0 };
 	
 	// while the run flag is active
 	while( run ){
@@ -624,6 +632,10 @@ int main( int argc , char* argv[] ){
 				}
 			}else{  particles[i]->deactivate();  }
 		}
+
+		// Move the joints
+		currQ = UR5.qDot * (float)t;
+		UR5.set_joint_state( currQ );
 		
 		// N. Sleep for remainder
 		hb.sleep_remainder(); // Not really needed with VSYNC, but just in case

@@ -63,7 +63,9 @@ const float MATL_BLACK[] = { 0 , 0 , 0 , 1 };
 
 // === Functions ===========================================================================================================================
 
-bool ErrCheck( const char* where ); // --- See if OpenGL has raised any errors
+bool ErrCheck( const char* where ); // --- See if OpenGL has raised any errors , Tag with 'where' for info
+bool ErrCheck( string where );
+
 void Fatal( const char* format , ... ); // Scream and Run
 
 void glVec3e( const vec3e& v ); // Set a vertex with an Eigen vector

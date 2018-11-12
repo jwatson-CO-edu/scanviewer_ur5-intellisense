@@ -167,6 +167,16 @@ matXe N_from_VF( const matXe& V , const matXi& F );
 
 // __ End Mesh __
 
+
+// == Print Helpers ==
+
+std::ostream& operator<<( std::ostream& os , const vec3e& vec );
+
+std::ostream& operator<<( std::ostream& os , const vec2e& vec );
+
+// __ End Print __
+
+
 // ___ End Func ____________________________________________________________________________________________________________________________
 
 

@@ -12,16 +12,16 @@
 [ ] Re-implement robot & Animate , Create an illuminated robot
 	[Y] Correct Errors
 	[Y] Create a UR5 class , This should emulate the the homework assignment
-	[ ] Test HW3 funtionality
-	[ ] Gut  HW6 elements
+	[Y] Test HW3 funtionality
+	[Y] Gut  HW6 elements
+    [ ] Find brushed textures
     [ ] Pick shiny material props for the arm beams
     [ ] Camera at robot gripper
-[ ] Troubleshoot hearbeat
+[Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync
 [ ] Display Scan Data
     [ ] Get scans working on the robot
     [ ] Determine file format
     [ ] Load files
-
 { } Robot IK
 */
 
@@ -467,9 +467,25 @@ double _last_time = 0.0;
 
 // === MAIN ================================================================================================================================
 
+// == Test Vars ==
+
+const vec3e test1{    1.0f , 0.0f , 0.0f };
+const vec3e test2 = { 2.0f , 0.0f , 0.0f };
+	  vec3e test3{    3.0f , 0.0f , 0.0f };
+	  vec3e test4 = { 4.0f , 0.0f , 0.0f };
+
+// __ End Test __
+
+
 // Start up GLUT and tell it what to do
 int main( int argc , char* argv[] ){
 	rand_init(); // initialize random seed based on system clock
+
+	// Run tests
+	cerr << "test1: " << test1 << endl;
+	cerr << "test2: " << test2 << endl;
+	cerr << "test3: " << test3 << endl;
+	cerr << "test4: " << test4 << endl;
 	
 	// 0. Start an OGL context
 	int winW , winH;
@@ -570,6 +586,8 @@ int main( int argc , char* argv[] ){
 	float _time_elapsed = dt; // This is fixed time for state updates
 
 	std::vector<float> currQ = { 0,0,0,0,0,0 };
+
+	bool QUITEARLY = false;
 	
 	// while the run flag is active
 	while( run ){
@@ -639,6 +657,9 @@ int main( int argc , char* argv[] ){
 		
 		// N. Sleep for remainder
 		hb.sleep_remainder(); // Not really needed with VSYNC, but just in case
+
+		// N+1. Quit for Debug
+		if( QUITEARLY ){  break;  }
 	}
 	
 	/// _____ END MAIN LOOP ________________________________________________________________________________________________________________

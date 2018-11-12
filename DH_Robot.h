@@ -21,10 +21,6 @@ Template Version: 2018-07-16
 // ~~ Shortcuts and Aliases ~~
 
 // ~~ Constants ~~
-const float BASEHEIGHT = 0.017;
-const vec3e URGREY{ 117/255.0 , 125/255.0 , 130/255.0 };
-const vec3e URBLCK{  50/255.0 ,  50/255.0 ,  50/255.0 };
-const vec3e URMETL{ 224/255.0 , 224/255.0 , 224/255.0 };
 
 
 // === Classes and Structs =================================================================================================================
@@ -67,7 +63,7 @@ public:
 	void draw( const DH_Parameters& DH );
 
 	// ~~ Member Vars ~~
-	bool enableLinkDraw = false;
+	bool enableLinkDraw = true;
 
 protected:
 	// ~ Proximal Joint ~

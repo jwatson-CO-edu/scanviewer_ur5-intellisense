@@ -19,7 +19,7 @@ Template Version: 2017-09-23
 // === Functions ===========================================================================================================================
 
 bool ErrCheck( const char* where ){
-	// See if OpenGL has raised any errors
+	// See if OpenGL has raised any errors , Tag with 'where' for the programmer's benefit
 	// Author: Willem A. (Vlakkies) Schreüder  
 	int err = glGetError();
 	if( err ){  
@@ -27,6 +27,8 @@ bool ErrCheck( const char* where ){
 		return true;
 	}else{  return false;  }
 }
+
+bool ErrCheck( string where ){  return ErrCheck( where.c_str() );  }
 
 void Fatal( const char* format , ... ){
 	// Scream and Run
@@ -69,8 +71,15 @@ void Print( string format , ... ){
 
 void draw_origin( float scale ){
 	//  Draw scaled axes at origin in [R,G,B] for [X,Y,Z]
+
+    GLboolean prevState = glIsEnabled( GL_LIGHTING ); // Get the current lighting flag
+    if( prevState ){
+        glDisable( GL_LIGHTING );  
+        glDisable( GL_COLOR_MATERIAL );
+    }
+
 	glLineWidth( 1.5 );
-	
+
 	glBegin( GL_LINES );
 		glColor3f( 1 , 0 , 0 ); // R
 		glVertex3d( 0     , 0 , 0 ); // Bgn
@@ -106,6 +115,14 @@ void draw_origin( float scale ){
 	#ifdef TEXTWITHSDL2
 	PrintSDL( "Z" );
 	#endif
+    // Restore lighting
+    if( prevState ){  
+        glEnable( GL_LIGHTING );  
+        glEnable( GL_COLOR_MATERIAL );
+    }else{             
+        glDisable( GL_LIGHTING );  
+        glDisable( GL_COLOR_MATERIAL );  
+    }
 }
 
 void draw_grid_org_XY( float gridSize , uint xPlusMinus , uint yPlusMinus , 

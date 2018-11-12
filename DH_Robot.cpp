@@ -8,6 +8,13 @@ Template Version: 2018-06-07
 
 #include "DH_Robot.h"
 
+// // ~~ Constants ~~
+// const float BASEHEIGHT = 0.017f;
+// const vec3e URGREY = { 117.0f/255.0f , 125.0f/255.0f , 130.0f/255.0f };
+// const vec3e URBLCK{  50.0f/255.0f ,  50.0f/255.0f ,  50.0f/255.0f };
+// const vec3e URMETL{ 224.0f/255.0f , 224.0f/255.0f , 224.0f/255.0f };
+// const vec3e unitX{ 1.0f , 0.0f , 0.0f };
+
 // === Functions ===========================================================================================================================
 
 void lnk1_draw( const DH_Parameters& DH ){
@@ -18,6 +25,11 @@ void lnk1_draw( const DH_Parameters& DH ){
 	float length   = 0.140;
 	float diameter = 0.120;
 	float zOffset  = 0.015;
+	vec3e URGREY = { 117.0f/255.0f , 125.0f/255.0f , 130.0f/255.0f };
+	vec3e URBLCK{  50.0f/255.0f ,  50.0f/255.0f ,  50.0f/255.0f };
+	vec3e URMETL{ 224.0f/255.0f , 224.0f/255.0f , 224.0f/255.0f };
+	vec3e unitX{ 1.0f , 0.0f , 0.0f };
+
 	glPushMatrix(); // Transformations apply only to this link
 	draw_cylinder( vec3e{ 0 , 0 , ( DH.d[1] - length/2.0f ) } , length , diameter/2.0f , NUMCYLFACETS , 
 				   URGREY , 0.0f );
@@ -28,7 +40,10 @@ void lnk1_draw( const DH_Parameters& DH ){
 				   URGREY , 0.0f );
 	glPopMatrix();
 
-	if( SHOWDEBUG ) cerr << "Paint link 1 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
+	if( SHOWDEBUG ){ 
+		cerr << "Paint link 1 , DH populated?: " << yesno( dh_populated( DH ) ) << endl; 
+		cerr << "OGL ERROR LINK 1?:" << yesno( ErrCheck( "lnk1_draw" ) ) << endl;
+	}
 }
 
 void lnk2_draw( const DH_Parameters& DH ){
@@ -39,6 +54,11 @@ void lnk2_draw( const DH_Parameters& DH ){
 	float length   = 0.140;
 	float diameter = 0.120;
 	float armDia   = 0.085;
+	vec3e URGREY = { 117.0f/255.0f , 125.0f/255.0f , 130.0f/255.0f };
+	vec3e URBLCK{  50.0f/255.0f ,  50.0f/255.0f ,  50.0f/255.0f };
+	vec3e URMETL{ 224.0f/255.0f , 224.0f/255.0f , 224.0f/255.0f };
+	vec3e unitX{ 1.0f , 0.0f , 0.0f };
+
 	glPushMatrix(); // Transformations apply only to this link
 	// 1. Vertical cylinder
 	glRotated( -90 , 0 , 0 , 1 ); 
@@ -63,7 +83,10 @@ void lnk2_draw( const DH_Parameters& DH ){
 				   URGREY , 0.0f );
 	glPopMatrix();
 
-	if( SHOWDEBUG ) cerr << "Paint link 2 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
+	if( SHOWDEBUG ){ 
+		cerr << "Paint link 2 , DH populated?: " << yesno( dh_populated( DH ) ) << endl; 
+		cerr << "OGL ERROR LINK 2?:" << yesno( ErrCheck( "lnk2_draw" ) ) << endl;
+	}
 }
 
 void lnk3_draw( const DH_Parameters& DH ){
@@ -75,6 +98,11 @@ void lnk3_draw( const DH_Parameters& DH ){
 	//~ float bigLen   = 0.140;
 	float diameter = 0.072;
 	float armDia   = diameter;
+	vec3e URGREY = { 117.0f/255.0f , 125.0f/255.0f , 130.0f/255.0f };
+	vec3e URBLCK{  50.0f/255.0f ,  50.0f/255.0f ,  50.0f/255.0f };
+	vec3e URMETL{ 224.0f/255.0f , 224.0f/255.0f , 224.0f/255.0f };
+	vec3e unitX{ 1.0f , 0.0f , 0.0f };
+
 	glPushMatrix(); // Transformations apply only to this link
 	// 1. Vertical cylinder
 	glRotated( -90 , 0 , 0 , 1 ); 
@@ -100,7 +128,10 @@ void lnk3_draw( const DH_Parameters& DH ){
 				   URGREY , 0.0f );
 	glPopMatrix();
 
-	if( SHOWDEBUG ) cerr << "Paint link 3 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
+	if( SHOWDEBUG ){ 
+		cerr << "Paint link 3 , DH populated?: " << yesno( dh_populated( DH ) ) << endl; 
+		cerr << "OGL ERROR LINK 3?:" << yesno( ErrCheck( "lnk3_draw" ) ) << endl;
+	}
 }
 
 void lnk4_draw( const DH_Parameters& DH ){
@@ -110,6 +141,11 @@ void lnk4_draw( const DH_Parameters& DH ){
 
 	float length   = 0.090;
 	float diameter = 0.072;
+	vec3e URGREY = { 117.0f/255.0f , 125.0f/255.0f , 130.0f/255.0f };
+	vec3e URBLCK{  50.0f/255.0f ,  50.0f/255.0f ,  50.0f/255.0f };
+	vec3e URMETL{ 224.0f/255.0f , 224.0f/255.0f , 224.0f/255.0f };
+	vec3e unitX{ 1.0f , 0.0f , 0.0f };
+
 	
 	glPushMatrix(); // Transformations apply only to this link
 	glTranslated( 0 , 0 , length/2.0f ); 
@@ -127,7 +163,10 @@ void lnk4_draw( const DH_Parameters& DH ){
 	
 	glPopMatrix();
 
-	if( SHOWDEBUG ) cerr << "Paint link 4 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
+	if( SHOWDEBUG ){ 
+		cerr << "Paint link 4 , DH populated?: " << yesno( dh_populated( DH ) ) << endl; 
+		cerr << "OGL ERROR LINK 4?:" << yesno( ErrCheck( "lnk4_draw" ) ) << endl;
+	}
 }
 
 void lnk5_draw( const DH_Parameters& DH ){
@@ -137,6 +176,11 @@ void lnk5_draw( const DH_Parameters& DH ){
 
 	float length   = 0.090;
 	float diameter = 0.072;
+	vec3e URGREY = { 117.0f/255.0f , 125.0f/255.0f , 130.0f/255.0f };
+	vec3e URBLCK{  50.0f/255.0f ,  50.0f/255.0f ,  50.0f/255.0f };
+	vec3e URMETL{ 224.0f/255.0f , 224.0f/255.0f , 224.0f/255.0f };
+	vec3e unitX{ 1.0f , 0.0f , 0.0f };
+
 	
 	glPushMatrix(); // Transformations apply only to this link
 	glTranslated( 0 , 0 , length/2.0f ); 
@@ -154,7 +198,10 @@ void lnk5_draw( const DH_Parameters& DH ){
 	
 	glPopMatrix();
 
-	if( SHOWDEBUG ) cerr << "Paint link 5 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
+	if( SHOWDEBUG ){ 
+		cerr << "Paint link 5 , DH populated?: " << yesno( dh_populated( DH ) ) << endl; 
+		cerr << "OGL ERROR LINK 5?:" << yesno( ErrCheck( "lnk5_draw" ) ) << endl;
+	}
 }
 
 void lnk6_draw( const DH_Parameters& DH ){
@@ -164,6 +211,11 @@ void lnk6_draw( const DH_Parameters& DH ){
 
 	float length   = 0.090;
 	float diameter = 0.072;
+	// vec3e URGREY = { 117.0f/255.0f , 125.0f/255.0f , 130.0f/255.0f };
+	vec3e URBLCK{  50.0f/255.0f ,  50.0f/255.0f ,  50.0f/255.0f };
+	vec3e URMETL{ 224.0f/255.0f , 224.0f/255.0f , 224.0f/255.0f };
+	vec3e unitX{ 1.0f , 0.0f , 0.0f };
+
 	glPushMatrix(); // Transformations apply only to this link
 	glTranslated( 0 , 0 , length/2.0f ); 
 	
@@ -171,7 +223,10 @@ void lnk6_draw( const DH_Parameters& DH ){
 				   URMETL , 0.0f );
 	glPopMatrix();
 
-	if( SHOWDEBUG ) cerr << "Paint link 6 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
+	if( SHOWDEBUG ){ 
+		cerr << "Paint link 6 , DH populated?: " << yesno( dh_populated( DH ) ) << endl;
+		cerr << "OGL ERROR LINK 6?:" << yesno( ErrCheck( "lnk6_draw" ) ) << endl;
+	}
 }
 
 // ___ End Func ____________________________________________________________________________________________________________________________
@@ -220,11 +275,19 @@ RobotLink::RobotLink( float pTheta , const vec3e& pOrigin ,
 	// cerr << "Assigned the value d = " << d_dist << endl;
 	origin       = pOrigin;
 	a_dist       = pA_dist;
+
+	cerr << "Got the value axis = ____ " << pNextRotnAxis << endl;
 	nextRotnAxis = pNextRotnAxis;
+	cerr << "Assigned the value axis = " << nextRotnAxis  << endl;
+	
 	nextRotnAngl = pNextRotnAngl;
 	drawFunc     = pDrawFunc;
 	
-	cerr << "Created a RobotLink with: alpha = " << nextRotnAngl << " , a = " << a_dist << " , d = " << d_dist << " , theta = " << theta << endl;
+	cerr << "Created a RobotLink with: alpha = " << nextRotnAngl 
+		 << " , a = " << a_dist 
+		 << " , d = " << d_dist 
+		 << " , theta = " << theta
+		 << " , alpha axis = " << nextRotnAxis << endl;
 }
 
 void RobotLink::add_distal( RobotLink* link ){  distalLinks.push_back( link );  }
@@ -236,7 +299,7 @@ uint RobotLink::get_num_distal(){
 
 void RobotLink::set_theta( float pTheta ){  theta = fmod( pTheta , 360.0f );  } // Set the angle of the joint at the base of the link
 
-static float AXESSCALE = 20.0;
+static float AXESSCALE = 0.5;
 
 bool RobotLink::has_draw_func(){  return drawFunc;  }
 
@@ -247,7 +310,10 @@ void RobotLink::draw( const DH_Parameters& DH ){
 
 	// 2. Transform link
 	glRotated( theta , 0 , 0 , 1 ); // ------------------ 2 , end
-	glTranslated( origin[0] , origin[1] , origin[2] ); // 1 , bgn 
+	
+	// glTranslated( origin[0] , origin[1] , origin[2] ); // 1 , bgn 
+	glTranslated( origin(0) , origin(1) , origin(2) ); // 1 , bgn 
+	
 	// 3. Render link
 	if( enableLinkDraw ) drawFunc( DH );
 	// 4. Downstream link transform
@@ -256,7 +322,8 @@ void RobotLink::draw( const DH_Parameters& DH ){
 	glTranslated( 0 , 0 , d_dist ); // ------------------------- 1 , bgn 
 
 	glRotated( nextRotnAngl , // ------------------------------------ 2 , end
-			   nextRotnAxis[0] , nextRotnAxis[1] , nextRotnAxis[2] );
+			//    nextRotnAxis[0] , nextRotnAxis[1] , nextRotnAxis[2] );
+			   nextRotnAxis(0) , nextRotnAxis(1) , nextRotnAxis(2) );
 	
 	draw_origin( AXESSCALE );
 	
@@ -282,8 +349,6 @@ bool RobotLink::is_leaf(){  return distalLinks.size() == 0;  }
 
 // == class UR5_OGL ==
 
-vec3e X{1,0,0};
-
 // ~ Con/Destuctors ~
 
 UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
@@ -294,41 +359,44 @@ UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 	basePos = baseOrigin;
 	params  = copy_dh_params( pParams );
 
-	cerr << "About to instantiate robot links!" << endl;
+
+	vec3e unitX{ 1.0f , 0.0f , 0.0f };
+
+
 	uint linkNum = 1;
 
 	Link1 = new RobotLink( 0.0 , basePos , 
-				 		   params.d[1] , params.a[1] , X ,  params.alpha[1] , 
+				 		   params.d[1] , params.a[1] , unitX ,  params.alpha[1] , 
 				 		   lnk1_draw );
 				
 	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 
 	Link2 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
-						   params.d[2] , params.a[2] , X ,  params.alpha[2] , // 3.0*0.045 + 0.280
+						   params.d[2] , params.a[2] , unitX ,  params.alpha[2] , // 3.0*0.045 + 0.280
 						   lnk2_draw );
 					
 	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 
 	Link3 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
-	 					   params.d[3] , params.a[3] , X ,  params.alpha[3] , 
+	 					   params.d[3] , params.a[3] , unitX ,  params.alpha[3] , 
 						   lnk3_draw );
 
 	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;	
 					
 	Link4 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
-						   params.d[4] , params.a[4] , X ,  params.alpha[4] , 
+						   params.d[4] , params.a[4] , unitX ,  params.alpha[4] , 
 						   lnk4_draw );
 
 	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 						
 	Link5 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
-						   params.d[5] , params.a[5] , X ,  params.alpha[5] , 
+						   params.d[5] , params.a[5] , unitX ,  params.alpha[5] , 
 						   lnk5_draw );
 
 	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 					
 	Link6 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
-						   params.d[6] , params.a[6] , X ,  params.alpha[6] , 
+						   params.d[6] , params.a[6] , unitX ,  params.alpha[6] , 
 						   lnk6_draw );
 
 	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
@@ -361,6 +429,7 @@ UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 // ~ Rendering ~
 void UR5_OGL::draw(){
 	// Render the robot
+	// Link1->draw( params ); // This will draw all distal links as well
 	Link1->draw( params ); // This will draw all distal links as well
 }
 

@@ -175,3 +175,14 @@ cpp_helpers/.git/
 cpp_helpers/.git
 scanviewer
 robot_control/.ipynb_checkpoints/
+robot_control/picture_waypoints.pkl
+robot_control/tallDno.pkl
+robot_control/tallDino_EAST.png
+robot_control/tallDino_NORTH.png
+robot_control/tallDino_SOUTH.png
+robot_control/tallDino_West.png
+robot_control/tallDino_WEST.png
+robot_control/pyntcloud_plot.ply
+robot_control/pyntcloud_plot.config.json
+robot_control/pyntcloud_plot.html
+robot_control/pyntcloud_plot_assets/

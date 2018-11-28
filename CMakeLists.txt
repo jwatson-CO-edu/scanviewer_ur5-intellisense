@@ -35,6 +35,9 @@ endif(UNIX)
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${MORE_FLAGS}" ) # This will prevent g++ from getting upset about default values
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MORE_FLAGS}" ) # This will prevent g++ from getting upset about default values
 
+# ~~ Configure Linker ~~
+set( LDFLAGS "${LDFLAGS} -Wl,-V" )
+
 # ~~ Configure Project ~~
 set( EXT_LIB true )
 
@@ -89,6 +92,7 @@ set( DH_RBT_CPP DH_Robot.cpp )
 if( EXT_LIB )
     # ~ delaunator-cpp , https://github.com/delfrrr/delaunator-cpp ~
     add_subdirectory( delaunator-cpp )
+    #include_directories( delaunator-cpp/include) 
 endif( EXT_LIB )
 # __ End External __
 

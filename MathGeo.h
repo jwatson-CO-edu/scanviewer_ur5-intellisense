@@ -26,7 +26,7 @@ Template Version: 2018-07-16
 #include <Cpp_Helpers.h> // Favorite C++ tricks! I am the author , Source: https://bitbucket.org/jwatson_utah_edu/cpp_helpers/src/master/
 // ~ External ~
 #ifdef EXT_LIB
-#include <delaunator.hpp>
+#include "delaunator-cpp/include/delaunator.hpp"
 #endif
 
 // ~~ Shortcuts and Aliases ~~

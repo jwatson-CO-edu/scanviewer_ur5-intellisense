@@ -138,6 +138,8 @@ vec2e rand_corners( const vec2e& corner1 , const vec2e& corner2 );
 
 vec2e sample_from_box( const matXe& box );
 
+std::vector<std::vector<size_t>> k_NN_2D_grid( const matXe& V );
+
 // __ End 2D __
 
 
@@ -153,6 +155,9 @@ matXe sample_from_AABB( size_t N , const matXe& aabb );
 vec3e sample_from_AABB( const matXe& aabb );
 
 vec3e get_any_perpendicular( const vec3e& query , typeF CRIT_ANG = GEO_CRIT_ANG );
+
+matXe verts3d_proj_to_plane_2D( matXe V , 
+								vec3e planePnt , vec3e normal , vec3e xBasis );
 
 // __ End 3D __
 

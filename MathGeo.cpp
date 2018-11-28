@@ -172,6 +172,23 @@ vec2e sample_from_box( const matXe& box ){
 	return rand_corners( crnr1 , crnr2 );
 }
 
+std::vector<std::vector<size_t>> k_NN_2D_grid( uint k , const matXe& V , uint xPartn , uint yPartn ){
+	// Return a vector of vectors in which each row is a vector of the k nearest neigbors to the point corresponding to the same row of 'V'
+
+	std::vector<std::vector<std::vector<size_t>>> partitions;
+	std::vector<std::pair<size_t,size_t>> /* - */ assignments;
+	
+	// 1. Get the bounding box of the 2D points
+	// 2. Get the partition size in X and Y
+	// 3. Get the number of partitions in X and Y
+	// 4. Init partitions
+	// 5. Assign each point to a partition
+	// 6. for each point
+		// 7. Get partition
+		// 8. For each point in the partition
+	
+}
+
 // __ End 2D __
 
 
@@ -217,6 +234,25 @@ vec3e get_any_perpendicular( const vec3e& query , typeF CRIT_ANG ){
 	vec3e op = vec3e_random();
 	while(  eq( angle_between( op , query ) , (typeF)0.0 , CRIT_ANG )  ){  op = vec3e_random();  }
 	return op.cross( query ).normalized();
+}
+
+matXe verts3d_proj_to_plane_2D( matXe V , 
+								vec3e planePnt , vec3e normal , vec3e xBasis ){
+	size_t len = V.rows();
+	matXe rtnMatx = matXe::Zero( len , 2 );
+	vec3e queryPnt;
+	vec3e diff;
+	// 0. Obtain mutually orthogonal basis vectors and ensure that they are normalized
+	vec3e yBasis = normal.cross( xBasis ).normalized();
+	xBasis = yBasis.cross( normal ).normalized();
+	for( size_t i = 0 ; i < len ; i++ ){
+		queryPnt = V.row(i);
+		// 1. Subtract the origin
+		diff = queryPnt - planePnt;
+		// 2. Project the vector onto each of the components
+		rtnMatx( i , 0 ) = xBasis.dot( diff );  rtnMatx( i , 1 ) = yBasis.dot( diff );  
+	}
+	return rtnMatx;
 }
 
 // __ End 3D __

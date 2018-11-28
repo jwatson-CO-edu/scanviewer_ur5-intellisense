@@ -102,6 +102,8 @@ unsigned int LoadTexBMP( const char* file );
 
 void Project( float fov , float w2h , float dim );
 
+void draw_point_cloud( const matXe& cloud , typeF pntSize , const vec3e& color );
+
 // ___ End Func ____________________________________________________________________________________________________________________________
 
 

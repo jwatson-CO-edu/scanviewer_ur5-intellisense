@@ -525,6 +525,21 @@ void Project( float fov , // -- Field of view angle, in degrees, in the y direct
 	glLoadIdentity();
 }
 
+void draw_point_cloud( const matXe& cloud , typeF pntSize , const vec3e& color ){
+	// Render a bunch of points
+	
+	glPointSize( pntSize ); 
+	glClr3e( color );
+	glBegin( GL_POINTS );
+	vec3e curPnt;
+	uint len = cloud.rows();
+	for( uint i = 0 ; i < len ; i++ ){
+		curPnt = cloud.row(i);
+		glVec3e( curPnt );
+	}
+	glEnd();
+}
+
 /// ##### OLD CODE ######################################################################################
 
 void draw_cylinder( const vec3e& origin  , typeF length , typeF radius , uint facets ,

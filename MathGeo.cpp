@@ -172,23 +172,6 @@ vec2e sample_from_box( const matXe& box ){
 	return rand_corners( crnr1 , crnr2 );
 }
 
-std::vector<std::vector<size_t>> k_NN_2D_grid( uint k , const matXe& V , uint xPartn , uint yPartn ){
-	// Return a vector of vectors in which each row is a vector of the k nearest neigbors to the point corresponding to the same row of 'V'
-
-	std::vector<std::vector<std::vector<size_t>>> partitions;
-	std::vector<std::pair<size_t,size_t>> /* - */ assignments;
-	
-	// 1. Get the bounding box of the 2D points
-	// 2. Get the partition size in X and Y
-	// 3. Get the number of partitions in X and Y
-	// 4. Init partitions
-	// 5. Assign each point to a partition
-	// 6. for each point
-		// 7. Get partition
-		// 8. For each point in the partition
-	
-}
-
 // __ End 2D __
 
 
@@ -306,6 +289,42 @@ std::ostream& operator<<( std::ostream& os , const vec2e& vec ){
 // ___ End Func ____________________________________________________________________________________________________________________________
 
 
+// === External Dependencies ===============================================================================================================
+#ifdef EXT_LIB
+
+// REQUIRED: delaunator-cpp
+// https://github.com/delfrrr/delaunator-cpp
+
+TriMeshVF_2D delaunay_from_V_2D( const matXe& V ){
+    // Get a 2D trimesh that is the Delaunay Traingulation of 'V'
+    TriMeshVF_2D rtnStruct;
+    float tx0 = 0.0f , ty0 = 0.0f , 
+          tx1 = 0.0f , ty1 = 0.0f , 
+          tx2 = 0.0f , ty2 = 0.0f ;
+    size_t len = V.rows();
+    std::vector<double> coords;
+    // 1. Load the input vector
+    for( size_t i = 0 ; i < len ; i++ ){
+        coords.push_back( (double)V(i,0) );
+        coords.push_back( (double)V(i,1) );
+    }
+    // 2. Triangulate
+    delaunator::Delaunator d( coords );
+    // 3. for each triangle
+    size_t numTri = d.triangles.size();     cout << "There are " << numTri << " triangles";
+    size_t numCrd = d.coords.size();        cout << "There are " << numCrd << " coordinates";
+    for(std::size_t i = 0 ; i < numTri ; i += 3 ){
+        tx0 = (typeF) d.coords[ 2 * d.triangles[ i     ]    ];
+        ty0 = (typeF) d.coords[ 2 * d.triangles[ i     ] + 1];
+        tx1 = (typeF) d.coords[ 2 * d.triangles[ i + 1 ]    ];
+        ty1 = (typeF) d.coords[ 2 * d.triangles[ i + 1 ] + 1];
+        tx2 = (typeF) d.coords[ 2 * d.triangles[ i + 2 ]    ];
+        ty2 = (typeF) d.coords[ 2 * d.triangles[ i + 2 ] + 1];
+    }
+}
+
+#endif
+// ___ End External ________________________________________________________________________________________________________________________
 
 
 /* === Spare Parts =========================================================================================================================

@@ -31,10 +31,12 @@ if(UNIX)
     set( MORE_FLAGS "${COMMON_FLAGS} -lglut -lGLU -lGL" )
 endif(UNIX)
 
-
 # ~~ Configure Compiler ~~
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${MORE_FLAGS}" ) # This will prevent g++ from getting upset about default values
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MORE_FLAGS}" ) # This will prevent g++ from getting upset about default values
+
+# ~~ Configure Project ~~
+set( EXT_LIB true )
 
 # ___ END COMPILER _________________________________________________________________________________________________________________________
 
@@ -82,6 +84,14 @@ set( TOYS_CPP ToyBox.cpp )
 set( SDL_UT_CPP SDL_utils.cpp )
 set( DH_RBT_CPP DH_Robot.cpp )
 
+# == External Includes ==
+
+if( EXT_LIB )
+    # ~ delaunator-cpp , https://github.com/delfrrr/delaunator-cpp ~
+    add_subdirectory( delaunator-cpp )
+endif( EXT_LIB )
+# __ End External __
+
 # ___ END INCLUDE __________________________________________________________________________________________________________________________
 
 
@@ -119,7 +129,12 @@ target_link_libraries( ${PROJECT_NAME}
 					   ${OPENGL_gl_LIBRARY}
 					   ${OPENGL_glu_LIBRARY} 
 					   ${GLUT_LIBRARY} 
-					   ${SDL2_LIBRARIES} ) 
+                       ${SDL2_LIBRARIES} ) 
+if( EXT_LIB )
+    # ~ delaunator-cpp , https://github.com/delfrrr/delaunator-cpp ~
+    target_link_libraries( ${PROJECT_NAME}  
+                           delaunator-cpp )
+endif( EXT_LIB )
 
 # ___ END LINK BUILD _______________________________________________________________________________________________________________________
 

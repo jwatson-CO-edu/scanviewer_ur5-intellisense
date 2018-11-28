@@ -65,9 +65,15 @@ if(abs(y2-y1) < EPSILON){
 //   These triangles are arranged in a consistent clockwise order.
 //   The triangle array 'v' should be malloced to 3 * nv
 //   The vertex array pxyz must be big enough to hold 3 more points
-//   The vertex array must be sorted in increasing x values say
+//   The vertex array must be sorted in increasing x values say: qsort(p,nv,sizeof(XYZ),XYZCompare);
 //
-//   qsort(p,nv,sizeof(XYZ),XYZCompare);
+//   Inputs:
+//   int nv , ___ Number of vertices
+//   XYZ pxyz[] , Array of vertices
+// 
+//   Outputs:
+//   ITRIANGLE v[] , Array of triangles
+//   int &ntri , ___ Number of triangles found
 ///////////////////////////////////////////////////////////////////////////////
 
 int Triangulate(int nv, XYZ pxyz[], ITRIANGLE v[], int &ntri){
@@ -76,10 +82,10 @@ int Triangulate(int nv, XYZ pxyz[], ITRIANGLE v[], int &ntri){
   IEDGE *p_EdgeTemp;
   int nedge = 0;
   int trimax, emax = 200;
-  int status = 0;
+//   int status = 0;
   int inside;
   int i, j, k;
-  double xp, yp, x1, y1, x2, y2, x3, y3, xc, yc, r;
+  double xp, yp, x1, y1, x2, y2, x3, y3, xc = 0 , yc, r = 0;
   double xmin, xmax, ymin, ymax, xmid, ymid;
   double dx, dy, dmax; 
 
@@ -147,7 +153,7 @@ int Triangulate(int nv, XYZ pxyz[], ITRIANGLE v[], int &ntri){
     y2 = pxyz[v[j].p2].y;
     x3 = pxyz[v[j].p3].x;
     y3 = pxyz[v[j].p3].y;
-    inside = CircumCircle(xp, yp, x1, y1, x2, y2, x3, y3, xc, yc, r);
+    inside = CircumCircle(xp, yp, x1, y1, x2, y2, x3, y3, xc, yc, r); // This will set 'xc' and 'r' 
     if (xc + r < xp)
 // Suggested
 // if (xc + r + EPSILON < xp)
@@ -251,9 +257,9 @@ int XYZCompare(const void *v1, const void *v2){
 }
 
 void outputtriangle(int &nv, XYZ p[], ITRIANGLE v[], int &ntri){
-  int X, Y, i = 0;
-  int max = 10;
-  double x, y;
+//   int X, Y, i = 0;
+//   int max = 10;
+//   double x, y;
 
   for(int i = 0; i < ntri; i++){// replace cout by a compatible lineto to trace
     cout<<(int)p[v[i].p1].x<<" "<< (int)p[v[i].p1].y<<" "<< (int)p[v[i].p2].x
@@ -264,6 +270,10 @@ void outputtriangle(int &nv, XYZ p[], ITRIANGLE v[], int &ntri){
     <<" "<< (int)p[v[i].p1].y<<"\n";
   }
 }
+
+/// ############## MAIN ###################################################################################################################
+
+#ifdef DELAUNAY_MAIN
 
 int main(){
   ITRIANGLE *v = NULL;
@@ -311,8 +321,8 @@ int main(){
   v = new ITRIANGLE[3 * nv]; 
   qsort(p, nv, sizeof(XYZ), XYZCompare);
   Triangulate(nv, p, v, ntri);
-  outputtriangle(nv, p, v, ntri); // use this fonction to trace the mesh (via 
-  delete []p;// OpenGL, DirectX, ...)
+  outputtriangle(nv, p, v, ntri); // use this fonction to trace the mesh (via OpenGL, DirectX, ...)
+  delete []p;
   delete []v;
   p = NULL;
   v = NULL;
@@ -320,6 +330,4 @@ int main(){
   return 0;
 }
 
-
-
-
+#endif

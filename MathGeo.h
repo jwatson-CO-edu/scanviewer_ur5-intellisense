@@ -22,6 +22,7 @@ Template Version: 2018-07-16
 #include <Eigen/Geometry> //- Quaternion , etc
 // ~ Local ~
 #include <Cpp_Helpers.h> // Favorite C++ tricks! I am the author , Source: https://bitbucket.org/jwatson_utah_edu/cpp_helpers/src/master/
+#include "Delaunay.h"
 
 // ~~ Shortcuts and Aliases ~~
 // ~ Eigen ~
@@ -94,10 +95,17 @@ protected:
 
 // == struct VF_2D ==
 
-struct TriMeshVF_2D{
+enum MESHTYPE{ GENERIC }; //- Default mesh type
+
+struct TriMeshVFN{
+    // Trimesh with some extra structure
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	matXe V; // N x 2 matrix in which each row is a point in the mesh
-	matXi F; // M x 2 matrix in which each row is a list of indices of 'V' that comprise the facet
+	matXe    V; // ---- N x 3 matrix in which each row is a unique point in the mesh
+	matXi    F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
+	matXe    N; // ---- List of normal vectors corresponding to F
+	vec3e    center; // Center of the mesh, used for some expansion operations
+	vec3e    axis; // - Main axis, used for some expansion operations
+	MESHTYPE type = GENERIC;
 };
 
 // __ End VF_2D __

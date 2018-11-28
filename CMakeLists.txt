@@ -87,13 +87,9 @@ set( TOYS_CPP ToyBox.cpp )
 set( SDL_UT_CPP SDL_utils.cpp )
 set( DH_RBT_CPP DH_Robot.cpp )
 
-# == External Includes ==
+# Other Libs
+set( DELAUNAY_CPP Delaunay.cpp )
 
-if( EXT_LIB )
-    # ~ delaunator-cpp , https://github.com/delfrrr/delaunator-cpp ~
-    add_subdirectory( delaunator-cpp )
-    #include_directories( delaunator-cpp/include) 
-endif( EXT_LIB )
 # __ End External __
 
 # ___ END INCLUDE __________________________________________________________________________________________________________________________
@@ -126,7 +122,8 @@ message( "Generating build files ..." )
 # ~~~ HOMEWORK 03 ~~~
 
 add_executable( ${PROJECT_NAME} ${PROJECT_NAME}.cpp  
-				${CPP_HELP_CPP} ${MATH_GEO_CPP} ${UTILS_CPP} ${SDL_UT_CPP} ${TOYS_CPP} ${DH_RBT_CPP} )
+                ${CPP_HELP_CPP} ${MATH_GEO_CPP} ${UTILS_CPP} ${SDL_UT_CPP} ${TOYS_CPP} ${DH_RBT_CPP} # Mine
+                ${DELAUNAY_CPP} ) # Others'
 
 target_link_libraries( ${PROJECT_NAME} 
 					   m
@@ -134,11 +131,6 @@ target_link_libraries( ${PROJECT_NAME}
 					   ${OPENGL_glu_LIBRARY} 
 					   ${GLUT_LIBRARY} 
                        ${SDL2_LIBRARIES} ) 
-if( EXT_LIB )
-    # ~ delaunator-cpp , https://github.com/delfrrr/delaunator-cpp ~
-    target_link_libraries( ${PROJECT_NAME}  
-                           delaunator-cpp )
-endif( EXT_LIB )
 
 # ___ END LINK BUILD _______________________________________________________________________________________________________________________
 

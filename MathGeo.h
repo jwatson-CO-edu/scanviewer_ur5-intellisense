@@ -15,8 +15,6 @@ Template Version: 2018-07-16
 #define MG_FLOAT // Use floats for all Eigen operations
 //~ #define MG_DUBBL // Use doubles for all Eigen operations
 
-#define EXT_LIB // Use external libraries
-
 // ~~ Includes ~~
 // ~ Eigen ~
 #include <Eigen/Core> // ---- The living heart of Eigen
@@ -24,10 +22,6 @@ Template Version: 2018-07-16
 #include <Eigen/Geometry> //- Quaternion , etc
 // ~ Local ~
 #include <Cpp_Helpers.h> // Favorite C++ tricks! I am the author , Source: https://bitbucket.org/jwatson_utah_edu/cpp_helpers/src/master/
-// ~ External ~
-#ifdef EXT_LIB
-#include "delaunator-cpp/include/delaunator.hpp"
-#endif
 
 // ~~ Shortcuts and Aliases ~~
 // ~ Eigen ~
@@ -201,13 +195,7 @@ std::ostream& operator<<( std::ostream& os , const vec2e& vec );
 // ___ End Func ____________________________________________________________________________________________________________________________
 
 
-// === External Dependencies ===============================================================================================================
-#ifdef EXT_LIB
 
-TriMeshVF_2D delaunay_from_V_2D( const matXe& V );
-
-#endif
-// ___ End External ________________________________________________________________________________________________________________________
 
 #endif
 

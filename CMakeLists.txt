@@ -39,7 +39,7 @@ set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MORE_FLAGS}" ) # This will prevent g++ fr
 set( LDFLAGS "${LDFLAGS} -Wl,-V" )
 
 # ~~ Configure Project ~~
-set( EXT_LIB true )
+set( EXT_LIB false )
 
 # ___ END COMPILER _________________________________________________________________________________________________________________________
 

@@ -251,6 +251,7 @@ vec3e basis_change( const vec3e& vec_A ,
 
 vec3e point_basis_change( const vec3e& point_A  , const vec3e& origin_B , 
 						  const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B ){
+	// Express 'point_A' in a frame that is contained in 'point_A''s current frame
 	vec3e offset = point_A - origin_B;
 	return basis_change( offset , xBasis_B , yBasis_B , zBasis_B );
 }
@@ -258,7 +259,31 @@ vec3e point_basis_change( const vec3e& point_A  , const vec3e& origin_B ,
 vec3e transform_point( const vec3e& point_A , 
                        const vec3e& origin , 
                        const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+	// Express 'point_A' in a frame that contains 'point_A's current frame
 	return ( xBasis * point_A(0) ) + ( yBasis * point_A(1) ) + ( zBasis * point_A(2) ) + origin;
+}
+
+vec3e YPR_from_rotn_matx( const matXe& R ){
+	// Get { roll , pitch , yaw } from the rotation matrix
+	// URL: http://planning.cs.uiuc.edu/node103.html
+	/* yaw:   */ typeF alpha = atan2(  R(1,0) , R(0,0) );
+	/* pitch: */ typeF beta  = atan2( -R(2,0) , sqrt( pow( R(2,1) , 2 ) + pow( R(2,2) , 2 ) ) );
+	/* roll:  */ typeF gamma = atan2(  R(2,1) , R(2,2) );
+	return vec3e{ alpha , beta , gamma };
+}
+
+matXe rotn_matx_from_basis_vectors( const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+	// Populate a rotation matrix from the basis vectors
+	matXe rtnMatx = matXe::Zero( 3 , 3 );
+	rtnMatx << xBasis(0) , yBasis(0) , zBasis(0) , 
+			   xBasis(1) , yBasis(1) , zBasis(1) , 
+			   xBasis(2) , yBasis(2) , zBasis(2) ;
+	return rtnMatx;
+}
+
+vec3e YPR_from_basis_vecs( const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+	// Get { roll , pitch , yaw } from the basis vectors
+	return YPR_from_rotn_matx( rotn_matx_from_basis_vectors( xBasis , yBasis , zBasis ) );
 }
 
 // __ End 3D __
@@ -312,7 +337,7 @@ matXe V_in_parent_frame( const matXe& V ,
 	// Express V in a frame that contains V's current frame
 	size_t len = V.rows();
 	matXe Vtrans = matXe::Zero( len , 3 );
-	Eigen::Vector3d point;
+	vec3e point;
 	for( size_t i = 0 ; i < len ; i++ ){
 		point = V.row(i);
 		Vtrans.row(i) = transform_point( point , origin , xBasis , yBasis , zBasis );

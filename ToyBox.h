@@ -78,21 +78,21 @@ public:
 
 protected:
 	// ~ Geometry ~
-	vec3e /* - */ center;
-	float /* - */ theta /*- */ = 0.0;
-	float /* - */ phi /* -- */ = 0.0;
-	vec3e /* - */ color;
-	uint /* -- */ numFaces     = 20;
+	vec3e center;
+	float theta    = 0.0;
+	float phi      = 0.0;
+	vec3e color;
+	uint  numFaces = 20;
 	// ~ Lighting ~
-	float /* - */ shininess;
-	vec3e /* - */ emitColor{0,0,0};
-	float /* - */ intensity    = 0.0;
-	float /* - */ emitArray[4] = { 0.0 , 0.0 , 0.0 , 1.0 };
+	float shininess;
+	vec3e emitColor{0,0,0};
+	float intensity    = 0.0;
+	float emitArray[4] = { 0.0 , 0.0 , 0.0 , 1.0 };
 	// ~ Textures ~
-	bool  /* - */ hasTextr     = false;
-	uint  /* - */ textureHandle;
-	matXe /* - */ txtrVerts;
-	string /*- */ txtrFile; 
+	bool   hasTextr = false;
+	uint   textureHandle;
+	matXe  txtrVerts;
+	string txtrFile; 
 };
 
 // __ End Icosahedron_OGL __
@@ -126,7 +126,6 @@ public:
 protected:
 
 	void _reset_random();
-
 	bool  active = false; // Flag for whether the beam should be painted
 	vec3e origin; // ----- Beam starts at this point
 	vec3e dirctn; // ----- Beam travels in this direction

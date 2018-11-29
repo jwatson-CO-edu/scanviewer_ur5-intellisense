@@ -33,6 +33,7 @@ Template Version: 2018-07-16
 	using typeF = float;
 	#define random rand_float
     #define nanF   nanf
+    //~ #define atan2F atan2f
 #endif
 #ifdef MG_DUBBL
 	using vec2e = Eigen::Vector2d;
@@ -41,6 +42,7 @@ Template Version: 2018-07-16
 	using typeF = double;
 	#define random rand_dbbl
     #define nanF   nan
+    //~ #define atan2F atan2
 #endif
 using vec2i = Eigen::Vector2i;
 using matXi = Eigen::MatrixXi;

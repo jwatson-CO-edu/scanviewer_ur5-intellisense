@@ -384,7 +384,6 @@ PatchMesh::PatchMesh( string fPath ){
         }else{
             patchLines.push_back( currLine );
         }
-
     }
 }
 

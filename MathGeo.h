@@ -188,6 +188,10 @@ vec3e get_CCW_tri_norm( const matXe& V );
 
 matXe N_from_VF( const matXe& V , const matXi& F );
 
+TriMeshVFN delaunay_from_V( const matXe& V );
+
+
+
 // __ End Mesh __
 
 

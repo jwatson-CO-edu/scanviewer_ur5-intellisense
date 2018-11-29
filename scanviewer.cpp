@@ -120,6 +120,9 @@ matXe testPoints;
 vec3e cloudClr{ 102/255.0, 204/255.0, 255/255.0 };
 float cloudSiz = 5.0f;
 
+TriMeshVFN pointsMesh;
+vec3e meshColor{ 153/255.0 , 51/255.0 , 255/255.0 };
+
 // ___ END GLOBAL ___
 
 // ___ END INIT ____________________________________________________________________________________________________________________________
@@ -193,9 +196,6 @@ void display( SDL_Window* window ){
 	glTranslated( 0,0,-1 );
 	draw_grid_org_XY( 0.250 , 20 , 20 , 0.5 , gridColor );
 	glPopMatrix();
-	
-	// Draw cloud
-	draw_point_cloud( testPoints , cloudSiz , cloudClr );
 			   
 	// 2. Lighting Calcs
 	//  Translate intensity to color vectors
@@ -243,7 +243,9 @@ void display( SDL_Window* window ){
 	// 10. draw particles
 	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
 	
-	
+	// 11. Draw cloud
+	draw_point_cloud( testPoints , cloudSiz , cloudClr );
+    draw_trimesh( pointsMesh , meshColor , shiny );
 
 	// N. Draw the robot
 	UR5.draw();
@@ -560,6 +562,9 @@ int main( int argc , char* argv[] ){
 	sampleBox << 0.5 , 0.5 , 0.00 ,
 				 1.0 , 1.0 , 0.25 ;
 	testPoints = sample_from_AABB( numPts , sampleBox );
+
+    // ~ Mesh Points ~
+    pointsMesh = delaunay_from_V( testPoints );
 	
 	/// ===== Main SDL event loop ==========================================================================================================
 	

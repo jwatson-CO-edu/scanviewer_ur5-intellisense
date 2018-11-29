@@ -238,34 +238,6 @@ matXe verts3d_proj_to_plane_2D( matXe V ,
 	return rtnMatx;
 }
 
-// TriMeshVF_2D delaunay_from_V_2D( const matXe& V ){
-//     // Get a 2D trimesh that is the Delaunay Traingulation of 'V'
-//     TriMeshVF_2D rtnStruct;
-//     float tx0 = 0.0f , ty0 = 0.0f , 
-//           tx1 = 0.0f , ty1 = 0.0f , 
-//           tx2 = 0.0f , ty2 = 0.0f ;
-//     size_t len = V.rows();
-//     std::vector<double> coords;
-//     // 1. Load the input vector
-//     for( size_t i = 0 ; i < len ; i++ ){
-//         coords.push_back( (double)V(i,0) );
-//         coords.push_back( (double)V(i,1) );
-//     }
-//     // 2. Triangulate
-//     delaunator::Delaunator d( coords );
-//     // 3. for each triangle
-//     size_t numTri = d.triangles.size();     cout << "There are " << numTri << " triangles";
-//     size_t numCrd = d.coords.size();        cout << "There are " << numCrd << " coordinates";
-//     for(std::size_t i = 0 ; i < numTri ; i += 3 ){
-//         tx0 = (typeF) d.coords[ 2 * d.triangles[ i     ]    ];
-//         ty0 = (typeF) d.coords[ 2 * d.triangles[ i     ] + 1];
-//         tx1 = (typeF) d.coords[ 2 * d.triangles[ i + 1 ]    ];
-//         ty1 = (typeF) d.coords[ 2 * d.triangles[ i + 1 ] + 1];
-//         tx2 = (typeF) d.coords[ 2 * d.triangles[ i + 2 ]    ];
-//         ty2 = (typeF) d.coords[ 2 * d.triangles[ i + 2 ] + 1];
-//     }
-// }
-
 // __ End 3D __
 
 
@@ -335,15 +307,17 @@ TriMeshVFN delaunay_from_V( const matXe& V ){
     }
 
     // 5. Set F
+    // Triangles are arranged in a consistent clockwise order by delaunay, --to-> CCW
     rtnStruct.F = matXi::Zero( ntri , 3 );
     for( int i = 0 ; i < ntri ; i++ ){
-        rtnStruct.F(i,0) = v[i].p1;
+        rtnStruct.F(i,0) = v[i].p3;
         rtnStruct.F(i,1) = v[i].p2;
-        rtnStruct.F(i,2) = v[i].p3;
+        rtnStruct.F(i,2) = v[i].p1;
     }
 
     // 6. Compute normals
     rtnStruct.N = N_from_VF( rtnStruct.V , rtnStruct.F );
+    // for( int i = 0 ; i < ntri ; i++ ){  rtnStruct.N.row(i) = -rtnStruct.N.row(i);  }
 
     // N. Return
     return rtnStruct;

@@ -540,7 +540,32 @@ void draw_point_cloud( const matXe& cloud , typeF pntSize , const vec3e& color )
 	glEnd();
 }
 
-/// ##### OLD CODE ######################################################################################
+void draw_trimesh( const TriMeshVFN& mesh , const vec3e& color , float shiny ){
+    // Draw the mesh from VFN data
+    size_t len = mesh.F.rows();
+    vec3e p0 , p1 , p2 ,
+          curNrm       ;
+    
+    // 1. Set the color
+    glClr3e( color );
+
+    // 2. Set material props
+    glMaterialf(  GL_FRONT , GL_SHININESS , shiny      ); // Set the material shininess
+	glMaterialfv( GL_FRONT , GL_SPECULAR  , MATL_WHITE ); // Set the color of the specular reflection
+	glMaterialfv( GL_FRONT , GL_EMISSION  , MATL_BLACK );
+
+    // 2. Draw triangles
+    glBegin( GL_TRIANGLES );
+    for( size_t i = 0 ; i < len ; i++ ){
+        curNrm = mesh.N.row(i);
+        glNrm3e( curNrm );
+        p0 = mesh.V.row( mesh.F(i,0) );  p1 = mesh.V.row( mesh.F(i,1) );  p2 = mesh.V.row( mesh.F(i,2) );  
+        glVec3e( p0 );                   glVec3e( p1 );                   glVec3e( p2 );                   
+    }
+    glEnd();
+}
+
+/// ##### OLD CODE ###############################################################################################################
 
 void draw_cylinder( const vec3e& origin  , typeF length , typeF radius , uint facets ,
 					const vec3e& fillClr , const vec3e& lineClr ){

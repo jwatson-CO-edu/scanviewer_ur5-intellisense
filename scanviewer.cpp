@@ -116,7 +116,12 @@ bool ANIMATBEAMS = true;
 
 // ~~ Geometry ~~
 float AXESSCALE     =   1.17;
+matXe testPoints;
+vec3e cloudClr{ 102/255.0, 204/255.0, 255/255.0 };
+float cloudSiz = 5.0f;
 
+TriMeshVFN pointsMesh;
+vec3e meshColor{ 153/255.0 , 51/255.0 , 255/255.0 };
 
 // ___ END GLOBAL ___
 
@@ -218,6 +223,8 @@ void display( SDL_Window* window ){
 	glLightfv( GL_LIGHT0 , GL_SPECULAR , Specular );
 	glLightfv( GL_LIGHT0 , GL_POSITION , Position );
 	
+
+	
 	// 3. Draw the dynamic scene
 	
 	//  Enable light 1
@@ -231,41 +238,14 @@ void display( SDL_Window* window ){
 						 1.0f };
 	glLightfv( GL_LIGHT1 , GL_DIFFUSE  , virsColr );
 	glLightfv( GL_LIGHT1 , GL_SPECULAR , virsSpec );
-	// icosTest.set_emission_intensity( emission );
-	// icosTest.draw( shiny );
-				   
-	// 4. For each of the faces
-	// uint len = icosTest.icosGeo.N.rows();
-	// float angle;
-	// vec3e axis;
-	// vec3e zPos{0,0,1};
-	// vec3e nrml;
-	// for( uint i = 0 ; i < len ; i++ ){
-	// 	// 5. Find the turn to the face
-	// 	nrml  = icosTest.icosGeo.N.row(i);
-	// 	angle = angle_between( nrml , zPos );
-	// 	axis  = zPos.cross( nrml ).normalized();
-	// 	// 6. Push
-	// 	glPushMatrix();
-	// 	// 7. Rotate
-	// 	glRotated( degrees( angle ) , axis(0) , axis(1) , axis(2) );
-	// 	// 8. Draw cylinder 
-	// 	draw_cylinder( vec3e{ 0 , 0 , 0.5 }  , 0.35 , 0.07 , 75 ,
-	// 			       vec3e{ 0.0/255, 102.0/255, 255.0/255 } , shiny ,
-	// 			       txtr6 );
-		
-	// 	glTranslated( 0,0,1 );
-		
-	// 	nodules[i]->draw( shiny );
-		
-	// 	// 9. Pop
-	// 	glPopMatrix();
-	// }
+	
 
 	// 10. draw particles
 	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
 	
-	
+	// 11. Draw cloud
+	draw_point_cloud( testPoints , cloudSiz , cloudClr );
+    draw_trimesh( pointsMesh , meshColor , shiny );
 
 	// N. Draw the robot
 	UR5.draw();
@@ -575,6 +555,16 @@ int main( int argc , char* argv[] ){
 		);
 		
 	}
+	
+	// ~  Create Points ~
+	size_t numPts = 100;
+	matXe sampleBox = matXe::Zero( 2 , 3 );	
+	sampleBox << 0.5 , 0.5 , 0.00 ,
+				 1.0 , 1.0 , 0.25 ;
+	testPoints = sample_from_AABB( numPts , sampleBox );
+
+    // ~ Mesh Points ~
+    pointsMesh = delaunay_from_V( testPoints );
 	
 	/// ===== Main SDL event loop ==========================================================================================================
 	

@@ -31,10 +31,15 @@ if(UNIX)
     set( MORE_FLAGS "${COMMON_FLAGS} -lglut -lGLU -lGL" )
 endif(UNIX)
 
-
 # ~~ Configure Compiler ~~
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ${MORE_FLAGS}" ) # This will prevent g++ from getting upset about default values
 set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MORE_FLAGS}" ) # This will prevent g++ from getting upset about default values
+
+# ~~ Configure Linker ~~
+set( LDFLAGS "${LDFLAGS} -Wl,-V" )
+
+# ~~ Configure Project ~~
+set( EXT_LIB false )
 
 # ___ END COMPILER _________________________________________________________________________________________________________________________
 
@@ -82,6 +87,11 @@ set( TOYS_CPP ToyBox.cpp )
 set( SDL_UT_CPP SDL_utils.cpp )
 set( DH_RBT_CPP DH_Robot.cpp )
 
+# Other Libs
+set( DELAUNAY_CPP Delaunay.cpp )
+
+# __ End External __
+
 # ___ END INCLUDE __________________________________________________________________________________________________________________________
 
 
@@ -112,14 +122,15 @@ message( "Generating build files ..." )
 # ~~~ HOMEWORK 03 ~~~
 
 add_executable( ${PROJECT_NAME} ${PROJECT_NAME}.cpp  
-				${CPP_HELP_CPP} ${MATH_GEO_CPP} ${UTILS_CPP} ${SDL_UT_CPP} ${TOYS_CPP} ${DH_RBT_CPP} )
+                ${CPP_HELP_CPP} ${MATH_GEO_CPP} ${UTILS_CPP} ${SDL_UT_CPP} ${TOYS_CPP} ${DH_RBT_CPP} # Mine
+                ${DELAUNAY_CPP} ) # Others'
 
 target_link_libraries( ${PROJECT_NAME} 
 					   m
 					   ${OPENGL_gl_LIBRARY}
 					   ${OPENGL_glu_LIBRARY} 
 					   ${GLUT_LIBRARY} 
-					   ${SDL2_LIBRARIES} ) 
+                       ${SDL2_LIBRARIES} ) 
 
 # ___ END LINK BUILD _______________________________________________________________________________________________________________________
 

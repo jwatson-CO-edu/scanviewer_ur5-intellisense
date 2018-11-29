@@ -219,6 +219,25 @@ vec3e get_any_perpendicular( const vec3e& query , typeF CRIT_ANG ){
 	return op.cross( query ).normalized();
 }
 
+matXe verts3d_proj_to_plane_2D( matXe V , 
+								vec3e planePnt , vec3e normal , vec3e xBasis ){
+	size_t len = V.rows();
+	matXe rtnMatx = matXe::Zero( len , 2 );
+	vec3e queryPnt;
+	vec3e diff;
+	// 0. Obtain mutually orthogonal basis vectors and ensure that they are normalized
+	vec3e yBasis = normal.cross( xBasis ).normalized();
+	xBasis = yBasis.cross( normal ).normalized();
+	for( size_t i = 0 ; i < len ; i++ ){
+		queryPnt = V.row(i);
+		// 1. Subtract the origin
+		diff = queryPnt - planePnt;
+		// 2. Project the vector onto each of the components
+		rtnMatx( i , 0 ) = xBasis.dot( diff );  rtnMatx( i , 1 ) = yBasis.dot( diff );  
+	}
+	return rtnMatx;
+}
+
 // __ End 3D __
 
 
@@ -250,6 +269,60 @@ matXe N_from_VF( const matXe& V , const matXi& F ){
 	return allNorms;
 }
 
+TriMeshVFN delaunay_from_V( const matXe& V ){
+    // FIXME: Maybe this only drapes in X-Y ????
+
+    bool SHOWDEBUG = true;
+
+    // ~ Inputs ~
+    int  len = V.rows();
+    XYZ* p   = new XYZ[ len + 3 ]; // --- The vertex array pxyz must be big enough to hold 3 more points
+    XYZ  temp;
+    // ~ Outputs ~
+    ITRIANGLE* v    = new ITRIANGLE[ 3 * len ]; // The triangle array 'v' should be malloced to 3 * nv
+    int /*- */ ntri = 0;
+
+    // 1. Load points
+    for( int i = 0 ; i < len ; i++ ){
+        temp = XYZ{ V(i,0) , V(i,1) , V(i,2) };
+        p[i] = temp;
+    }
+
+    // 2. The vertex array must be sorted in increasing x values say: qsort(p,nv,sizeof(XYZ),XYZCompare);
+    qsort( p , len , sizeof( XYZ ) , XYZCompare );
+
+    // 3. Obtain traingulation
+    Triangulate( len , p , v , ntri );
+    
+    if( SHOWDEBUG ){  cout << "Built " << ntri << " triangles from " << len << " vertices!" << endl;  }
+
+    TriMeshVFN rtnStruct;
+
+    // 4. Load the sorted points
+    rtnStruct.V = matXe::Zero( len , 3 );
+    for( int i = 0 ; i < len ; i++ ){
+        rtnStruct.V(i,0) = p[i].x;
+        rtnStruct.V(i,1) = p[i].y;
+        rtnStruct.V(i,2) = p[i].z;
+    }
+
+    // 5. Set F
+    // Triangles are arranged in a consistent clockwise order by delaunay, --to-> CCW
+    rtnStruct.F = matXi::Zero( ntri , 3 );
+    for( int i = 0 ; i < ntri ; i++ ){
+        rtnStruct.F(i,0) = v[i].p3;
+        rtnStruct.F(i,1) = v[i].p2;
+        rtnStruct.F(i,2) = v[i].p1;
+    }
+
+    // 6. Compute normals
+    rtnStruct.N = N_from_VF( rtnStruct.V , rtnStruct.F );
+    // for( int i = 0 ; i < ntri ; i++ ){  rtnStruct.N.row(i) = -rtnStruct.N.row(i);  }
+
+    // N. Return
+    return rtnStruct;
+}
+
 // __ End Mesh __
 
 
@@ -268,6 +341,7 @@ std::ostream& operator<<( std::ostream& os , const vec2e& vec ){
 // __ End Print __
 
 // ___ End Func ____________________________________________________________________________________________________________________________
+
 
 
 

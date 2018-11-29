@@ -22,6 +22,7 @@ Template Version: 2018-07-16
 #include <Eigen/Geometry> //- Quaternion , etc
 // ~ Local ~
 #include <Cpp_Helpers.h> // Favorite C++ tricks! I am the author , Source: https://bitbucket.org/jwatson_utah_edu/cpp_helpers/src/master/
+#include "Delaunay.h"
 
 // ~~ Shortcuts and Aliases ~~
 // ~ Eigen ~
@@ -92,6 +93,23 @@ protected:
 
 // __ End Icosahedron_e __
 
+// == struct VF_2D ==
+
+enum MESHTYPE{ GENERIC }; //- Default mesh type
+
+struct TriMeshVFN{
+    // Trimesh with some extra structure
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	matXe    V; // ---- N x 3 matrix in which each row is a unique point in the mesh
+	matXi    F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
+	matXe    N; // ---- List of normal vectors corresponding to F
+	vec3e    center; // Center of the mesh, used for some expansion operations
+	vec3e    axis; // - Main axis, used for some expansion operations
+	MESHTYPE type = GENERIC;
+};
+
+// __ End VF_2D __
+
 // ___ End Classes _________________________________________________________________________________________________________________________
 
 
@@ -138,6 +156,8 @@ vec2e rand_corners( const vec2e& corner1 , const vec2e& corner2 );
 
 vec2e sample_from_box( const matXe& box );
 
+std::vector<std::vector<size_t>> k_NN_2D_grid( const matXe& V );
+
 // __ End 2D __
 
 
@@ -154,6 +174,9 @@ vec3e sample_from_AABB( const matXe& aabb );
 
 vec3e get_any_perpendicular( const vec3e& query , typeF CRIT_ANG = GEO_CRIT_ANG );
 
+matXe verts3d_proj_to_plane_2D( matXe V , 
+								vec3e planePnt , vec3e normal , vec3e xBasis );
+
 // __ End 3D __
 
 
@@ -164,6 +187,10 @@ vec3e get_CCW_tri_norm( const vec3e& v0 , const vec3e& v1 , const vec3e& v2 );
 vec3e get_CCW_tri_norm( const matXe& V );
 
 matXe N_from_VF( const matXe& V , const matXi& F );
+
+TriMeshVFN delaunay_from_V( const matXe& V );
+
+
 
 // __ End Mesh __
 
@@ -178,6 +205,8 @@ std::ostream& operator<<( std::ostream& os , const vec2e& vec );
 
 
 // ___ End Func ____________________________________________________________________________________________________________________________
+
+
 
 
 #endif

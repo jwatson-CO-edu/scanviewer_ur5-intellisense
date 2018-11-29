@@ -238,6 +238,29 @@ matXe verts3d_proj_to_plane_2D( matXe V ,
 	return rtnMatx;
 }
 
+vec3e err_vec3(){  // Return a 3D vec populated with NaN
+	return vec3e( nanF("") , nanF("") , nanF("") );  
+} 
+
+vec3e basis_change( const vec3e& vec_A , 
+					const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B ){
+	vec3e rtnVec;
+	rtnVec << vec_A.dot( xBasis_B ) , vec_A.dot( yBasis_B ) , vec_A.dot( zBasis_B ) ;
+	return rtnVec;
+}
+
+vec3e point_basis_change( const vec3e& point_A  , const vec3e& origin_B , 
+						  const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B ){
+	vec3e offset = point_A - origin_B;
+	return basis_change( offset , xBasis_B , yBasis_B , zBasis_B );
+}
+
+vec3e transform_point( const vec3e& point_A , 
+                       const vec3e& origin , 
+                       const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+	return ( xBasis * point_A(0) ) + ( yBasis * point_A(1) ) + ( zBasis * point_A(2) ) + origin;
+}
+
 // __ End 3D __
 
 
@@ -267,6 +290,34 @@ matXe N_from_VF( const matXe& V , const matXi& F ){
 		allNorms.row( i ) = get_CCW_tri_norm( v0 , v1 , v2 );
 	}
 	return allNorms;
+}
+
+matXe V_in_child_frame( const matXe& V , 
+                        const vec3e& origin , 
+                        const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+	// Express V in a frame that is contained in V's current frame
+	size_t len = V.rows();
+	matXe Vtrans = matXe::Zero( len , 3 );
+	vec3e point;
+	for( size_t i = 0 ; i < len ; i++ ){
+		point = V.row(i);
+		Vtrans.row(i) = point_basis_change( point , origin , xBasis , yBasis , zBasis );
+	}
+	return Vtrans;
+}
+
+matXe V_in_parent_frame( const matXe& V , 
+                         const vec3e& origin , 
+                         const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+	// Express V in a frame that contains V's current frame
+	size_t len = V.rows();
+	matXe Vtrans = matXe::Zero( len , 3 );
+	Eigen::Vector3d point;
+	for( size_t i = 0 ; i < len ; i++ ){
+		point = V.row(i);
+		Vtrans.row(i) = transform_point( point , origin , xBasis , yBasis , zBasis );
+	}
+	return Vtrans;
 }
 
 TriMeshVFN delaunay_from_V( const matXe& V ){
@@ -339,6 +390,28 @@ std::ostream& operator<<( std::ostream& os , const vec2e& vec ){
 }
 
 // __ End Print __
+
+
+// == I/O Helpers ==
+
+vec3e str_to_vec3( string delimitedTriple , char delimiter ){
+    // Interpret 'delimitedTriple' as an R3 vector
+    std::vector<double> elems = tokenize_to_dbbl_w_separator( delimitedTriple , delimiter );
+    if( elems.size() == 3 )
+        #ifdef MG_FLOAT
+            return vec3e{ (float) elems[0] , (float) elems[0] , (float) elems[0] };
+        #endif
+        #ifdef MG_DUBBL
+            return vec3e{ elems[0] , elems[0] , elems[0] };
+        #endif
+    else
+        return err_vec3();
+}
+
+
+
+
+// __ End I/O __
 
 // ___ End Func ____________________________________________________________________________________________________________________________
 

@@ -325,6 +325,72 @@ void RibbonBolt::draw(){
 // __ End RibbonBolt __
 
 
+// == class PatchMesh == 
+
+matXe matx_from_lines( const stdvec<string>& lines , char separator , size_t numCols ){
+    // Build a matrix from a vector of lines of text assumed to contain floats
+    // NOTE: This function assumes that the
+    size_t len = lines.size();
+    matXe rtnMatx = matXe::Zero( len , numCols );
+    stdvec<float> tokens; 
+    for( size_t i = 0 ; i < len ; i++ ){
+        tokens = tokenize_to_float_w_separator( lines[i] , separator );
+        for( size_t j = 0 ; j < numCols ; j++ ){
+            rtnMatx(i,j) = tokens[j];
+        }
+    }
+    return rtnMatx;
+}
+
+PatchMesh::PatchMesh( string fPath ){
+    // Create a Patchmesh from a file
+    // NOTE: This function assumes that 'fPath' has at least one "OBJ" defined
+
+    bool SHOWDEBUG = true; // if( SHOWDEBUG ){  cout <<  << endl;  }
+
+    // 0. Get lines
+    stdvec<string> lines    = readlines( fPath );
+    size_t /* - */ numLines = lines.size();
+
+    // 1. Read the texture path & load texture
+    txtrPath = lines[0];
+    if( SHOWDEBUG ){  cout << "Texture File: " << txtrPath << endl;  }
+
+    // 2. Read the camera origin
+    camOrigin = str_to_vec3( lines[1] , ',' );
+    if( SHOWDEBUG ){  cout << "Camera Origin: " << camOrigin << endl;  }
+
+    // 3. Read the camera basis vectors
+    cam_xBasis = str_to_vec3( lines[2] , ',' );
+    cam_yBasis = str_to_vec3( lines[3] , ',' );
+    cam_zBasis = str_to_vec3( lines[4] , ',' );
+    if( SHOWDEBUG ){  cout << "Camera Basis Vectors: " << cam_xBasis << " , " 
+                                                       << cam_yBasis << " , " 
+                                                       << cam_zBasis << endl;  }
+
+    string /* - */ currLine;
+    stdvec<string> patchLines;
+    matXe /* -- */ patchVerts;
+    // 4. Read the mesh points
+    for( size_t i = 5 ; i < numLines ; i++ ){
+        currLine = lines[i];
+        // 5. If a patch header is encountered , check if there is an existing patch to be processed
+        if( !currLine.compare( "OBJ" ) ){
+            // 6. If there are stored lines
+            if( patchLines.size() > 0 ){
+                patchVerts = matx_from_lines( patchLines , ',' , 3 );
+            }
+        // I. else assume we are on a non-empty line containing a triple
+        }else{
+            patchLines.push_back( currLine );
+        }
+
+    }
+}
+
+// __ End PatchMesh __
+
+
 // ___ End Classes _________________________________________________________________________________________________________________________
 
 

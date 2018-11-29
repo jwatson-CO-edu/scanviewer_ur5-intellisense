@@ -32,6 +32,7 @@ Template Version: 2018-07-16
 	using matXe = Eigen::MatrixXf;
 	using typeF = float;
 	#define random rand_float
+    #define nanF   nanf
 #endif
 #ifdef MG_DUBBL
 	using vec2e = Eigen::Vector2d;
@@ -39,6 +40,7 @@ Template Version: 2018-07-16
 	using matXe = Eigen::MatrixXd;
 	using typeF = double;
 	#define random rand_dbbl
+    #define nanF   nan
 #endif
 using vec2i = Eigen::Vector2i;
 using matXi = Eigen::MatrixXi;
@@ -177,6 +179,18 @@ vec3e get_any_perpendicular( const vec3e& query , typeF CRIT_ANG = GEO_CRIT_ANG 
 matXe verts3d_proj_to_plane_2D( matXe V , 
 								vec3e planePnt , vec3e normal , vec3e xBasis );
 
+vec3e err_vec3(); // Return a 3D vec populated with NaN
+
+vec3e basis_change( const vec3e& vec_A , 
+					const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B );
+
+vec3e point_basis_change( const vec3e& point_A  , const vec3e& origin_B , 
+						  const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B );
+
+vec3e transform_point( const vec3e& point_A , 
+                       const vec3e& origin , 
+                       const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
+
 // __ End 3D __
 
 
@@ -187,6 +201,14 @@ vec3e get_CCW_tri_norm( const vec3e& v0 , const vec3e& v1 , const vec3e& v2 );
 vec3e get_CCW_tri_norm( const matXe& V );
 
 matXe N_from_VF( const matXe& V , const matXi& F );
+
+matXe V_in_child_frame( const matXe& V , 
+                        const vec3e& origin , 
+                        const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
+
+matXe V_in_parent_frame( const matXe& V , 
+                         const vec3e& origin , 
+                         const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
 
 TriMeshVFN delaunay_from_V( const matXe& V );
 
@@ -202,6 +224,13 @@ std::ostream& operator<<( std::ostream& os , const vec3e& vec );
 std::ostream& operator<<( std::ostream& os , const vec2e& vec );
 
 // __ End Print __
+
+
+// == I/O Helpers ==
+
+vec3e str_to_vec3( string delimitedTriple , char delimiter ); // Interpret 'delimitedTriple' as an R3 vector
+
+// __ End I/O __
 
 
 // ___ End Func ____________________________________________________________________________________________________________________________

@@ -565,6 +565,17 @@ int main( int argc , char* argv[] ){
 
     // ~ Mesh Points ~
     pointsMesh = delaunay_from_V( testPoints );
+
+    // ~ Read files ~
+    stdvec<string> fNames = { "tallDino_NORTH.txt" , "tallDino_SOUTH.txt" , 
+                              "tallDino_EAST.txt"  , "tallDino_WEST.txt"  };
+    uint numNames = fNames.size();
+    stdvec<string> lines;
+
+    for( uint i = 0 ; i < numNames ; i++ ){
+        lines = readlines( "robot_control/" + fNames[i] ); // Return all the lines of text file as a string vector
+        printlines( lines ); // Print all the lines read from a file
+    }
 	
 	/// ===== Main SDL event loop ==========================================================================================================
 	

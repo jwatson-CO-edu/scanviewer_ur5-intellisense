@@ -149,6 +149,34 @@ protected:
 // __ End RibbonBolt __
 
 
+// == class PatchMesh == 
+
+class PatchMesh{
+    // Scanned objects for display
+public:
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    // ~ Con/Destructors ~
+    PatchMesh( string fPath );
+
+    // ~~ Public Members ~~
+    // ~ Geometry ~
+    stdvec<TriMeshVFN*> patches; // Hold each processed scan segment associated with the camera shot
+
+protected:
+    // ~ Geometry ~
+    vec3e  camOrigin;
+    vec3e  cam_xBasis;
+    vec3e  cam_yBasis;
+    vec3e  cam_zBasis;
+    // ~ Texture ~
+    string txtrPath;
+    uint   textureHandle;
+	matXe  txtrVerts;
+};
+
+// __ End PatchMesh __
+
 // ___ End Classes _________________________________________________________________________________________________________________________
 
 

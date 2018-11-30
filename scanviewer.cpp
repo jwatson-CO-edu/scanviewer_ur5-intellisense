@@ -14,15 +14,28 @@
 	[Y] Create a UR5 class , This should emulate the the homework assignment
 	[Y] Test HW3 funtionality
 	[Y] Gut  HW6 elements
-    [ ] Find brushed textures
+    [Y] Find brushed textures
     [ ] Pick shiny material props for the arm beams
     [ ] Camera at robot gripper
 [Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync
 [ ] Display Scan Data
-    [ ] Get scans working on the robot
-    [ ] Determine file format
-    [ ] Load files
+    [Y] Get scans working on the robot
+    [Y] Determine file format
+    [Y] Load files
+    [ ] Display scan meshes
+    [ ] Load texture files
+    [ ] Compute texture triangles
+    [ ] Apply textures
 { } Robot IK
+
+
+Project Guidelines
+* How to run it
+* Why is it important?
+
+Parametric Curves
+* 
+
 */
 
 // === INIT ================================================================================================================================
@@ -122,6 +135,8 @@ float cloudSiz = 5.0f;
 
 TriMeshVFN pointsMesh;
 vec3e meshColor{ 153/255.0 , 51/255.0 , 255/255.0 };
+
+PatchMesh testScan{ "robot_control/tallDino_EAST.txt" };
 
 // ___ END GLOBAL ___
 
@@ -243,12 +258,15 @@ void display( SDL_Window* window ){
 	// 10. draw particles
 	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
 	
-	// 11. Draw cloud
-	draw_point_cloud( testPoints , cloudSiz , cloudClr );
-    draw_trimesh( pointsMesh , meshColor , shiny );
+	//~ // 11. Draw cloud
+	//~ draw_point_cloud( testPoints , cloudSiz , cloudClr );
+    //~ draw_trimesh( pointsMesh , meshColor , shiny );
 
-	// N. Draw the robot
-	UR5.draw();
+	// 12. Draw scan
+	testScan.draw( shiny );
+
+	//~ // N. Draw the robot
+	//~ UR5.draw();
 	
 
 	glDisable( GL_LIGHTING );
@@ -571,11 +589,13 @@ int main( int argc , char* argv[] ){
                               "tallDino_EAST.txt"  , "tallDino_WEST.txt"  };
     uint numNames = fNames.size();
     stdvec<string> lines;
+    
+    testScan.set_solid_color( vec3e{ 255/255.0, 153/255.0, 51/255.0 } );
 
-    for( uint i = 0 ; i < numNames ; i++ ){
-        lines = readlines( "robot_control/" + fNames[i] ); // Return all the lines of text file as a string vector
-        printlines( lines ); // Print all the lines read from a file
-    }
+    //~ for( uint i = 0 ; i < numNames ; i++ ){
+        //~ lines = readlines( "robot_control/" + fNames[i] ); // Return all the lines of text file as a string vector
+        //~ printlines( lines ); // Print all the lines read from a file
+    //~ }
 	
 	/// ===== Main SDL event loop ==========================================================================================================
 	

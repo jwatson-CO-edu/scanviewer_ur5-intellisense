@@ -80,6 +80,22 @@ matXe& Icosahedron_e::get_normals(){  return N; };
 
 // __ End Icosahedron_d __
 
+
+// == struct TriMeshVFN ==
+
+TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original ){
+	TriMeshVFN* rtnStruct = new TriMeshVFN{};
+	rtnStruct->V      = original.V; // ---- N x 3 matrix in which each row is a unique point in the mesh
+	rtnStruct->F      = original.F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
+	rtnStruct->N      = original.N; // ---- List of normal vectors corresponding to F
+	rtnStruct->center = original.center; // Center of the mesh, used for some expansion operations
+	rtnStruct->axis   = original.axis; // - Main axis, used for some expansion operations
+	rtnStruct->type   = original.type;
+	return rtnStruct;
+}
+
+// __ End TriMeshVFN __
+
 // ___ End Classes _________________________________________________________________________________________________________________________
 
 

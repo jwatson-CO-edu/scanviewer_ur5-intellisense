@@ -97,7 +97,7 @@ protected:
 
 // __ End Icosahedron_e __
 
-// == struct VF_2D ==
+// == struct TriMeshVFN ==
 
 enum MESHTYPE{ GENERIC }; //- Default mesh type
 
@@ -112,7 +112,9 @@ struct TriMeshVFN{
 	MESHTYPE type = GENERIC;
 };
 
-// __ End VF_2D __
+TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original );
+
+// __ End TriMeshVFN __
 
 // ___ End Classes _________________________________________________________________________________________________________________________
 

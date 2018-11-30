@@ -157,21 +157,31 @@ public:
 
     // ~ Con/Destructors ~
     PatchMesh( string fPath );
+    
+    // ~ Rendering ~
+    
+    void set_solid_color( const vec3e& clrSld );
+    
+    void draw( float shiny );
 
     // ~~ Public Members ~~
     // ~ Geometry ~
     stdvec<TriMeshVFN*> patches; // Hold each processed scan segment associated with the camera shot
+    // ~ Texture ~
+    bool hasTextr = false;
 
 protected:
     // ~ Geometry ~
-    vec3e  camOrigin;
-    vec3e  cam_xBasis;
-    vec3e  cam_yBasis;
-    vec3e  cam_zBasis;
+    vec3e camOrigin;
+    vec3e cam_xBasis;
+    vec3e cam_yBasis;
+    vec3e cam_zBasis;
     // ~ Texture ~
     string txtrPath;
     uint   textureHandle;
 	matXe  txtrVerts;
+	// ~ Render ~
+	vec3e colorSolid; // Color to use for rendering if no texture has been applied
 };
 
 // __ End PatchMesh __

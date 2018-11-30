@@ -342,6 +342,14 @@ matXe matx_from_lines( const stdvec<string>& lines , char separator , size_t num
     return rtnMatx;
 }
 
+TriMeshVFN V_to_mesh_in_cam_frame( const matXe& V , const vec3e& origin , const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+	// Express the points in the camera frame so that it can be meshed properly
+	// 1. Transform points
+	matXe Vxfrm = V_in_child_frame( V , origin , xBasis , yBasis , zBasis );
+	// 2. Mesh points with Delaunay
+	return delaunay_from_V( Vxfrm );
+}
+
 PatchMesh::PatchMesh( string fPath ){
     // Create a Patchmesh from a file
     // NOTE: This function assumes that 'fPath' has at least one "OBJ" defined
@@ -371,6 +379,7 @@ PatchMesh::PatchMesh( string fPath ){
     string /* - */ currLine;
     stdvec<string> patchLines;
     matXe /* -- */ patchVerts;
+    TriMeshVFN     camPatch;
     // 4. Read the mesh points
     for( size_t i = 5 ; i < numLines ; i++ ){
         currLine = lines[i];
@@ -379,12 +388,34 @@ PatchMesh::PatchMesh( string fPath ){
             // 6. If there are stored lines
             if( patchLines.size() > 0 ){
                 patchVerts = matx_from_lines( patchLines , ',' , 3 );
+                camPatch   = V_to_mesh_in_cam_frame( patchVerts , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                patches.push_back( copy_mesh_to_heap( camPatch ) );
             }
         // I. else assume we are on a non-empty line containing a triple
         }else{
             patchLines.push_back( currLine );
         }
     }
+    
+    if( SHOWDEBUG ){
+		// How many patches are there?  
+		cout << "There are " << patches.size() << " patches to render" << endl;  
+		// How many points does each have?
+	}
+}
+
+// ~ Rendering ~
+
+void PatchMesh::set_solid_color( const vec3e& clrSld ){  colorSolid = clrSld;  }
+
+void PatchMesh::draw( float shiny ){
+	
+	// 1. For each of the patches
+	uint len = patches.size();
+	if( !hasTextr ){  for( uint i = 0 ; i < len ; i++ ){  draw_trimesh( *patches[i] , colorSolid , shiny );  }  }
+	
+	
 }
 
 // __ End PatchMesh __

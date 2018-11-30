@@ -443,9 +443,9 @@ TriMeshVFN delaunay_from_V( const matXe& V ){
     // Triangles are arranged in a consistent clockwise order by delaunay, --to-> CCW
     rtnStruct.F = matXi::Zero( ntri , 3 );
     for( int i = 0 ; i < ntri ; i++ ){
-        rtnStruct.F(i,0) = v[i].p3;
+        rtnStruct.F(i,0) = v[i].p1;
         rtnStruct.F(i,1) = v[i].p2;
-        rtnStruct.F(i,2) = v[i].p1;
+        rtnStruct.F(i,2) = v[i].p3;
     }
 
     // 6. Compute normals
@@ -453,6 +453,33 @@ TriMeshVFN delaunay_from_V( const matXe& V ){
     // for( int i = 0 ; i < ntri ; i++ ){  rtnStruct.N.row(i) = -rtnStruct.N.row(i);  }
 
     // N. Return
+    return rtnStruct;
+}
+
+TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& original ){ 
+    // Return a version of 'original' with all triangles removed with a side longer than 'sizeLimit'
+    TriMeshVFN rtnStruct;
+    rtnStruct.V = original.V; // Has the same vertices as the original, but potentially lest triangles
+    size_t numTri = original.F.rows();
+    vec3e p0  , p1  , p2;
+    typeF d01 , d12 , d20;
+    vec3i f_i;
+    vec3e n_i;
+    for( size_t i = 0 ; i < numTri ; i++ ){
+        p0  = original.V.row( original.F(i,0) );
+        p1  = original.V.row( original.F(i,1) );
+        p2  = original.V.row( original.F(i,2) );
+        d01 = ( p0 - p1 ).norm();
+        d12 = ( p1 - p2 ).norm();
+        d20 = ( p2 - p0 ).norm();
+        f_i = original.F.row(i);
+        n_i = original.N.row(i);
+
+        if( ( d01 <= sizeLimit ) && ( d12 <= sizeLimit ) && ( d20 <= sizeLimit ) ){
+            rtnStruct.F = copy_F_plus_row( rtnStruct.F , f_i );
+            rtnStruct.N = copy_V_plus_row( rtnStruct.N , n_i );
+        }
+    }
     return rtnStruct;
 }
 
@@ -490,10 +517,55 @@ vec3e str_to_vec3( string delimitedTriple , char delimiter ){
         return err_vec3();
 }
 
-
-
-
 // __ End I/O __
+
+
+// == Struct Helpers ==
+
+matXe copy_V_plus_row( const matXe& pMatx , const vec3e& nuVec ){ 
+	// Extend vertices list by 1 R3 vector
+	// NOTE: This function assumes that 'pMatx' is either empty or has 3 columns
+	// NOTE: This function is not efficient
+	
+	bool SHOWDEBUG = false;
+	
+	matXe rtnMatx;
+	size_t pRows = pMatx.rows();
+	if( SHOWDEBUG ){  cout << "Found a matrix with " << pRows << " rows" << endl;  }
+	if( pRows < 1 ){
+		rtnMatx = matXe::Zero(1,3);
+		rtnMatx.row(0) = nuVec;
+	}else{
+		rtnMatx = matXe::Zero( pRows+1 , 3 );
+		rtnMatx.block( 0 , 0 , pRows , 3 ) = pMatx;
+		rtnMatx.row( pRows ) = nuVec;
+	}
+	
+	if( SHOWDEBUG ){
+		cout << "About to return expanded matrix ..." << endl;
+		cout << rtnMatx << endl;
+	}
+	
+	return rtnMatx;
+}
+
+matXi copy_F_plus_row( const matXi& pMatx , const vec3i& nuVec ){
+	// Extend vertices list by 1 I3 vector , return copy
+	matXi rtnMatx;
+	size_t pRows = pMatx.rows();
+	if( pRows < 1 ){
+		rtnMatx = matXi::Zero(1,3);
+		rtnMatx.row(0) = nuVec;
+	}else{
+		rtnMatx = matXi::Zero( pRows+1 , 3 );
+		rtnMatx.block( 0 , 0 , pRows , 3 ) = pMatx;
+		rtnMatx.row( pRows ) = nuVec;
+	}
+	return rtnMatx;
+}
+
+// __ End Struct __
+
 
 // ___ End Func ____________________________________________________________________________________________________________________________
 

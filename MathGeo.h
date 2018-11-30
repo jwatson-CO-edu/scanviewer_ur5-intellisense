@@ -33,7 +33,7 @@ Template Version: 2018-07-16
 	using typeF = float;
 	#define random rand_float
     #define nanF   nanf
-    #define eqF eqf
+    #define eqF    eqf
 #endif
 #ifdef MG_DUBBL
 	using vec2e = Eigen::Vector2d;
@@ -42,9 +42,10 @@ Template Version: 2018-07-16
 	using typeF = double;
 	#define random rand_dbbl
     #define nanF   nan
-    #define eqF eq
+    #define eqF    eq
 #endif
 using vec2i = Eigen::Vector2i;
+using vec3i = Eigen::Vector3i;
 using matXi = Eigen::MatrixXi;
 
 
@@ -221,7 +222,7 @@ matXe V_in_parent_frame( const matXe& V ,
 
 TriMeshVFN delaunay_from_V( const matXe& V );
 
-
+TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& original );
 
 // __ End Mesh __
 
@@ -240,6 +241,15 @@ std::ostream& operator<<( std::ostream& os , const vec2e& vec );
 vec3e str_to_vec3( string delimitedTriple , char delimiter ); // Interpret 'delimitedTriple' as an R3 vector
 
 // __ End I/O __
+
+
+// == Struct Helpers ==
+
+matXe copy_V_plus_row( const matXe& pMatx , const vec3e& nuVec );
+
+matXi copy_F_plus_row( const matXi& pMatx , const vec3i& nuVec );
+
+// __ End Struct __
 
 
 // ___ End Func ____________________________________________________________________________________________________________________________

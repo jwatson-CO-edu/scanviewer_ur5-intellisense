@@ -85,7 +85,7 @@ float dim /* --- */ =  2.0; // Scale Dimension
 // ~ Screen ~
 float w2h = 0.0f; // Aspect ratio
 // ~ Camera ~
-float camRadius     =    2.35; // --- Distance of the camera from [0,0,0]
+float camRadius     =    0.65; // --- Distance of the camera from scene center
 float CAMRADINCR    =    0.0625; // - Zoom in and out by this far each keypress
 int   DFLT_THETA    = -315; // ----- Initial rotation for viewing
 int   DFLT_PSI      =   25; // ----- Initial elevation for viewing
@@ -94,7 +94,7 @@ int   th /* ---- */ = DFLT_THETA; // Azimuth of view angle
 int   ps /* ---- */ = DFLT_PSI; // - Elevation of view angle
 int   fov /* --- */ = 55; // ------- Field of view (for perspective)
 vec3e eyeLoc{ 0 , 0 , 0 }; // ------ Camera location (world frame)
-vec3e lookPt{ 0 , 0 , 0 }; // ------ Focus of camera (world frame)
+vec3e lookPt{ 0.42 , -0.48 , -0.08 }; // ------ Focus of camera (world frame)
 vec3e upVctr{ 0 , 0 , 0 }; // ------ Direction of "up"
 vec3e lookDr; // ------------------- Direction that the camera is looking (not always used)
 
@@ -136,7 +136,22 @@ float cloudSiz = 5.0f;
 TriMeshVFN pointsMesh;
 vec3e meshColor{ 153/255.0 , 51/255.0 , 255/255.0 };
 
-PatchMesh testScan{ "robot_control/tallDino_WEST.txt" };
+PatchMesh testScan1{ "robot_control/tallDino_WEST.txt" };
+vec3e meshColor1{ 153/255.0 , 51/255.0 , 255/255.0 };
+
+PatchMesh testScan2{ "robot_control/tallDino_EAST.txt" };
+vec3e meshColor2{ 0/255.0, 153/255.0, 204/255.0 };
+
+PatchMesh testScan3{ "robot_control/tallDino_SOUTH.txt" };
+vec3e meshColor3{ 0/255.0, 153/255.0, 51/255.0 };
+
+PatchMesh testScan4{ "robot_control/tallDino_NORTH.txt" };
+vec3e meshColor4{ 204/255.0, 0/255.0, 204/255.0 };
+
+bool SHOT1 = true  , 
+     SHOT2 = false , 
+     SHOT3 = false , 
+     SHOT4 = false ;
 
 // ___ END GLOBAL ___
 
@@ -196,8 +211,8 @@ void display( SDL_Window* window ){
 	
 	// 1. Calculate the user view
 	// Calc the eye position for perspective view (Orbit [0,0,0] spherically)
-	eyeLoc = vec_sphr( camRadius , th , ps );
-	lookPt = vec3e{0,0,0};
+	eyeLoc = vec_sphr( camRadius , th , ps ) + lookPt;
+	// lookPt = vec3e{0,0,0};
 	lookDr = lookPt - eyeLoc;
 	upVctr = ( lookDr.cross( vec3e{0,0,1}.cross( lookDr ) ) ).normalized();
 	gluLookAt( eyeLoc[0] , eyeLoc[1] , eyeLoc[2] ,  
@@ -258,17 +273,20 @@ void display( SDL_Window* window ){
 	// 10. draw particles
 	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
 
-    for( uint i = 0 ; i < testScan.patches.size() ; i++ ){
-        draw_aabb( AABB( testScan.patches[i]->V ) , vec3e{0,1,0} , 2.0 );
-        draw_point_cloud( testScan.patches[i]->V , cloudSiz , cloudClr );
-    }
+    // for( uint i = 0 ; i < testScan.patches.size() ; i++ ){
+    //     draw_aabb( AABB( testScan.patches[i]->V ) , vec3e{0,1,0} , 2.0 );
+    //     draw_point_cloud( testScan.patches[i]->V , cloudSiz , cloudClr );
+    // }
 	
 	//~ // 11. Draw cloud
 	//~ draw_point_cloud( testPoints , cloudSiz , cloudClr );
     //~ draw_trimesh( pointsMesh , meshColor , shiny );
 
 	// 12. Draw scan
-	// testScan.draw( shiny );
+	if( SHOT1 ) testScan1.draw( shiny );
+    if( SHOT2 ) testScan2.draw( shiny );
+    if( SHOT3 ) testScan3.draw( shiny );
+    if( SHOT4 ) testScan4.draw( shiny );
 
 	//~ // N. Draw the robot
 	//~ UR5.draw();
@@ -330,6 +348,26 @@ bool key( const SDL_KeyboardEvent& event ){
 			ps = DFLT_PSI;
 			printf( "theta and psi reset!\n" );
 			break;
+
+        case SDLK_1: 
+		case SDLK_KP_1: 
+            SHOT1 = !SHOT1;
+            break;
+
+        case SDLK_2: 
+		case SDLK_KP_2: 
+            SHOT2 = !SHOT2;
+            break;
+
+        case SDLK_3: 
+		case SDLK_KP_3: 
+            SHOT3 = !SHOT3;
+            break;
+
+        case SDLK_4: 
+		case SDLK_KP_4: 
+            SHOT4 = !SHOT4;
+            break;
 
 		// ~~ Program Controls ~~
 
@@ -592,10 +630,13 @@ int main( int argc , char* argv[] ){
     // ~ Read files ~
     stdvec<string> fNames = { "tallDino_NORTH.txt" , "tallDino_SOUTH.txt" , 
                               "tallDino_EAST.txt"  , "tallDino_WEST.txt"  };
-    uint numNames = fNames.size();
+    // uint numNames = fNames.size();
     stdvec<string> lines;
     
-    testScan.set_solid_color( vec3e{ 255/255.0, 153/255.0, 51/255.0 } );
+    testScan1.set_solid_color( meshColor1 );
+    testScan2.set_solid_color( meshColor2 );
+    testScan3.set_solid_color( meshColor3 );
+    testScan4.set_solid_color( meshColor4 );
 
     //~ for( uint i = 0 ; i < numNames ; i++ ){
         //~ lines = readlines( "robot_control/" + fNames[i] ); // Return all the lines of text file as a string vector

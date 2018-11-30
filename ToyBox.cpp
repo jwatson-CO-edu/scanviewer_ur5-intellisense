@@ -395,8 +395,9 @@ PatchMesh::PatchMesh( string fPath ){
             if( patchLines.size() > 0 ){
                 patchVerts = matx_from_lines( patchLines , ',' , 3 );
                 camPatch   = V_to_mesh_in_cam_frame( patchVerts , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
-                // camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
                 camPatch.N = N_from_VF( camPatch.V , camPatch.F );
+                camPatch = prune_big_triangles_from( MESHSIZE * 1.2f , camPatch );
                 patches.push_back( copy_mesh_to_heap( camPatch ) );
             }
             patchLines.clear();

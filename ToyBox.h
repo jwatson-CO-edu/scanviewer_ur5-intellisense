@@ -21,7 +21,7 @@ Template Version: 2018-07-16
 // ~~ Shortcuts and Aliases ~~
 
 // ~~ Constants ~~
-
+const typeF MESHSIZE = 0.005;
 
 // === Classes and Structs =================================================================================================================
 

@@ -1,7 +1,7 @@
 #############################
 README.txt
-James Watson, 2018 October
-Building, Running, and Usage directions for Homework submission
+James Watson, 2018 November
+Building, Running, and Usage directions for Project submission
 #############################
 
 === Build Instructions ===
@@ -18,6 +18,7 @@ The script will:
 Dependencies:
 	* CMake version 3.0+
 	* C++11
+    * SDL2
 
 ___ End Build ___
 
@@ -25,21 +26,30 @@ ___ End Build ___
 === Run Instructions ===
 
 In the root directory for the project:
-./HW${N}
+./scanviewer
 where '${N}' is the correct HW number
 
 ___ End Run ___
+
+
+=== Remaining Work ===
+
+1. Texture the point cloud meshes with the infrared images gathered from the camera
+2. Display the robot in the pose in which each shot was taken ( animate? )
+3. Display the 2D infrared image as a billboard so that the user can visualize the robot's point of view
+
+___ End Work ___
 
 
 === Usage Instructions ===
 
 ~~ Keys ~~
 
-~ This scene has two lighting presets ~
-
-[p] : Pretty Mode  - Plenty of diffuse from the orbiting source plus a little specular, Objects slightly shiny (Scene starts in this setting)
-[o] : October Mode - A soft eerie glow emits from the core, illuminating the inner surfaces of the scene. Orbiting source is very dim
-	NOTE: Core emits beams of mysterious power at emissivity >= 50
+~ This scene has several 3D camera scans pre-loaded ~
+[1] Toggle Scan 1
+[2] Toggle Scan 2
+[3] Toggle Scan 3
+[4] Toggle Scan 4
 
 ~ Camera Control ~
 
@@ -47,8 +57,7 @@ ___ End Run ___
 [Arrow Rt/Lf] : Yaw the plot about lab Z axis
 [PgDn/PgUp] : _ Zoom in and out
 [0] : _________ Set view angles to default
-NOTE: The orthographic view is no longer featured
-NOTE: Camera always faces [0,0,0]
+NOTE: Camera always faces scan center-ish
 
 ~ Light Position ~
 
@@ -63,12 +72,10 @@ NOTE: Camera always faces [0,0,0]
 [d/D] : Decrease/increase diffuse light from the orbiting light
 [s/S] : Decrease/increase specular light from the orbiting light
 [n/N] : Decrease/increase shininess of all objects except the orbiting light
-[e/E] : Decrease/increase emitted light from the core
-	NOTE: Core surface emission also controls the diffuse light from the core
+
 
 ~ Other ~
 
-[b] : _________ Toggle mysterious beams
 [Esc] : _______ Close program 
 
 ___ End Usage ___
@@ -76,8 +83,13 @@ ___ End Usage ___
 
 === Dev Time ===
 
-6 hours
-	* Finding and applying textures
-	* Some math for taking random triangular samples from textures
+30 hours ????
+	* Conversion to SDL2
+	* Setting up apparatus
+    * Camera problems
+    * Data formatting problems
+    * Geometry for taking meshes in and
+    * Incorporating Delaunay triangulation by P. Bourke
+    * Cleaning the resulting mesh
 
 ___ End Time ___

@@ -346,8 +346,10 @@ TriMeshVFN V_to_mesh_in_cam_frame( const matXe& V , const vec3e& origin , const 
 	// Express the points in the camera frame so that it can be meshed properly
 	// 1. Transform points
 	matXe Vxfrm = V_in_child_frame( V , origin , xBasis , yBasis , zBasis );
-	// 2. Mesh points with Delaunay
+	
+    // 2. Mesh points with Delaunay
 	return delaunay_from_V( Vxfrm );
+    // return delaunay_from_V( V );
 }
 
 PatchMesh::PatchMesh( string fPath ){
@@ -369,12 +371,16 @@ PatchMesh::PatchMesh( string fPath ){
     if( SHOWDEBUG ){  cout << "Camera Origin: " << camOrigin << endl;  }
 
     // 3. Read the camera basis vectors
-    cam_xBasis = str_to_vec3( lines[2] , ',' );
-    cam_yBasis = str_to_vec3( lines[3] , ',' );
-    cam_zBasis = str_to_vec3( lines[4] , ',' );
-    if( SHOWDEBUG ){  cout << "Camera Basis Vectors: " << cam_xBasis << " , " 
-                                                       << cam_yBasis << " , " 
-                                                       << cam_zBasis << endl;  }
+    cam_xBasis = str_to_vec3( lines[2] , ',' ).normalized();
+    cam_yBasis = str_to_vec3( lines[3] , ',' ).normalized();
+    cam_zBasis = str_to_vec3( lines[4] , ',' ).normalized();
+    if( SHOWDEBUG ){  
+        cout << "Camera Basis Vectors: " << cam_xBasis << " , " 
+                                         << cam_yBasis << " , "                                                        
+                                         << cam_zBasis << endl
+             << "Bases Orthonormal?: " << yesno( check_bases_orthonormal( cam_xBasis , cam_yBasis , cam_zBasis ) ) << endl;
+        
+    }
 
     string /* - */ currLine;
     stdvec<string> patchLines;
@@ -389,9 +395,11 @@ PatchMesh::PatchMesh( string fPath ){
             if( patchLines.size() > 0 ){
                 patchVerts = matx_from_lines( patchLines , ',' , 3 );
                 camPatch   = V_to_mesh_in_cam_frame( patchVerts , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
-                camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                // camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                camPatch.N = N_from_VF( camPatch.V , camPatch.F );
                 patches.push_back( copy_mesh_to_heap( camPatch ) );
             }
+            patchLines.clear();
         // I. else assume we are on a non-empty line containing a triple
         }else{
             patchLines.push_back( currLine );
@@ -402,6 +410,10 @@ PatchMesh::PatchMesh( string fPath ){
 		// How many patches are there?  
 		cout << "There are " << patches.size() << " patches to render" << endl;  
 		// How many points does each have?
+        for( uint i = 0 ; i < patches.size() ; i++ ){
+            cout << "\t" << patches[i]->V.rows() << " vertices , " << patches[i]->F.rows() << " triangles" << endl;
+            cout << "\tBounding Box: " << endl <<  AABB( patches[i]->V ) << endl;
+        }
 	}
 }
 

@@ -210,6 +210,24 @@ vec3e rand_corners( const vec3e& corner1 , const vec3e& corner2 ){
 	return vec3e{ corner1(0)+span(0)*sample(0) , corner1(1)+span(1)*sample(1) , corner1(2)+span(2)*sample(2) };
 }
 
+matXe AABB( const matXe& V ){
+	// Return the minimum and maximum corners of an AA Bounding Box of arbitrary dimension , Return size 2 x M
+	size_t numCols = V.cols() , 
+		   numRows = V.rows() ;
+	matXe corners = matXe::Zero( 2 , numCols );
+	corners.row(0) = V.row(0);  corners.row(1) = V.row(0); // Init corners for a proper comparision
+	for( size_t i = 0 ; i < numRows ; i++ ){
+		for( size_t j = 0 ; j < numCols ; j++ ){
+			corners( 0 , j ) = min( corners( 0 , j ) , V( i , j ) ); // min corner
+			corners( 1 , j ) = max( corners( 1 , j ) , V( i , j ) ); // max corner
+		}
+	}
+	return corners;
+}
+
+// Return the minimum and maximum corners of an AA Bounding Box of 'mesh'
+matXe AABB( const TriMeshVFN& mesh ){  return AABB( mesh.V );  } 
+
 matXe sample_from_AABB( size_t N , const matXe& aabb ){
 	// Return 'N' uniform, random samples from AABB
 	matXe rtnMatx = matXe::Zero( N , 3 );
@@ -277,6 +295,29 @@ vec3e transform_point( const vec3e& point_A ,
                        const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
 	// Express 'point_A' in a frame that contains 'point_A's current frame
 	return ( xBasis * point_A(0) ) + ( yBasis * point_A(1) ) + ( zBasis * point_A(2) ) + origin;
+}
+
+bool check_bases_orthonormal( const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){ 
+    // Return true if { 'xBasis' , 'yBasis' , 'zBasis' } form an orthonormal basis
+    bool XYperp = eqF( xBasis.dot( yBasis ) , 0.0f );
+    if( !XYperp ) cout << "X and Y are NOT perpendicular! " << xBasis.dot( yBasis ) << endl;
+    bool YZperp = eqF( yBasis.dot( zBasis ) , 0.0f );
+    if( !YZperp ) cout << "Y and Z are NOT perpendicular! " << yBasis.dot( zBasis ) << endl;
+    bool ZXperp = eqF( zBasis.dot( xBasis ) , 0.0f );
+    if( !ZXperp ) cout << "Z and X are NOT perpendicular! " << zBasis.dot( xBasis ) << endl;
+    bool XYrght = eqF( xBasis.cross( yBasis ).dot( zBasis ) , 1.0f );
+    if( !XYrght ) cout << "X cross Y is NOT Z! Not righthand! " << xBasis.cross( yBasis ).dot( zBasis ) << endl;
+    bool YZrght = eqF( yBasis.cross( zBasis ).dot( xBasis ) , 1.0f );
+    if( !YZrght ) cout << "Y cross Z is NOT X! Not righthand! " << yBasis.cross( zBasis ).dot( xBasis ) << endl;
+    bool ZXrght = eqF( zBasis.cross( xBasis ).dot( yBasis ) , 1.0f );
+    if( !ZXrght ) cout << "Z cross X is NOT Y! Not righthand! " << zBasis.cross( xBasis ).dot( yBasis ) << endl;
+    bool Xnorml = eqF( xBasis.norm() , 1.0f );
+    if( !Xnorml ) cout << "X is NOT a normal vector! " << xBasis.norm() << endl;
+    bool Ynorml = eqF( yBasis.norm() , 1.0f );
+    if( !Ynorml ) cout << "Y is NOT a normal vector! " << yBasis.norm() << endl;
+    bool Znorml = eqF( zBasis.norm() , 1.0f );
+    if( !Znorml ) cout << "Z is NOT a normal vector! " << zBasis.norm() << endl;
+    return XYperp && YZperp && ZXperp && XYrght && YZrght && ZXrght && Xnorml && Ynorml && Znorml;
 }
 
 vec3e YPR_from_rotn_matx( const matXe& R ){
@@ -440,10 +481,10 @@ vec3e str_to_vec3( string delimitedTriple , char delimiter ){
     std::vector<double> elems = tokenize_to_dbbl_w_separator( delimitedTriple , delimiter );
     if( elems.size() == 3 )
         #ifdef MG_FLOAT
-            return vec3e{ (float) elems[0] , (float) elems[0] , (float) elems[0] };
+            return vec3e{ (float) elems[0] , (float) elems[1] , (float) elems[2] };
         #endif
         #ifdef MG_DUBBL
-            return vec3e{ elems[0] , elems[0] , elems[0] };
+            return vec3e{ elems[0] , elems[1] , elems[2] };
         #endif
     else
         return err_vec3();

@@ -33,7 +33,7 @@ Template Version: 2018-07-16
 	using typeF = float;
 	#define random rand_float
     #define nanF   nanf
-    //~ #define atan2F atan2f
+    #define eqF eqf
 #endif
 #ifdef MG_DUBBL
 	using vec2e = Eigen::Vector2d;
@@ -42,7 +42,7 @@ Template Version: 2018-07-16
 	using typeF = double;
 	#define random rand_dbbl
     #define nanF   nan
-    //~ #define atan2F atan2
+    #define eqF eq
 #endif
 using vec2i = Eigen::Vector2i;
 using matXi = Eigen::MatrixXi;
@@ -175,6 +175,9 @@ vec3e vec3e_random();
 
 vec3e vec3e_rand_corners( const vec3e& corner1 , const vec3e& corner2 );
 
+matXe AABB( const matXe& V );
+matXe AABB( const TriMeshVFN& mesh );
+
 matXe sample_from_AABB( size_t N , const matXe& aabb );
 vec3e sample_from_AABB( const matXe& aabb );
 
@@ -194,6 +197,8 @@ vec3e point_basis_change( const vec3e& point_A  , const vec3e& origin_B ,
 vec3e transform_point( const vec3e& point_A , 
                        const vec3e& origin , 
                        const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
+
+bool check_bases_orthonormal( const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
 
 // __ End 3D __
 

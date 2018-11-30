@@ -267,7 +267,9 @@ RobotLink::RobotLink( float pTheta , const vec3e& pOrigin ,
 					  void (*pDrawFunc)( const DH_Parameters& DH ) ){
 	// Create a robot link with an orientation, origin, and draw function
 
-	cerr << "About to set 'RobotLink' vars ... " << endl;
+    bool SHOWDEBUG = false;
+
+	if( SHOWDEBUG ) cerr << "About to set 'RobotLink' vars ... " << endl;
 
 	theta        = pTheta;
 	// cerr << "Got the value d = " << pD_dist << endl;
@@ -276,18 +278,19 @@ RobotLink::RobotLink( float pTheta , const vec3e& pOrigin ,
 	origin       = pOrigin;
 	a_dist       = pA_dist;
 
-	cerr << "Got the value axis = ____ " << pNextRotnAxis << endl;
+	if( SHOWDEBUG ) cerr << "Got the value axis = ____ " << pNextRotnAxis << endl;
 	nextRotnAxis = pNextRotnAxis;
-	cerr << "Assigned the value axis = " << nextRotnAxis  << endl;
+	if( SHOWDEBUG ) cerr << "Assigned the value axis = " << nextRotnAxis  << endl;
 	
 	nextRotnAngl = pNextRotnAngl;
 	drawFunc     = pDrawFunc;
 	
-	cerr << "Created a RobotLink with: alpha = " << nextRotnAngl 
-		 << " , a = " << a_dist 
-		 << " , d = " << d_dist 
-		 << " , theta = " << theta
-		 << " , alpha axis = " << nextRotnAxis << endl;
+    if( SHOWDEBUG ) 
+        cerr << "Created a RobotLink with: alpha = " << nextRotnAngl 
+            << " , a = " << a_dist 
+            << " , d = " << d_dist 
+            << " , theta = " << theta
+            << " , alpha axis = " << nextRotnAxis << endl;
 }
 
 void RobotLink::add_distal( RobotLink* link ){  distalLinks.push_back( link );  }
@@ -354,7 +357,7 @@ bool RobotLink::is_leaf(){  return distalLinks.size() == 0;  }
 UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 	// 1. Instantiate the links
 
-	bool SHOWDEBUG = true;
+	bool SHOWDEBUG = false;
 
 	basePos = baseOrigin;
 	params  = copy_dh_params( pParams );
@@ -369,39 +372,39 @@ UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 				 		   params.d[1] , params.a[1] , unitX ,  params.alpha[1] , 
 				 		   lnk1_draw );
 				
-	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
+	if( SHOWDEBUG ) cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 
 	Link2 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
 						   params.d[2] , params.a[2] , unitX ,  params.alpha[2] , // 3.0*0.045 + 0.280
 						   lnk2_draw );
 					
-	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
+	if( SHOWDEBUG ) cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 
 	Link3 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
 	 					   params.d[3] , params.a[3] , unitX ,  params.alpha[3] , 
 						   lnk3_draw );
 
-	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;	
+	if( SHOWDEBUG ) cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;	
 					
 	Link4 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
 						   params.d[4] , params.a[4] , unitX ,  params.alpha[4] , 
 						   lnk4_draw );
 
-	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
+	if( SHOWDEBUG ) cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 						
 	Link5 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
 						   params.d[5] , params.a[5] , unitX ,  params.alpha[5] , 
 						   lnk5_draw );
 
-	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
+	if( SHOWDEBUG ) cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 					
 	Link6 = new RobotLink( 0.0 , vec3e{ 0 , 0 , 0.000 } , 
 						   params.d[6] , params.a[6] , unitX ,  params.alpha[6] , 
 						   lnk6_draw );
 
-	cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
+	if( SHOWDEBUG ) cerr << "Link " << linkNum++ << " instantiated!" << endl << endl;
 
-	cerr << "About to link robot links!" << endl;
+	if( SHOWDEBUG ) cerr << "About to link robot links!" << endl;
 
 	// 2. Set up the link structure: Connect Links
 	Link1->add_distal( Link2 );  
@@ -437,7 +440,7 @@ void UR5_OGL::draw(){
 void UR5_OGL::set_joint_state( const std::vector<float>& qNu ){
 	// Check that the new joint state has the correct length and if so set
 
-	bool SHOWDEBUG = true;
+	bool SHOWDEBUG = false;
 
 	uint qLen = qNu.size();
 	if( qLen == 6 ){

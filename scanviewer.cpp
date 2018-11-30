@@ -136,7 +136,7 @@ float cloudSiz = 5.0f;
 TriMeshVFN pointsMesh;
 vec3e meshColor{ 153/255.0 , 51/255.0 , 255/255.0 };
 
-PatchMesh testScan{ "robot_control/tallDino_EAST.txt" };
+PatchMesh testScan{ "robot_control/tallDino_WEST.txt" };
 
 // ___ END GLOBAL ___
 
@@ -238,7 +238,7 @@ void display( SDL_Window* window ){
 	glLightfv( GL_LIGHT0 , GL_SPECULAR , Specular );
 	glLightfv( GL_LIGHT0 , GL_POSITION , Position );
 	
-
+    
 	
 	// 3. Draw the dynamic scene
 	
@@ -257,13 +257,18 @@ void display( SDL_Window* window ){
 
 	// 10. draw particles
 	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
+
+    for( uint i = 0 ; i < testScan.patches.size() ; i++ ){
+        draw_aabb( AABB( testScan.patches[i]->V ) , vec3e{0,1,0} , 2.0 );
+        draw_point_cloud( testScan.patches[i]->V , cloudSiz , cloudClr );
+    }
 	
 	//~ // 11. Draw cloud
 	//~ draw_point_cloud( testPoints , cloudSiz , cloudClr );
     //~ draw_trimesh( pointsMesh , meshColor , shiny );
 
 	// 12. Draw scan
-	testScan.draw( shiny );
+	// testScan.draw( shiny );
 
 	//~ // N. Draw the robot
 	//~ UR5.draw();

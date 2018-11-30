@@ -565,6 +565,22 @@ void draw_trimesh( const TriMeshVFN& mesh , const vec3e& color , float shiny ){
     glEnd();
 }
 
+void draw_aabb( const matXe& bbox , const vec3e& color , typeF lineWidth ){
+    glLineWidth( lineWidth );
+    glClr3e( color );
+
+    std::vector<std::vector<size_t>> indices = enumerate_in_base( 3 , 2 );
+
+	glBegin( GL_LINES );
+        for( size_t i = 1 ; i < indices.size() ; i++ ){
+            // Bgn
+            glVertex3d( bbox( indices[i-1][0] , 0 ) , bbox( indices[i-1][1] , 0 ) , bbox( indices[i-1][2] , 2 ) );
+            // End
+            glVertex3d( bbox( indices[i  ][0] , 0 ) , bbox( indices[i  ][1] , 0 ) , bbox( indices[i  ][2] , 2 ) ); 
+        }
+	glEnd();
+}
+
 /// ##### OLD CODE ###############################################################################################################
 
 void draw_cylinder( const vec3e& origin  , typeF length , typeF radius , uint facets ,

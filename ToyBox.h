@@ -21,7 +21,9 @@ Template Version: 2018-07-16
 // ~~ Shortcuts and Aliases ~~
 
 // ~~ Constants ~~
-const typeF MESHSIZE = 0.005;
+const typeF MESHSIZE   = 0.005;
+const typeF FOVHORZDEG = 69.4;
+const typeF FOVVERTDEG = 42.5;
 
 // === Classes and Structs =================================================================================================================
 
@@ -150,13 +152,23 @@ protected:
 
 // == class PatchMesh == 
 
+matXe matx_from_lines( const stdvec<string>& lines , char separator , size_t numCols );
+
+TriMeshVFN V_to_mesh_in_cam_frame( const matXe& V , 
+                                   const vec3e& origin , 
+                                   const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
+
+matXe compute_UV_for_trimesh( const matXe& Vcamera , typeF horz_FOVdeg , typeF vert_FOVdeg );
+
 class PatchMesh{
     // Scanned objects for display
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // ~ Con/Destructors ~
-    PatchMesh( string fPath );
+    PatchMesh( string fPath , bool useTxtr = false );
+    
+    uint load_texture( string fPath = "" );
     
     // ~ Rendering ~
     

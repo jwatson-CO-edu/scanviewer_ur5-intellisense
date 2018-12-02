@@ -342,7 +342,9 @@ matXe matx_from_lines( const stdvec<string>& lines , char separator , size_t num
     return rtnMatx;
 }
 
-TriMeshVFN V_to_mesh_in_cam_frame( const matXe& V , const vec3e& origin , const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+TriMeshVFN V_to_mesh_in_cam_frame( const matXe& V , 
+                                   const vec3e& origin , 
+                                   const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
 	// Express the points in the camera frame so that it can be meshed properly
 	// 1. Transform points
 	matXe Vxfrm = V_in_child_frame( V , origin , xBasis , yBasis , zBasis );
@@ -352,25 +354,51 @@ TriMeshVFN V_to_mesh_in_cam_frame( const matXe& V , const vec3e& origin , const 
     // return delaunay_from_V( V );
 }
 
-PatchMesh::PatchMesh( string fPath ){
+matXe compute_UV_for_trimesh( const matXe& Vcamera , typeF horz_FOVdeg , typeF vert_FOVdeg ){
+    // For each of the vertices in 'Vcamera', compute the UV position within [0,1] and return correspinding UV
+    // NOTE: This function assumes that 'Vcamera' is in the camera frame
+    // NOTE: There is a row-row correspondence between 'Vmesh' and the return matrix
+    // NOTE: U:X as V:Y, from the bottom-left , https://stackoverflow.com/a/5532670
+    
+    // A. The center of the shot is ( 0.5 , 0.5 )
+    size_t len     = Vcamera.rows();
+    matXe  rtnMatx = matXe::Zero( len , 2 );
+    typeF  H_horz  = tan( radians( horz_FOVdeg / 2.0f ) );
+    typeF  H_vert  = tan( radians( vert_FOVdeg / 2.0f ) );
+    vec3e  p_i;
+
+    // 1. For each of the original points in the mesh
+    for( size_t i = 0 ; i < len ; i++ ){
+        p_i = Vcamera.row(i);
+        // 2. Compute U
+        rtnMatx(i,0) = ( p_i(0) / p_i(2) ) / ( 2 * H_horz ) + 0.5f;
+        // 3. Compute V
+        rtnMatx(i,1) = ( p_i(1) / p_i(2) ) / ( 2 * H_vert ) + 0.5f;
+    }
+    return rtnMatx;
+}
+
+PatchMesh::PatchMesh( string fPath , bool useTxtr ){
     // Create a Patchmesh from a file
     // NOTE: This function assumes that 'fPath' has at least one "OBJ" defined
 
     bool SHOWDEBUG = true; // if( SHOWDEBUG ){  cout <<  << endl;  }
 
+    hasTextr = useTxtr;
+
     // 0. Get lines
     stdvec<string> lines    = readlines( fPath );
     size_t /* - */ numLines = lines.size();
 
-    // 1. Read the texture path & load texture
+    //  1. Read the texture path & load texture
     txtrPath = lines[0];
     if( SHOWDEBUG ){  cout << "Texture File: " << txtrPath << endl;  }
 
-    // 2. Read the camera origin
+    //  2. Read the camera origin
     camOrigin = str_to_vec3( lines[1] , ',' );
     if( SHOWDEBUG ){  cout << "Camera Origin: " << camOrigin << endl;  }
 
-    // 3. Read the camera basis vectors
+    //  3. Read the camera basis vectors
     cam_xBasis = str_to_vec3( lines[2] , ',' ).normalized();
     cam_yBasis = str_to_vec3( lines[3] , ',' ).normalized();
     cam_zBasis = str_to_vec3( lines[4] , ',' ).normalized();
@@ -379,29 +407,41 @@ PatchMesh::PatchMesh( string fPath ){
                                          << cam_yBasis << " , "                                                        
                                          << cam_zBasis << endl
              << "Bases Orthonormal?: " << yesno( check_bases_orthonormal( cam_xBasis , cam_yBasis , cam_zBasis ) ) << endl;
-        
     }
 
     string /* - */ currLine;
     stdvec<string> patchLines;
     matXe /* -- */ patchVerts;
     TriMeshVFN     camPatch;
-    // 4. Read the mesh points
+    //  4. Read the mesh points
     for( size_t i = 5 ; i < numLines ; i++ ){
         currLine = lines[i];
-        // 5. If a patch header is encountered , check if there is an existing patch to be processed
+        //  5. If a patch header is encountered , check if there is an existing patch to be processed
         if( !currLine.compare( "OBJ" ) ){
-            // 6. If there are stored lines
+            //  6. If there are stored lines , then fetch vertices and mesh with the camera looking down Z
             if( patchLines.size() > 0 ){
                 patchVerts = matx_from_lines( patchLines , ',' , 3 );
                 camPatch   = V_to_mesh_in_cam_frame( patchVerts , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                //  7. If texture is used , then Get UV patches for each of the mesh triangles
+                if( hasTextr ){  
+					camPatch.UV = compute_UV_for_trimesh( camPatch.V , FOVHORZDEG , FOVVERTDEG );  
+					if( SHOWDEBUG ){  cout << "Computed UV!" << endl
+										   << "Num UV Coords: " << camPatch.UV.rows() << endl;  }
+				}
+                //  8. Transform back into lab frame
                 camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                if( SHOWDEBUG ){  cout << "Transformed to lab frame!" << endl;  }
                 camPatch.N = N_from_VF( camPatch.V , camPatch.F );
+                if( SHOWDEBUG ){  cout << "Recomputed normals!" << endl;  }
+                //  9. Trash triangles that span disconnected parts of the mesh
                 camPatch = prune_big_triangles_from( MESHSIZE * 1.2f , camPatch );
+                if( SHOWDEBUG ){  cout << "Pruned triangles!" << endl;  }
+                // 10. Store
                 patches.push_back( copy_mesh_to_heap( camPatch ) );
+                if( SHOWDEBUG ){  cout << "Stowed patch!" << endl;  }
             }
             patchLines.clear();
-        // I. else assume we are on a non-empty line containing a triple
+        // 11. else assume we are on a non-empty line containing a triple
         }else{
             patchLines.push_back( currLine );
         }
@@ -418,17 +458,25 @@ PatchMesh::PatchMesh( string fPath ){
 	}
 }
 
+uint PatchMesh::load_texture( string fPath ){ 
+	uint handle;
+	//  5. Load Texture
+	if( fPath.length() == 0 )
+		handle = textureHandle = LoadTexBMP( ( "robot_control/" + txtrPath ).c_str() );
+	else
+		handle = textureHandle = LoadTexBMP( fPath.c_str() );
+	return handle;
+}
+
 // ~ Rendering ~
 
 void PatchMesh::set_solid_color( const vec3e& clrSld ){  colorSolid = clrSld;  }
 
 void PatchMesh::draw( float shiny ){
-	
 	// 1. For each of the patches
 	uint len = patches.size();
-	if( !hasTextr ){  for( uint i = 0 ; i < len ; i++ ){  draw_trimesh( *patches[i] , colorSolid , shiny );  }  }
-	
-	
+	if( !hasTextr ){  for( uint i = 0 ; i < len ; i++ ){  draw_trimesh( *patches[i] , colorSolid , shiny );              }  }
+    else{             for( uint i = 0 ; i < len ; i++ ){  draw_textured_trimesh( *patches[i] , shiny , textureHandle );  }  }
 }
 
 // __ End PatchMesh __

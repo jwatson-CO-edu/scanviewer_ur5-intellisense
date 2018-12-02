@@ -136,16 +136,18 @@ float cloudSiz = 5.0f;
 TriMeshVFN pointsMesh;
 vec3e meshColor{ 153/255.0 , 51/255.0 , 255/255.0 };
 
-PatchMesh testScan1{ "robot_control/tallDino_WEST.txt" };
+bool ENABLECAMTXTR = true;
+
+PatchMesh testScan1{ "robot_control/tallDino_WEST.txt" , ENABLECAMTXTR };
 vec3e meshColor1{ 153/255.0 , 51/255.0 , 255/255.0 };
 
-PatchMesh testScan2{ "robot_control/tallDino_EAST.txt" };
+PatchMesh testScan2{ "robot_control/tallDino_EAST.txt" , ENABLECAMTXTR };
 vec3e meshColor2{ 0/255.0, 153/255.0, 204/255.0 };
 
-PatchMesh testScan3{ "robot_control/tallDino_SOUTH.txt" };
+PatchMesh testScan3{ "robot_control/tallDino_SOUTH.txt" , ENABLECAMTXTR };
 vec3e meshColor3{ 0/255.0, 153/255.0, 51/255.0 };
 
-PatchMesh testScan4{ "robot_control/tallDino_NORTH.txt" };
+PatchMesh testScan4{ "robot_control/tallDino_NORTH.txt" , ENABLECAMTXTR };
 vec3e meshColor4{ 204/255.0, 0/255.0, 204/255.0 };
 
 bool SHOT1 = true  , 
@@ -589,6 +591,11 @@ int main( int argc , char* argv[] ){
 	txtr4 = LoadTexBMP( "textures/triRando.bmp" );
 	txtr5 = LoadTexBMP( "textures/mineralGreen.bmp" );
 	txtr6 = LoadTexBMP( "textures/concrete.bmp" );
+	
+	testScan1.load_texture();
+	testScan2.load_texture();
+	testScan3.load_texture();
+	testScan4.load_texture();
 	
 	// ~ Create objects ~
 	// icosTest.set_emission_color( RXcolor );

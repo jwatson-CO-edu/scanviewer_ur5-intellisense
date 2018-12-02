@@ -108,6 +108,7 @@ struct TriMeshVFN{
 	matXe    V; // ---- N x 3 matrix in which each row is a unique point in the mesh
 	matXi    F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
 	matXe    N; // ---- List of normal vectors corresponding to F
+    matXe    UV; // --- N x 2 matrix in which each row is the R2 <u,v> tuple assocated with same row 'V' R3 vertex
 	vec3e    center; // Center of the mesh, used for some expansion operations
 	vec3e    axis; // - Main axis, used for some expansion operations
 	MESHTYPE type = GENERIC;
@@ -245,9 +246,10 @@ vec3e str_to_vec3( string delimitedTriple , char delimiter ); // Interpret 'deli
 
 // == Struct Helpers ==
 
-matXe copy_V_plus_row( const matXe& pMatx , const vec3e& nuVec );
+matXe copy_V_plus_row( const matXe& pMatx , const vec3e& nuVec ); // Append 3D typeF vector to matrix
+matXe copy_V_plus_row( const matXe& pMatx , const vec2e& nuVec ); // Append 2D typeF vector to matrix
 
-matXi copy_F_plus_row( const matXi& pMatx , const vec3i& nuVec );
+matXi copy_F_plus_row( const matXi& pMatx , const vec3i& nuVec ); // Append 3D integer vector to matrix
 
 // __ End Struct __
 

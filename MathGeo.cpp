@@ -88,6 +88,7 @@ TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original ){
 	rtnStruct->V      = original.V; // ---- N x 3 matrix in which each row is a unique point in the mesh
 	rtnStruct->F      = original.F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
 	rtnStruct->N      = original.N; // ---- List of normal vectors corresponding to F
+	rtnStruct->UV     = original.UV; // --- N x 2 matrix in which each row is the R2 <u,v> tuple assocated with same row 'V' R3 vertex
 	rtnStruct->center = original.center; // Center of the mesh, used for some expansion operations
 	rtnStruct->axis   = original.axis; // - Main axis, used for some expansion operations
 	rtnStruct->type   = original.type;
@@ -458,13 +459,23 @@ TriMeshVFN delaunay_from_V( const matXe& V ){
 
 TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& original ){ 
     // Return a version of 'original' with all triangles removed with a side longer than 'sizeLimit'
+    
+    bool SHOWDEBUG = true;
+    
     TriMeshVFN rtnStruct;
-    rtnStruct.V = original.V; // Has the same vertices as the original, but potentially lest triangles
+    rtnStruct.V  = original.V; // Has the same vertices as the original, but potentially lest triangles
+    rtnStruct.UV = original.UV;
     size_t numTri = original.F.rows();
     vec3e p0  , p1  , p2;
     typeF d01 , d12 , d20;
     vec3i f_i;
     vec3e n_i;
+    vec2e uv_i;
+    bool  hasUV = original.UV.rows() > 0;
+    if( SHOWDEBUG ){  
+		cerr << "About to process triangles!" << endl;
+		if( hasUV )  cerr << "Incoming mesh has UV defined!" << endl;
+	}
     for( size_t i = 0 ; i < numTri ; i++ ){
         p0  = original.V.row( original.F(i,0) );
         p1  = original.V.row( original.F(i,1) );
@@ -474,12 +485,21 @@ TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& origina
         d20 = ( p2 - p0 ).norm();
         f_i = original.F.row(i);
         n_i = original.N.row(i);
+        //~ if( hasUV )  uv_i = original.UV.row(i);
 
         if( ( d01 <= sizeLimit ) && ( d12 <= sizeLimit ) && ( d20 <= sizeLimit ) ){
+			if( SHOWDEBUG )  cerr << "Triangle accepted!" << endl;
             rtnStruct.F = copy_F_plus_row( rtnStruct.F , f_i );
+            if( SHOWDEBUG )  cerr << "Copied facet!" << endl;
             rtnStruct.N = copy_V_plus_row( rtnStruct.N , n_i );
+            if( SHOWDEBUG )  cerr << "Copied normal!" << endl;
+            //~ if( hasUV ){  
+				//~ rtnStruct.UV = copy_V_plus_row( rtnStruct.UV , uv_i );
+				//~ if( SHOWDEBUG )  cerr << "Triangle accepted!" << endl;
+			//~ }
         }
     }
+    if( SHOWDEBUG )  cerr << "Triangles processed!" << endl;
     return rtnStruct;
 }
 
@@ -544,6 +564,22 @@ matXe copy_V_plus_row( const matXe& pMatx , const vec3e& nuVec ){
 	if( SHOWDEBUG ){
 		cout << "About to return expanded matrix ..." << endl;
 		cout << rtnMatx << endl;
+	}
+	
+	return rtnMatx;
+}
+
+matXe copy_V_plus_row( const matXe& pMatx , const vec2e& nuVec ){ 
+	// Extend vertices list by 1 R2 vector , return copy
+	matXe rtnMatx;
+	size_t pRows = pMatx.rows();
+	if( pRows < 1 ){
+		rtnMatx = matXe::Zero(1,2);
+		rtnMatx.row(0) = nuVec;
+	}else{
+		rtnMatx = matXe::Zero( pRows+1 , 2 );
+		rtnMatx.block( 0 , 0 , pRows , 3 ) = pMatx;
+		rtnMatx.row( pRows ) = nuVec;
 	}
 	
 	return rtnMatx;

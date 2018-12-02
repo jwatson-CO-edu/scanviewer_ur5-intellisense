@@ -32,6 +32,11 @@ void SDL_Heartbeat::sleep_remainder(){
 	mark_time();
 }
 
+typeF SDL_Heartbeat::seconds_elapsed(){
+    // Get the number of seconds elapsed from the last mark
+    return SDL_GetTicks() / 1000.0 - lastMark_s;
+}
+
 // __ End SDL_Heartbeat __
 
 // ___ End Classes _________________________________________________________________________________________________________________________

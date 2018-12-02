@@ -176,6 +176,9 @@ public:
     
     void draw( float shiny );
 
+    // ~ Robot ~
+    stdvec<float> get_joint_state( bool deg = true ); // Get joint state that shot was taken in either deg or radians
+
     // ~~ Public Members ~~
     // ~ Geometry ~
     stdvec<TriMeshVFN*> patches; // Hold each processed scan segment associated with the camera shot
@@ -194,6 +197,8 @@ protected:
 	matXe  txtrVerts;
 	// ~ Render ~
 	vec3e colorSolid; // Color to use for rendering if no texture has been applied
+    // ~ Other ~
+    stdvec<float> joint_state; // Represents the pose of the robot when the shot was taken
 };
 
 // __ End PatchMesh __

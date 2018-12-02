@@ -53,9 +53,11 @@ public:
 	
 	// ~ Timekeeping ~
 	
-	void mark_time(); // Mark the current time as the beginning of the current interval
+	void  mark_time(); // Mark the current time as the beginning of the current interval
 	
-	void sleep_remainder(); // Sleep the remaining time to maintain the interval
+	void  sleep_remainder(); // Sleep the remaining time to maintain the interval
+
+    typeF seconds_elapsed(); // Get the number of seconds elapsed from the last mark
 
 private:
 	

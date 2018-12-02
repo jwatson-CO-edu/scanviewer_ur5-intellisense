@@ -124,6 +124,9 @@ float dimRad_ball     =   0.050; // - Radius of the ball itself
 // ~~ Data ~~
 uint txtr1 , txtr2 , txtr3 , txtr4 , txtr5 , txtr6; // Textures
 
+stdvec<float> targetJointState = { 0 , 0 , 0 , 0 , 0 , 0 };
+float maxAngSpeed = 30.0; // [deg/s]
+
 // ~~ Control ~~
 // ~ Flags ~
 bool BALLMOVAUTO = true;
@@ -181,9 +184,9 @@ bool SHOT1 = true  ,
 // === VARIABLES & OBJECTS =================================================================================================================
 //						  float rad , const vec3e& cntr , const vec3e& colr , float shiny
 // Icosahedron_OGL icosTest{ 0.5 , vec3e{0,0,0} , vec3e{0,1,0} , 5.5 };
-std::vector<Icosahedron_OGL*> nodules;
-vec3e RXcolor{ 0.0/255 , 204.0/255 , 102.0/255 };
-std::vector<RibbonBolt*> particles;
+// std::vector<Icosahedron_OGL*> nodules;
+// vec3e RXcolor{ 0.0/255 , 204.0/255 , 102.0/255 };
+// std::vector<RibbonBolt*> particles;
 
 // = Robot Parameters =
 // Joint:                       0   ,  1      ,  2     ,  3     ,  4      ,   5      ,  6
@@ -293,8 +296,8 @@ void display( SDL_Window* window ){
     if( SHOT3 ) testScan3.draw( shiny );
     if( SHOT4 ) testScan4.draw( shiny );
 
-	//~ // N. Draw the robot
-	//~ UR5.draw();
+	// N. Draw the robot
+	UR5.draw();
 	
 
 	glDisable( GL_LIGHTING );
@@ -357,21 +360,25 @@ bool key( const SDL_KeyboardEvent& event ){
         case SDLK_1: 
 		case SDLK_KP_1: 
             SHOT1 = !SHOT1;
+            if( SHOT1 )  targetJointState = testScan1.get_joint_state();
             break;
 
         case SDLK_2: 
 		case SDLK_KP_2: 
             SHOT2 = !SHOT2;
+            if( SHOT2 )  targetJointState = testScan2.get_joint_state();
             break;
 
         case SDLK_3: 
 		case SDLK_KP_3: 
             SHOT3 = !SHOT3;
+            if( SHOT3 )  targetJointState = testScan3.get_joint_state();
             break;
 
         case SDLK_4: 
 		case SDLK_KP_4: 
             SHOT4 = !SHOT4;
+            if( SHOT4 )  targetJointState = testScan4.get_joint_state();
             break;
 
 		// ~~ Program Controls ~~
@@ -604,38 +611,38 @@ int main( int argc , char* argv[] ){
 	// icosTest.set_emission_color( RXcolor );
 	// icosTest.assign_face_textures_randomly( txtr1 , 100.0f , 1024 , 512 );
 	
-	float lenTravelMin = 0.5f;
-	float lenTravelMax = 2.0f;
-	float travelSpeed  = 1.75f;
-	float width /* -*/ = 0.0075;
-	float lengthMin    = 0.010;
-	float lengthMax    = 1.5f;
+	// float lenTravelMin = 0.5f;
+	// float lenTravelMax = 2.0f;
+	// float travelSpeed  = 1.75f;
+	// float width /* -*/ = 0.0075;
+	// float lengthMin    = 0.010;
+	// float lengthMax    = 1.5f;
 	
-	for( uint i = 0 ; i < 20 ; i++ ){
+	// for( uint i = 0 ; i < 20 ; i++ ){
 		
-		nodules.push_back(  
-			new Icosahedron_OGL( 0.125 , vec3e{0,0,0} , vec3e{255.0/255, 102.0/255, 0.0/255} , 5.5 )
-		);
-		nodules[i]->assign_face_textures_randomly( txtr5 , 40.0f , 512 , 128 );
+	// 	nodules.push_back(  
+	// 		new Icosahedron_OGL( 0.125 , vec3e{0,0,0} , vec3e{255.0/255, 102.0/255, 0.0/255} , 5.5 )
+	// 	);
+	// 	nodules[i]->assign_face_textures_randomly( txtr5 , 40.0f , 512 , 128 );
 		
-		particles.push_back(
-			new RibbonBolt( vec3e{0,0,0} , 
-							RXcolor , 1.0f ,
-							lenTravelMin , lenTravelMax , travelSpeed ,
-							width , lengthMin , lengthMax )
-		);
+	// 	particles.push_back(
+	// 		new RibbonBolt( vec3e{0,0,0} , 
+	// 						RXcolor , 1.0f ,
+	// 						lenTravelMin , lenTravelMax , travelSpeed ,
+	// 						width , lengthMin , lengthMax )
+	// 	);
 		
-	}
+	// }
 	
-	// ~  Create Points ~
-	size_t numPts = 100;
-	matXe sampleBox = matXe::Zero( 2 , 3 );	
-	sampleBox << 0.5 , 0.5 , 0.00 ,
-				 1.0 , 1.0 , 0.25 ;
-	testPoints = sample_from_AABB( numPts , sampleBox );
+	// // ~  Create Points ~
+	// size_t numPts = 100;
+	// matXe sampleBox = matXe::Zero( 2 , 3 );	
+	// sampleBox << 0.5 , 0.5 , 0.00 ,
+	// 			 1.0 , 1.0 , 0.25 ;
+	// testPoints = sample_from_AABB( numPts , sampleBox );
 
-    // ~ Mesh Points ~
-    pointsMesh = delaunay_from_V( testPoints );
+    // // ~ Mesh Points ~
+    // pointsMesh = delaunay_from_V( testPoints );
 
     // ~ Read files ~
     stdvec<string> fNames = { "tallDino_NORTH.txt" , "tallDino_SOUTH.txt" , 
@@ -663,6 +670,8 @@ int main( int argc , char* argv[] ){
 	float _time_elapsed = dt; // This is fixed time for state updates
 
 	std::vector<float> currQ = { 0,0,0,0,0,0 };
+    stdvec<float>      diffQ = { 0,0,0,0,0,0 };
+    float /* ------ */ frameSpeed;
 
 	bool QUITEARLY = false;
 	
@@ -712,24 +721,30 @@ int main( int argc , char* argv[] ){
 		if( BALLMOVAUTO ){  th_ball += _time_elapsed * ballOrbitSpeed;  }
 		th_ball = fmod( th_ball , 360.0f );
 		
-		// Set number of particles active in proportion to emissitivity of the core
-		// Core begins to emit rays at emissitivity >= 50
-		uint numActive = (uint) ( emission > 49 ? ( emission * 1.5 / 5 ) : 0 ); 
-		// Update particles
-		for( uint i = 0 ; i < 20 ; i++ ){
-			if( ANIMATBEAMS ){
-				if( i < numActive ){
-					particles[i]->activate(); 
-					particles[i]->set_emission_intensity( emission );
-					particles[i]->advance( _time_elapsed );
-				}else{
-					particles[i]->deactivate(); 
-				}
-			}else{  particles[i]->deactivate();  }
-		}
+		// // Set number of particles active in proportion to emissitivity of the core
+		// // Core begins to emit rays at emissitivity >= 50
+		// uint numActive = (uint) ( emission > 49 ? ( emission * 1.5 / 5 ) : 0 ); 
+		// // Update particles
+		// for( uint i = 0 ; i < 20 ; i++ ){
+		// 	if( ANIMATBEAMS ){
+		// 		if( i < numActive ){
+		// 			particles[i]->activate(); 
+		// 			particles[i]->set_emission_intensity( emission );
+		// 			particles[i]->advance( _time_elapsed );
+		// 		}else{
+		// 			particles[i]->deactivate(); 
+		// 		}
+		// 	}else{  particles[i]->deactivate();  }
+		// }
 
 		// Move the joints
-		currQ = UR5.qDot * (float)t;
+		
+
+        diffQ = targetJointState - currQ;
+        frameSpeed = (float) hb.seconds_elapsed() * maxAngSpeed;
+        diffQ = clamp_vec( diffQ , -frameSpeed ,  frameSpeed );
+        currQ += diffQ;
+
 		UR5.set_joint_state( currQ );
 		
 		// N. Sleep for remainder

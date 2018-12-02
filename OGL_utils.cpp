@@ -422,15 +422,15 @@ unsigned int LoadTexBMP( const char* file ){
 	// Load texture from BMP file
 	// NOTE: BMP must be 24 bit format
 	// Author: Willem A. (Vlakkies) Schreüder
-	unsigned int   texture; // -- Texture name
-	FILE*          f; // -------- File pointer
-	unsigned short magic; // ---- Image magic
-	int            dx,dy,size; // Image dimensions
-	unsigned short nbp,bpp; // -- Planes and bits per pixel
-	unsigned char* image; // ---- Image data
-	unsigned int   off; // ------ Image offset
-	int            k; // -------- Counter
-	int            max; // ------ Maximum texture dimensions
+	unsigned int   texture; // ------ Texture name
+	FILE* /* -- */ f; // ------------ File pointer
+	unsigned short magic; // -------- Image magic
+	int /* ---- */ dx , dy , size; // Image dimensions
+	unsigned short nbp , bpp; // ---- Planes and bits per pixel
+	unsigned char* image; // -------- Image data
+	unsigned int   off; // ---------- Image offset
+	int /* ---- */ k; // ------------ Counter
+	int /* ---- */ max; // ---------- Maximum texture dimensions
 
 	// ~ Open file ~
 	f = fopen( file , "rb" );
@@ -454,6 +454,7 @@ unsigned int LoadTexBMP( const char* file ){
 	}
 	// ~ Check image parameters ~
 	glGetIntegerv( GL_MAX_TEXTURE_SIZE , &max );
+    cout << "Loaded an image " << dx << " horizontal and " << dy << " vertical pixels" << endl;
 	if( dx < 1 || dx > max ) Fatal( "%s image width %d out of range 1-%d\n"  , file , dx , max );
 	if( dy < 1 || dy > max ) Fatal( "%s image height %d out of range 1-%d\n" , file , dy , max );
 	if( nbp != 1 )  Fatal( "%s bit planes is not 1: %d\n"        , file , nbp );
@@ -516,7 +517,7 @@ void Project( float fov , // -- Field of view angle, in degrees, in the y direct
 	
 	gluPerspective( fov , // -- Field of view angle, in degrees, in the y direction.
 					w2h , // -- Aspect ratio , the field of view in the x direction. Ratio of x (width) to y (height).
-					dim/4 , //- Specifies the distance from the viewer to the near clipping plane (always positive).
+					dim/8 , //- Specifies the distance from the viewer to the near clipping plane (always positive).
 					4*dim ); // Specifies the distance from the viewer to the far clipping plane (always positive).
 	
 	// Switch back to manipulating the model matrix

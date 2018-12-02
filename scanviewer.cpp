@@ -94,7 +94,10 @@ int   th /* ---- */ = DFLT_THETA; // Azimuth of view angle
 int   ps /* ---- */ = DFLT_PSI; // - Elevation of view angle
 int   fov /* --- */ = 55; // ------- Field of view (for perspective)
 vec3e eyeLoc{ 0 , 0 , 0 }; // ------ Camera location (world frame)
-vec3e lookPt{ 0.42 , -0.48 , -0.08 }; // ------ Focus of camera (world frame)
+
+// vec3e lookPt{ 0.42 , -0.48 , -0.08 }; // ------ Focus of camera (world frame)
+vec3e lookPt{ 0.0 , 0.0 , 0.0 }; // ------ Focus of camera (world frame)
+
 vec3e upVctr{ 0 , 0 , 0 }; // ------ Direction of "up"
 vec3e lookDr; // ------------------- Direction that the camera is looking (not always used)
 

@@ -360,6 +360,8 @@ matXe compute_UV_for_trimesh( const matXe& Vcamera , typeF horz_FOVdeg , typeF v
     // NOTE: There is a row-row correspondence between 'Vmesh' and the return matrix
     // NOTE: U:X as V:Y, from the bottom-left , https://stackoverflow.com/a/5532670
     
+    bool SHOWDEBUG = true;
+
     // A. The center of the shot is ( 0.5 , 0.5 )
     size_t len     = Vcamera.rows();
     matXe  rtnMatx = matXe::Zero( len , 2 );
@@ -371,10 +373,15 @@ matXe compute_UV_for_trimesh( const matXe& Vcamera , typeF horz_FOVdeg , typeF v
     for( size_t i = 0 ; i < len ; i++ ){
         p_i = Vcamera.row(i);
         // 2. Compute U
-        rtnMatx(i,0) = ( p_i(0) / p_i(2) ) / ( 2 * H_horz ) + 0.5f;
+        rtnMatx(i,0) = ( - p_i(0) / p_i(2) ) / ( 2 * H_horz ) + 0.5f;
+        // rtnMatx(i,0) = ( p_i(0) / p_i(2) ) / ( H_horz ) + 0.5f;;
         // 3. Compute V
-        rtnMatx(i,1) = ( p_i(1) / p_i(2) ) / ( 2 * H_vert ) + 0.5f;
+        rtnMatx(i,1) = (   p_i(1) / p_i(2) ) / ( 2 * H_vert ) + 0.5f;
+        // rtnMatx(i,1) = ( p_i(1) / p_i(2) ) / ( H_vert ) + 0.5f;;
     }
+
+    if( SHOWDEBUG )  cerr << "Found UV in the following ranges:" << endl << AABB( rtnMatx ) << endl;
+
     return rtnMatx;
 }
 
@@ -428,8 +435,10 @@ PatchMesh::PatchMesh( string fPath , bool useTxtr ){
 					if( SHOWDEBUG ){  cout << "Computed UV!" << endl
 										   << "Num UV Coords: " << camPatch.UV.rows() << endl;  }
 				}
+
                 //  8. Transform back into lab frame
-                camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                // camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+                
                 if( SHOWDEBUG ){  cout << "Transformed to lab frame!" << endl;  }
                 camPatch.N = N_from_VF( camPatch.V , camPatch.F );
                 if( SHOWDEBUG ){  cout << "Recomputed normals!" << endl;  }

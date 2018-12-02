@@ -460,7 +460,7 @@ TriMeshVFN delaunay_from_V( const matXe& V ){
 TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& original ){ 
     // Return a version of 'original' with all triangles removed with a side longer than 'sizeLimit'
     
-    bool SHOWDEBUG = true;
+    bool SHOWDEBUG = false;
     
     TriMeshVFN rtnStruct;
     rtnStruct.V  = original.V; // Has the same vertices as the original, but potentially lest triangles

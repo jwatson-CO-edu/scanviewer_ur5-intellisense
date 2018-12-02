@@ -420,6 +420,35 @@ PatchMesh::PatchMesh( string fPath , bool useTxtr ){
     stdvec<string> patchLines;
     matXe /* -- */ patchVerts;
     TriMeshVFN     camPatch;
+
+    // LAMBDA: [&] Capture all named variables by reference
+    // Type defaults to void if there is no return statement
+    auto process_lines = [&](){
+        patchVerts = matx_from_lines( patchLines , ',' , 3 );
+        camPatch   = V_to_mesh_in_cam_frame( patchVerts , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+        //  7. If texture is used , then Get UV patches for each of the mesh triangles
+        if( hasTextr ){  
+            camPatch.UV = compute_UV_for_trimesh( camPatch.V , FOVHORZDEG , FOVVERTDEG );  
+            if( SHOWDEBUG ){  cout << "Computed UV!" << endl
+                                    << "Num UV Coords: " << camPatch.UV.rows() << endl;  }
+        }
+
+        //  8. Transform back into lab frame
+        camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
+        
+        if( SHOWDEBUG ){  cout << "Transformed to lab frame!" << endl;  }
+        camPatch.N = N_from_VF( camPatch.V , camPatch.F );
+        if( SHOWDEBUG ){  cout << "Recomputed normals!" << endl;  }
+
+        //  9. Trash triangles that span disconnected parts of the mesh
+        camPatch = prune_big_triangles_from( MESHSIZE * 1.2f , camPatch );
+        
+        if( SHOWDEBUG ){  cout << "Pruned triangles!" << endl;  }
+        // 10. Store
+        patches.push_back( copy_mesh_to_heap( camPatch ) );
+        if( SHOWDEBUG ){  cout << "Stowed patch!" << endl;  }
+    }; // NOTE: Lambda expression must end with a semicolon
+
     //  4. Read the mesh points
     for( size_t i = 5 ; i < numLines ; i++ ){
         currLine = lines[i];
@@ -427,27 +456,7 @@ PatchMesh::PatchMesh( string fPath , bool useTxtr ){
         if( !currLine.compare( "OBJ" ) ){
             //  6. If there are stored lines , then fetch vertices and mesh with the camera looking down Z
             if( patchLines.size() > 0 ){
-                patchVerts = matx_from_lines( patchLines , ',' , 3 );
-                camPatch   = V_to_mesh_in_cam_frame( patchVerts , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
-                //  7. If texture is used , then Get UV patches for each of the mesh triangles
-                if( hasTextr ){  
-					camPatch.UV = compute_UV_for_trimesh( camPatch.V , FOVHORZDEG , FOVVERTDEG );  
-					if( SHOWDEBUG ){  cout << "Computed UV!" << endl
-										   << "Num UV Coords: " << camPatch.UV.rows() << endl;  }
-				}
-
-                //  8. Transform back into lab frame
-                // camPatch.V = V_in_parent_frame( camPatch.V , camOrigin , cam_xBasis , cam_yBasis , cam_zBasis );
-                
-                if( SHOWDEBUG ){  cout << "Transformed to lab frame!" << endl;  }
-                camPatch.N = N_from_VF( camPatch.V , camPatch.F );
-                if( SHOWDEBUG ){  cout << "Recomputed normals!" << endl;  }
-                //  9. Trash triangles that span disconnected parts of the mesh
-                camPatch = prune_big_triangles_from( MESHSIZE * 1.2f , camPatch );
-                if( SHOWDEBUG ){  cout << "Pruned triangles!" << endl;  }
-                // 10. Store
-                patches.push_back( copy_mesh_to_heap( camPatch ) );
-                if( SHOWDEBUG ){  cout << "Stowed patch!" << endl;  }
+                process_lines();
             }
             patchLines.clear();
         // 11. else assume we are on a non-empty line containing a triple
@@ -455,7 +464,10 @@ PatchMesh::PatchMesh( string fPath , bool useTxtr ){
             patchLines.push_back( currLine );
         }
     }
-    
+    if( patchLines.size() > 0 ){
+        process_lines();
+    }
+
     if( SHOWDEBUG ){
 		// How many patches are there?  
 		cout << "There are " << patches.size() << " patches to render" << endl;  

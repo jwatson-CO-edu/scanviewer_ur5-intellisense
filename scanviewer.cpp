@@ -588,12 +588,12 @@ int main( int argc , char* argv[] ){
 	// ~~ Init Work ~~
 	
 	// ~ Load textures ~
-	txtr1 = LoadTexBMP( "textures/triBrownHuge.bmp" );
-	txtr2 = LoadTexBMP( "textures/triDirtHuge.bmp" );
-	txtr3 = LoadTexBMP( "textures/oldBoxesSml.bmp" );
-	txtr4 = LoadTexBMP( "textures/triRando.bmp" );
-	txtr5 = LoadTexBMP( "textures/mineralGreen.bmp" );
-	txtr6 = LoadTexBMP( "textures/concrete.bmp" );
+	// txtr1 = LoadTexBMP( "textures/triBrownHuge.bmp" );
+	// txtr2 = LoadTexBMP( "textures/triDirtHuge.bmp" );
+	// txtr3 = LoadTexBMP( "textures/oldBoxesSml.bmp" );
+	// txtr4 = LoadTexBMP( "textures/triRando.bmp" );
+	// txtr5 = LoadTexBMP( "textures/mineralGreen.bmp" );
+	// txtr6 = LoadTexBMP( "textures/concrete.bmp" );
 	
 	testScan1.load_texture();
 	testScan2.load_texture();

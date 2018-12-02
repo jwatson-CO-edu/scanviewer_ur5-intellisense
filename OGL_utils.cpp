@@ -599,10 +599,16 @@ void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHand
         curNrm = mesh.N.row(i);
         glNrm3e( curNrm );
         p0 = mesh.V.row( mesh.F(i,0) );  p1 = mesh.V.row( mesh.F(i,1) );  p2 = mesh.V.row( mesh.F(i,2) );  
-        glVec3e( p0 );                   glVec3e( p1 );                   glVec3e( p2 );     
+        
+        // NOTE: 'glTexCoord2f' MUST be called BEFORE the associated 'glVertex3f' so that the state machine matches them!
         glTexCoord2f( mesh.UV( mesh.F(i,0) , 0 ) , mesh.UV( mesh.F(i,0) , 1 ) );
+        glVec3e( p0 );                   
+
         glTexCoord2f( mesh.UV( mesh.F(i,1) , 0 ) , mesh.UV( mesh.F(i,1) , 1 ) );
+        glVec3e( p1 );                   
+
         glTexCoord2f( mesh.UV( mesh.F(i,2) , 0 ) , mesh.UV( mesh.F(i,2) , 1 ) );
+        glVec3e( p2 );     
     }
     glEnd();
     

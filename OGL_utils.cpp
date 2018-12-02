@@ -382,17 +382,18 @@ void light_ball( float x , float y , float z , float r ,
 	// Author: Willem A. (Vlakkies) Schreüder  
 	int th , ph;
 	float yellow[] = { 1.0f , 1.0f , 0.0f , 1.0f };
-	float Emission[] = { 0.0f , 0.0f , 0.01f * emission , 1.0f };
+	float Emission[] = { 0.0f * emission , 0.0f * emission , 0.01f * emission , 1.0f };
 	//  Save transformation
 	glPushMatrix();
 	//  Offset, scale and rotate
 	glTranslated( x , y , z );
 	glScaled( r , r , r );
-	//  White ball
-	glColor3f( 1 , 1 , 1 );
 	glMaterialf( GL_FRONT_AND_BACK , GL_SHININESS , shiny );
 	glMaterialfv( GL_FRONT_AND_BACK , GL_SPECULAR , yellow );
 	glMaterialfv( GL_FRONT_AND_BACK , GL_EMISSION , Emission );
+
+    //  White ball
+	glColor3f( 1 , 1 , 1 );
 	//  Bands of latitude
 	for( ph =- 90 ; ph < 90 ; ph += BALL_ANG_INCR ){
 		glBegin( GL_QUAD_STRIP );

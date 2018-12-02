@@ -262,21 +262,21 @@ void display( SDL_Window* window ){
 	
 	// 3. Draw the dynamic scene
 	
-	//  Enable light 1
-	glEnable( GL_LIGHT1 );
-	float virsCntr[]  = { 0.0f , 0.0f , 0.0f , 1.0f };
-	glLightfv( GL_LIGHT1 , GL_POSITION , virsCntr );
-	float virsColr[] = { RXcolor(0) * 0.01f * emission , RXcolor(1) * 0.01f * emission , RXcolor(2) * 0.01f * emission , 1.0f };
-	float virsSpec[] = { RXcolor(0) * 0.01f * emission * 0.01f * specular , 
-						 RXcolor(1) * 0.01f * emission * 0.01f * specular , 
-						 RXcolor(2) * 0.01f * emission * 0.01f * specular , 
-						 1.0f };
-	glLightfv( GL_LIGHT1 , GL_DIFFUSE  , virsColr );
-	glLightfv( GL_LIGHT1 , GL_SPECULAR , virsSpec );
+	// //  Enable light 1
+	// glEnable( GL_LIGHT1 );
+	// float virsCntr[]  = { 0.0f , 0.0f , 0.0f , 1.0f };
+	// glLightfv( GL_LIGHT1 , GL_POSITION , virsCntr );
+	// float virsColr[] = { RXcolor(0) * 0.01f * emission , RXcolor(1) * 0.01f * emission , RXcolor(2) * 0.01f * emission , 1.0f };
+	// float virsSpec[] = { RXcolor(0) * 0.01f * emission * 0.01f * specular , 
+	// 					 RXcolor(1) * 0.01f * emission * 0.01f * specular , 
+	// 					 RXcolor(2) * 0.01f * emission * 0.01f * specular , 
+	// 					 1.0f };
+	// glLightfv( GL_LIGHT1 , GL_DIFFUSE  , virsColr );
+	// glLightfv( GL_LIGHT1 , GL_SPECULAR , virsSpec );
 	
 
 	// 10. draw particles
-	for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
+	// for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
 
     // for( uint i = 0 ; i < testScan.patches.size() ; i++ ){
     //     draw_aabb( AABB( testScan.patches[i]->V ) , vec3e{0,1,0} , 2.0 );

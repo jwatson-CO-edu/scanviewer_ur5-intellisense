@@ -15,19 +15,24 @@
 	[Y] Test HW3 funtionality
 	[Y] Gut  HW6 elements
     [Y] Find brushed textures
-    [ ] Pick shiny material props for the arm beams
-    [ ] Camera at robot gripper
+    [ ] FIX THE BLUE LIGHTING ISSUE
 [Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync
-[ ] Display Scan Data
+[Y] Display Scan Data
     [Y] Get scans working on the robot
     [Y] Determine file format
     [Y] Load files
-    [ ] Display scan meshes
-    [ ] Load texture files
-    [ ] Compute texture triangles
-    [ ] Apply textures
-{ } Robot IK
-
+    [Y] Display scan meshes
+    [Y] Load texture files
+    [Y] Compute texture triangles
+    [Y] Apply textures
+[ ] Make the 3D meshes selectable
+    [ ] Detect mouse click
+    [ ] Construct a ray from the eye to the virtual cursor
+    [ ] Mesh-collision detection
+    [ ] Put a bounding box around the selected mesh
+    [ ] Display mesh data
+    [ ] Click on air deselects
+    { } Highlight it somehow?
 
 Project Guidelines
 * How to run it
@@ -161,6 +166,16 @@ bool SHOT1 = true  ,
      SHOT3 = false , 
      SHOT4 = false ;
 
+// ~~ Interaction ~~
+Uint32 mouseButtonBitmask; // Mouse button state
+int    winXmouse; // -------- Mouse X position in the window
+int    winYmouse; // -------- Mouse Y position in the window
+bool   windowHasMouse; // --- Flag for whether the window has the mouse or not
+float  crossLen = 0.050; // -- Crosshair length [m]
+int    winW , winH; // ------ Window dimensions
+float  viewXfrac = 0.0 , 
+       viewYfrac = 0.0 ;
+
 // ___ END GLOBAL ___
 
 // ___ END INIT ____________________________________________________________________________________________________________________________
@@ -205,6 +220,58 @@ UR5_OGL UR5{ vec3e{0,0,0} , paramsUR5 };
 
 // === DRAWING =============================================================================================================================
 
+
+void crosshairs( int mouseX , int mouseY , float hairLen ,
+                 float& viewFracX , float& viewFracY ){
+    // Draw the crosshairs as an overlay , Must be called last , Set variables to indicate where the cursor is with the viewport
+
+    // Save transform attributes (Matrix Mode and Enabled Modes)
+    glPushAttrib( GL_TRANSFORM_BIT | GL_ENABLE_BIT );
+
+    // Save projection matrix and set unit transform
+    glMatrixMode( GL_PROJECTION );
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho( -w2h , +w2h , 
+             -1   ,  1   , 
+             -1   ,  1   );
+
+    // Locate the mouse in the viewport
+    viewFracX = 2 * ( (float)  mouseX / winW - 0.5 ); // [ -1 , 1 ] : right  --to-> left
+    viewFracY = 2 * ( (float) -mouseY / winH + 0.5 ); // [ -1 , 1 ] : bottom --to-> top
+    float Xrndr = viewFracX * w2h  ,
+          Yrndr = viewFracY * 1.0f ;
+
+    //  Save model view matrix and set to indentity
+    glMatrixMode( GL_MODELVIEW );
+    glPushMatrix();
+    glLoadIdentity();
+
+    //  Draw crosshairs
+    glColor3f( 1 , 1 , 1 );
+
+    glBegin( GL_LINES );
+    /* Left  */   glVertex2f( (float) Xrndr , (float) Yrndr );   glVertex2f( (float) Xrndr - hairLen , (float) Yrndr           );
+    /* Right */   glVertex2f( (float) Xrndr , (float) Yrndr );   glVertex2f( (float) Xrndr + hairLen , (float) Yrndr           );
+    /* Down  */   glVertex2f( (float) Xrndr , (float) Yrndr );   glVertex2f( (float) Xrndr           , (float) Yrndr - hairLen );    
+    /* Up    */   glVertex2f( (float) Xrndr , (float) Yrndr );   glVertex2f( (float) Xrndr           , (float) Yrndr + hairLen );
+    glEnd();
+
+    //  Reset model view matrix
+    glPopMatrix();
+    //  Reset projection matrix
+    glMatrixMode( GL_PROJECTION );
+    glPopMatrix();
+    //  Pop transform attributes (Matrix Mode and Enabled Modes)
+    glPopAttrib();
+
+    /* Flip X so that we are in a right-handed coordinate system with 
+       +Z pointing into the viewport, towards the scene
+       +X to the left on the viewport
+       +Y to the top of the viewport */
+    viewFracX = -viewFracX;
+}
+
 void display( SDL_Window* window ){
 	// Display the scene
 	
@@ -229,7 +296,9 @@ void display( SDL_Window* window ){
 			   
 
 	// 2. Draw the static scene
-	// Draw a grid
+    
+    // glColor3f( 1,1,1 );
+
 	glPushMatrix();
 	glTranslated( 0,0,-1 );
 	draw_grid_org_XY( 0.250 , 20 , 20 , 0.5 , gridColor );
@@ -264,27 +333,6 @@ void display( SDL_Window* window ){
     
 	
 	// 3. Draw the dynamic scene
-	
-	// //  Enable light 1
-	// glEnable( GL_LIGHT1 );
-	// float virsCntr[]  = { 0.0f , 0.0f , 0.0f , 1.0f };
-	// glLightfv( GL_LIGHT1 , GL_POSITION , virsCntr );
-	// float virsColr[] = { RXcolor(0) * 0.01f * emission , RXcolor(1) * 0.01f * emission , RXcolor(2) * 0.01f * emission , 1.0f };
-	// float virsSpec[] = { RXcolor(0) * 0.01f * emission * 0.01f * specular , 
-	// 					 RXcolor(1) * 0.01f * emission * 0.01f * specular , 
-	// 					 RXcolor(2) * 0.01f * emission * 0.01f * specular , 
-	// 					 1.0f };
-	// glLightfv( GL_LIGHT1 , GL_DIFFUSE  , virsColr );
-	// glLightfv( GL_LIGHT1 , GL_SPECULAR , virsSpec );
-	
-
-	// 10. draw particles
-	// for( uint i = 0 ; i < 20 ; i++ ){  particles[i]->draw();  }
-
-    // for( uint i = 0 ; i < testScan.patches.size() ; i++ ){
-    //     draw_aabb( AABB( testScan.patches[i]->V ) , vec3e{0,1,0} , 2.0 );
-    //     draw_point_cloud( testScan.patches[i]->V , cloudSiz , cloudClr );
-    // }
 	
 	//~ // 11. Draw cloud
 	//~ draw_point_cloud( testPoints , cloudSiz , cloudClr );
@@ -322,6 +370,9 @@ void display( SDL_Window* window ){
 		   
 	// __ End Message __
 
+    // ~ Draw crosshairs ~
+    if( windowHasMouse ){  crosshairs( winXmouse , winYmouse , crossLen , viewXfrac , viewYfrac );  }
+
 	// ____ End Draw ____
 
 	// Check for errors, Flush, and swap
@@ -345,151 +396,155 @@ bool key( const SDL_KeyboardEvent& event ){
 	const Uint8 *state = SDL_GetKeyboardState( NULL );
 	bool  SHIFTPRESS   = state[ SDL_SCANCODE_LSHIFT ]  ||  state[ SDL_SCANCODE_RSHIFT ];
 
+    // NOTE: SDL2 seems to hear random keyboard events?, but we can corroborate by checking if it also heard a press
+    // URL , Was a key pressed?: https://wiki.libsdl.org/SDL_KeyboardEvent
+    if( event.state == SDL_PRESSED ){
 
-	// 2. Repond to the event
-	switch( event.keysym.sym ){
-		case SDLK_ESCAPE: // Esc: Exit the program
-			exit( 0 );
-		case SDLK_0: // 0 : Set view angles to 0
-		case SDLK_KP_0: // 0 : Set view angles to 0
-			th = DFLT_THETA;
-			ps = DFLT_PSI;
-			printf( "theta and psi reset!\n" );
-			break;
+        // 2. Repond to the event
+        switch( event.keysym.sym ){
+            case SDLK_ESCAPE: // Esc: Exit the program
+                exit( 0 );
+            case SDLK_0: // 0 : Set view angles to 0
+            case SDLK_KP_0: // 0 : Set view angles to 0
+                th = DFLT_THETA;
+                ps = DFLT_PSI;
+                printf( "theta and psi reset!\n" );
+                break;
 
-        case SDLK_1: 
-		case SDLK_KP_1: 
-            SHOT1 = !SHOT1;
-            if( SHOT1 )  targetJointState = testScan1.get_joint_state();
-            break;
+            case SDLK_1: 
+            case SDLK_KP_1: 
+                SHOT1 = !SHOT1;
+                if( SHOT1 )  targetJointState = testScan1.get_joint_state();
+                break;
 
-        case SDLK_2: 
-		case SDLK_KP_2: 
-            SHOT2 = !SHOT2;
-            if( SHOT2 )  targetJointState = testScan2.get_joint_state();
-            break;
+            case SDLK_2: 
+            case SDLK_KP_2: 
+                SHOT2 = !SHOT2;
+                if( SHOT2 )  targetJointState = testScan2.get_joint_state();
+                break;
 
-        case SDLK_3: 
-		case SDLK_KP_3: 
-            SHOT3 = !SHOT3;
-            if( SHOT3 )  targetJointState = testScan3.get_joint_state();
-            break;
+            case SDLK_3: 
+            case SDLK_KP_3: 
+                SHOT3 = !SHOT3;
+                if( SHOT3 )  targetJointState = testScan3.get_joint_state();
+                break;
 
-        case SDLK_4: 
-		case SDLK_KP_4: 
-            SHOT4 = !SHOT4;
-            if( SHOT4 )  targetJointState = testScan4.get_joint_state();
-            break;
+            case SDLK_4: 
+            case SDLK_KP_4: 
+                SHOT4 = !SHOT4;
+                if( SHOT4 )  targetJointState = testScan4.get_joint_state();
+                break;
 
-		// ~~ Program Controls ~~
+            // ~~ Program Controls ~~
 
-		// ~ Orbit Camera for Perspective View ~
-	
-		case SDLK_RIGHT: // Right arrow key - increase azimuth by 5 degrees
-			th += VIEW_DEG_INCR;
-			break;
-		case SDLK_LEFT: // Left arrow key - decrease azimuth by 5 degrees
-			th -= VIEW_DEG_INCR;
-			break;
-		case SDLK_UP: // Up arrow key - increase elevation by 5 degrees
-			ps += VIEW_DEG_INCR;
-			break;
-		case SDLK_DOWN: // Down arrow key - decrease elevation by 5 degrees
-			ps -= VIEW_DEG_INCR;
-			break;
-		case SDLK_PAGEDOWN: // Page Down Key - Zoom Out
-			camRadius += CAMRADINCR;
-			break;
-		case SDLK_PAGEUP: // Page Up Key - Zoom in
-			camRadius -= CAMRADINCR;
-			break;
-			
-		// ~~ Camera Zoom ~~
-			
-		case SDLK_END: // End Key - Decrease camera radius from [0,0,0]
-			rad_bal -= CAMRADINCR;
-			break;
-		case SDLK_HOME: // Home Key - Increase camera radius from [0,0,0]
-			rad_bal += CAMRADINCR;
-			break;
+            // ~ Orbit Camera for Perspective View ~
+        
+            case SDLK_RIGHT: // Right arrow key - increase azimuth by 5 degrees
+                th += VIEW_DEG_INCR;
+                break;
+            case SDLK_LEFT: // Left arrow key - decrease azimuth by 5 degrees
+                th -= VIEW_DEG_INCR;
+                break;
+            case SDLK_UP: // Up arrow key - increase elevation by 5 degrees
+                ps += VIEW_DEG_INCR;
+                break;
+            case SDLK_DOWN: // Down arrow key - decrease elevation by 5 degrees
+                ps -= VIEW_DEG_INCR;
+                break;
+            case SDLK_PAGEDOWN: // Page Down Key - Zoom Out
+                camRadius += CAMRADINCR;
+                break;
+            case SDLK_PAGEUP: // Page Up Key - Zoom in
+                camRadius -= CAMRADINCR;
+                break;
+                
+            // ~~ Camera Zoom ~~
+                
+            case SDLK_END: // End Key - Decrease camera radius from [0,0,0]
+                rad_bal -= CAMRADINCR;
+                break;
+            case SDLK_HOME: // Home Key - Increase camera radius from [0,0,0]
+                rad_bal += CAMRADINCR;
+                break;
 
-		// ~ Light Control ~
-		case SDLK_LEFTBRACKET:
-			ps_ball -= BALL_ORBIT_INCR;
-			break;
-		case SDLK_RIGHTBRACKET:
-			ps_ball += BALL_ORBIT_INCR;
-			break;
-		case SDLK_m:
-			toggle( BALLMOVAUTO );
-			break;
-		case SDLK_QUOTE:
-			th_ball -= BALL_ORBIT_INCR;
-			break;
-		case SDLK_SLASH:
-			th_ball += BALL_ORBIT_INCR;
-			break;
+            // ~ Light Control ~
+            case SDLK_LEFTBRACKET:
+                ps_ball -= BALL_ORBIT_INCR;
+                break;
+            case SDLK_RIGHTBRACKET:
+                ps_ball += BALL_ORBIT_INCR;
+                break;
+            case SDLK_m:
+                toggle( BALLMOVAUTO );
+                break;
+            case SDLK_QUOTE:
+                th_ball -= BALL_ORBIT_INCR;
+                break;
+            case SDLK_SLASH:
+                th_ball += BALL_ORBIT_INCR;
+                break;
 
-		// ~ Light Properties ~
-		case SDLK_a: // Ambient level
-			if( SHIFTPRESS ){
-				if( ambient < 100 ) ambient += 5;
-			}else{
-				if( ambient >   0 ) ambient -= 5;}
-			break;
-		case SDLK_d: // Diffuse level
-			if( SHIFTPRESS ){
-				if( diffuse < 100 ) diffuse += 5;
-			}else{
-				if( diffuse >   0 ) diffuse -= 5;}
-			break;
-		case SDLK_s: // Specular level
-			if( SHIFTPRESS ){
-				if( specular < 100 ) specular += 5;
-			}else{
-				if( specular >   0 ) specular -= 5;}
-			break;
-		case SDLK_e: // Emission level
-			if( SHIFTPRESS ){
-				if( emission < 100 ) emission += 5;
-			}else{
-				if( emission >   0 ) emission -= 5;}
-			break;
-		case SDLK_n: //  Shininess level
-			if( SHIFTPRESS ){
-				if( shininess <  7 ) shininess += 1;
-			}else{
-				if( shininess > -1 ) shininess -= 1;}
-			break;
+            // ~ Light Properties ~
+            case SDLK_a: // Ambient level
+                if( SHIFTPRESS ){
+                    if( ambient < 100 ) ambient += 5;
+                }else{
+                    if( ambient >   0 ) ambient -= 5;}
+                break;
+            case SDLK_d: // Diffuse level
+                if( SHIFTPRESS ){
+                    if( diffuse < 100 ) diffuse += 5;
+                }else{
+                    if( diffuse >   0 ) diffuse -= 5;}
+                break;
+            case SDLK_s: // Specular level
+                if( SHIFTPRESS ){
+                    if( specular < 100 ) specular += 5;
+                }else{
+                    if( specular >   0 ) specular -= 5;}
+                break;
+            case SDLK_e: // Emission level
+                if( SHIFTPRESS ){
+                    if( emission < 100 ) emission += 5;
+                }else{
+                    if( emission >   0 ) emission -= 5;}
+                break;
+            case SDLK_n: //  Shininess level
+                if( SHIFTPRESS ){
+                    if( shininess <  7 ) shininess += 1;
+                }else{
+                    if( shininess > -1 ) shininess -= 1;}
+                break;
 
-		// ~ Light Presets ~
-		case SDLK_o: // October Mode
-			emission  = 95;
-			ambient   =  0;
-			diffuse   =  5;
-			specular  =  5;
-			shininess =  1;
-			break;
-		case SDLK_p: // Pretty Mode
-			emission  =  0;
-			ambient   = 25;
-			diffuse   = 90;
-			specular  =  5;
-			shininess =  3;
-			break;
-			
-		// ~ Other ~
-		case SDLK_b: // Toggle beams
-			toggle( ANIMATBEAMS );
-			break;
-	
-		// <?> : Keys are nice, I guess!
-			
-		default :
-			// printf( "There is no function for this key!\n" );
-			// Do nothing , Do not notify unhandled events
-			break;
-	}
+            // ~ Light Presets ~
+            case SDLK_o: // October Mode
+                emission  = 95;
+                ambient   =  0;
+                diffuse   =  5;
+                specular  =  5;
+                shininess =  1;
+                break;
+            case SDLK_p: // Pretty Mode
+                emission  =  0;
+                ambient   = 25;
+                diffuse   = 90;
+                specular  =  5;
+                shininess =  3;
+                break;
+                
+            // ~ Other ~
+            case SDLK_b: // Toggle beams
+                toggle( ANIMATBEAMS );
+                break;
+        
+            // <?> : Keys are nice, I guess!
+                
+            default :
+                // printf( "There is no function for this key!\n" );
+                // Do nothing , Do not notify unhandled events
+                break;
+        }
+    }
 
 	//  Translate shininess power to value (-1 => 0)
 	shiny = shininess<0 ? 0 : pow(2.0,shininess);
@@ -541,7 +596,6 @@ int main( int argc , char* argv[] ){
 	cerr << "test4: " << test4 << endl;
 	
 	// 0. Start an OGL context
-	int winW , winH;
 	
 	//  Initialize SDL
 	SDL_Init( SDL_INIT_VIDEO );
@@ -550,19 +604,20 @@ int main( int argc , char* argv[] ){
     SDL_RendererInfo displayRendererInfo;
 
 	displayWindow = SDL_CreateWindow(
-        ( "James Watson , " + HWname ).c_str() ,                  // window title
-        SDL_WINDOWPOS_UNDEFINED,           // initial x position
-        SDL_WINDOWPOS_UNDEFINED,           // initial y position
-        800,                               // width, in pixels
-        600,                               // height, in pixels
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE                // flags - see below
+        ( "James Watson , " + HWname ).c_str() , // window title
+        SDL_WINDOWPOS_UNDEFINED, // --------------- initial x position
+        SDL_WINDOWPOS_UNDEFINED, // --------------- initial y position
+        800, // ----------------------------------- width  , in pixels
+        600, // ----------------------------------- height , in pixels
+        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE // flags , see below
     ); 
 
 	displayRenderer = SDL_CreateRenderer( displayWindow , -1 , SDL_RENDERER_PRESENTVSYNC ); 
+
 	// SDL_GL_SetSwapInterval( 0 ); // Immediate updates
 	SDL_GL_SetSwapInterval( 1 ); // Updates synchronized with the vertical retrace
 
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE , 32 );
+	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE , 32 ); // minimum number of bits in the depth buffer
 
 
     SDL_GetRendererInfo( displayRenderer , &displayRendererInfo );
@@ -579,6 +634,9 @@ int main( int argc , char* argv[] ){
 	//  Set screen size
 	SDL_GetWindowSize( displayWindow , &winW , &winH );
 	reshape( winW , winH );
+
+    // Hide cursor in the window
+    SDL_ShowCursor( SDL_DISABLE );
 	
 	// Set heartbeat for 60 fps
 	SDL_Heartbeat hb{ 1.0f / 60.0f };  hb.mark_time();
@@ -606,43 +664,6 @@ int main( int argc , char* argv[] ){
 	testScan2.load_texture();
 	testScan3.load_texture();
 	testScan4.load_texture();
-	
-	// ~ Create objects ~
-	// icosTest.set_emission_color( RXcolor );
-	// icosTest.assign_face_textures_randomly( txtr1 , 100.0f , 1024 , 512 );
-	
-	// float lenTravelMin = 0.5f;
-	// float lenTravelMax = 2.0f;
-	// float travelSpeed  = 1.75f;
-	// float width /* -*/ = 0.0075;
-	// float lengthMin    = 0.010;
-	// float lengthMax    = 1.5f;
-	
-	// for( uint i = 0 ; i < 20 ; i++ ){
-		
-	// 	nodules.push_back(  
-	// 		new Icosahedron_OGL( 0.125 , vec3e{0,0,0} , vec3e{255.0/255, 102.0/255, 0.0/255} , 5.5 )
-	// 	);
-	// 	nodules[i]->assign_face_textures_randomly( txtr5 , 40.0f , 512 , 128 );
-		
-	// 	particles.push_back(
-	// 		new RibbonBolt( vec3e{0,0,0} , 
-	// 						RXcolor , 1.0f ,
-	// 						lenTravelMin , lenTravelMax , travelSpeed ,
-	// 						width , lengthMin , lengthMax )
-	// 	);
-		
-	// }
-	
-	// // ~  Create Points ~
-	// size_t numPts = 100;
-	// matXe sampleBox = matXe::Zero( 2 , 3 );	
-	// sampleBox << 0.5 , 0.5 , 0.00 ,
-	// 			 1.0 , 1.0 , 0.25 ;
-	// testPoints = sample_from_AABB( numPts , sampleBox );
-
-    // // ~ Mesh Points ~
-    // pointsMesh = delaunay_from_V( testPoints );
 
     // ~ Read files ~
     stdvec<string> fNames = { "tallDino_NORTH.txt" , "tallDino_SOUTH.txt" , 
@@ -655,10 +676,6 @@ int main( int argc , char* argv[] ){
     testScan3.set_solid_color( meshColor3 );
     testScan4.set_solid_color( meshColor4 );
 
-    //~ for( uint i = 0 ; i < numNames ; i++ ){
-        //~ lines = readlines( "robot_control/" + fNames[i] ); // Return all the lines of text file as a string vector
-        //~ printlines( lines ); // Print all the lines read from a file
-    //~ }
 	
 	/// ===== Main SDL event loop ==========================================================================================================
 	
@@ -687,10 +704,16 @@ int main( int argc , char* argv[] ){
 			switch( event.type ){
 				case SDL_WINDOWEVENT:
 					switch( event.window.event ){
-					
 						case SDL_WINDOWEVENT_RESIZED:
 							reshape( event.window.data1 , event.window.data2 );
 							break;
+                        // URL , SDL2 mouse enter and leave window: http://lazyfoo.net/tutorials/SDL/35_window_events/index.php
+                        case SDL_WINDOWEVENT_ENTER: 
+                            windowHasMouse = true;
+                            break;
+                        case SDL_WINDOWEVENT_LEAVE:
+                            windowHasMouse = false;
+                            break;
 						default:
 							// Do nothing , Do not notify unhandled events
 							break;
@@ -701,7 +724,7 @@ int main( int argc , char* argv[] ){
 					break;
 				case SDL_KEYDOWN:
 					run = key( event.key );
-					t0 = t + 0.5;  // Wait 1/2 s before repeating
+					t0 = t + 0.5; // Wait 1/2 s before repeating
 					break;
 			}
 			
@@ -711,42 +734,35 @@ int main( int argc , char* argv[] ){
 				t0  = t;
 			}
 		}
+
+        // 3. Mouse interaction
+        if( windowHasMouse ){
+            SDL_GetMouseState( &winXmouse , &winYmouse );
+        }else{ 
+            winXmouse = -1;  winYmouse = -1;
+        }
+        cerr << "Mouse X: " << winXmouse << " , Mouse Y: " << winYmouse << endl;
+
 		
 		// 3. Draw
 		display( displayWindow );
 		
+        cerr << "X_frac: " << viewXfrac << " , Y_frac: " << viewYfrac << endl;
+
 		// 4. Calculate the next frame
 		
-		// Update light ball
+		// ~ Update light ball ~
 		if( BALLMOVAUTO ){  th_ball += _time_elapsed * ballOrbitSpeed;  }
 		th_ball = fmod( th_ball , 360.0f );
-		
-		// // Set number of particles active in proportion to emissitivity of the core
-		// // Core begins to emit rays at emissitivity >= 50
-		// uint numActive = (uint) ( emission > 49 ? ( emission * 1.5 / 5 ) : 0 ); 
-		// // Update particles
-		// for( uint i = 0 ; i < 20 ; i++ ){
-		// 	if( ANIMATBEAMS ){
-		// 		if( i < numActive ){
-		// 			particles[i]->activate(); 
-		// 			particles[i]->set_emission_intensity( emission );
-		// 			particles[i]->advance( _time_elapsed );
-		// 		}else{
-		// 			particles[i]->deactivate(); 
-		// 		}
-		// 	}else{  particles[i]->deactivate();  }
-		// }
 
-		// Move the joints
-		
+		// ~ Move the joints ~
+        diffQ = targetJointState - currQ; // Get the difference between current and desired
+        frameSpeed = (float) hb.seconds_elapsed() * maxAngSpeed; // Calc max angle we can move this frame
+        diffQ = clamp_vec( diffQ , -frameSpeed ,  frameSpeed ); // Limit difference to max angle
+        currQ += diffQ; // Update current angle towards desired
+		UR5.set_joint_state( currQ ); // Send angle to robot
 
-        diffQ = targetJointState - currQ;
-        frameSpeed = (float) hb.seconds_elapsed() * maxAngSpeed;
-        diffQ = clamp_vec( diffQ , -frameSpeed ,  frameSpeed );
-        currQ += diffQ;
 
-		UR5.set_joint_state( currQ );
-		
 		// N. Sleep for remainder
 		hb.sleep_remainder(); // Not really needed with VSYNC, but just in case
 

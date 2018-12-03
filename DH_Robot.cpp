@@ -20,7 +20,7 @@ Template Version: 2018-06-07
 void lnk1_draw( const DH_Parameters& DH ){
 	// Draw Link 1
 
-	bool SHOWDEBUG = true;
+	bool SHOWDEBUG = false;
 
 	float length   = 0.140;
 	float diameter = 0.120;
@@ -49,7 +49,7 @@ void lnk1_draw( const DH_Parameters& DH ){
 void lnk2_draw( const DH_Parameters& DH ){
 	// Draw Link 2
 
-	bool SHOWDEBUG = true;
+	bool SHOWDEBUG = false;
 
 	float length   = 0.140;
 	float diameter = 0.120;
@@ -92,7 +92,7 @@ void lnk2_draw( const DH_Parameters& DH ){
 void lnk3_draw( const DH_Parameters& DH ){
 	// Draw Link 3
 
-	bool SHOWDEBUG = true;
+	bool SHOWDEBUG = false;
 
 	float length   = 0.090;
 	//~ float bigLen   = 0.140;
@@ -137,7 +137,7 @@ void lnk3_draw( const DH_Parameters& DH ){
 void lnk4_draw( const DH_Parameters& DH ){
 	// Draw Link 4
 
-	bool SHOWDEBUG = true;
+	bool SHOWDEBUG = false;
 
 	float length   = 0.090;
 	float diameter = 0.072;
@@ -172,7 +172,7 @@ void lnk4_draw( const DH_Parameters& DH ){
 void lnk5_draw( const DH_Parameters& DH ){
 	// Draw Link 5
 
-	bool SHOWDEBUG = true;
+	bool SHOWDEBUG = false;
 
 	float length   = 0.090;
 	float diameter = 0.072;
@@ -207,7 +207,7 @@ void lnk5_draw( const DH_Parameters& DH ){
 void lnk6_draw( const DH_Parameters& DH ){
 	// Draw Link 6
 
-	bool SHOWDEBUG = true;
+	bool SHOWDEBUG = false;
 
 	float length   = 0.090;
 	float diameter = 0.072;

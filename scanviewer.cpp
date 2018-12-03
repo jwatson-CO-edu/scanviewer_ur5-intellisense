@@ -15,7 +15,7 @@
 	[Y] Test HW3 funtionality
 	[Y] Gut  HW6 elements
     [Y] Find brushed textures
-    [ ] FIX THE BLUE LIGHTING ISSUE
+    [ ] FIX THE BLUE LIGHTING ISSUE , IT MAKES EVERYTHING BLUE , >>EVEN TEXT WHY<<
 [Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync
 [Y] Display Scan Data
     [Y] Get scans working on the robot
@@ -25,10 +25,16 @@
     [Y] Load texture files
     [Y] Compute texture triangles
     [Y] Apply textures
+[ ] Robot Control
+    [Y] The robot configuration can be visualized in the configuration of each shot, 
+    [ ] or moved to arbitrary configurations if the user wishes to assess its freedom in the workspace.
+        [ ] Reinstate control from HW3
 [ ] Make the 3D meshes selectable
-    [ ] Detect mouse click
-    [ ] Construct a ray from the eye to the virtual cursor
+    [Y] Detect mouse click
+    [Y] Construct a ray from the eye to the virtual cursor
     [ ] Mesh-collision detection
+        [ ] Store meshes in a list of pointers that can be iterated
+        [ ] Store collision meshes in a list of pointers that can be iterated
     [ ] Put a bounding box around the selected mesh
     [ ] Display mesh data
     [ ] Click on air deselects
@@ -88,7 +94,12 @@ string HWname = "HW7";
 // ~~ View ~~
 float dim /* --- */ =  2.0; // Scale Dimension
 // ~ Screen ~
-float w2h = 0.0f; // Aspect ratio
+int   FOVy =   55; // ------------------------------ Field of view in the Y-direction [deg] (for perspective)
+float w2h  = 0.0f; // ------------------------------ Aspect ratio
+float Z_xt = 1.0f; // ------------------------------ Arbitrary distance from camera for an image plane
+float Y_xt = tan( radians( FOVy / 2.0 ) ) * Z_xt; // Half the height of the image plane in R3 space (constant for given 'FOVy')
+float X_xt; // ------------------------------------- Half the width  of the image plane in R3 space (variable with aspect ratio)
+
 // ~ Camera ~
 float camRadius     =    0.65; // --- Distance of the camera from scene center
 float CAMRADINCR    =    0.0625; // - Zoom in and out by this far each keypress
@@ -97,7 +108,7 @@ int   DFLT_PSI      =   25; // ----- Initial elevation for viewing
 int   VIEW_DEG_INCR =    5; // ----- View angle change for every key press
 int   th /* ---- */ = DFLT_THETA; // Azimuth of view angle
 int   ps /* ---- */ = DFLT_PSI; // - Elevation of view angle
-int   fov /* --- */ = 55; // ------- Field of view (for perspective)
+
 vec3e eyeLoc{ 0 , 0 , 0 }; // ------ Camera location (world frame)
 
 vec3e lookPt{ 0.42 , -0.48 , -0.08 }; // ------ Focus of camera (world frame)
@@ -116,15 +127,15 @@ int   specular  =   0; // Specular intensity (%)
 int   shininess =   0; // Shininess (power of two)
 float shiny     =   1; // Shininess (value)
 // ~ Example Light source ~
-float BALL_ORBIT_INCR = 2.5; // ---- Angle increase for each button press
-float ballOrbitSpeed  = 45.0; // --- Orbit speed of ball [deg/s]
-float th_ball /* - */ = 0.0f; // --- Ball azimuth angle
-float ps_ball /* - */ = 10.0; // Ball elevation angle
-float rad_bal /* - */ = 1.25; // ---- Radius of ball from origin
-vec3e center_ball{0,0,0}; // ------- Location of the light ball in space
-int   emsn_ball       =  20; // ----- Emission intensity (%)
-float shiny_ball      =   1; // ----- Shininess (value)
-float dimRad_ball     =   0.050; // - Radius of the ball itself
+float BALL_ORBIT_INCR = 2.5; // --- Angle increase for each button press
+float ballOrbitSpeed  = 45.0; // -- Orbit speed of ball [deg/s]
+float th_ball /* - */ = 0.0f; // -- Ball azimuth angle
+float ps_ball /* - */ = 10.0; // -- Ball elevation angle
+float rad_bal /* - */ = 1.25; // -- Radius of ball from origin
+vec3e center_ball{0,0,0}; // ------ Location of the light ball in space
+int   emsn_ball       =  20; // --- Emission intensity (%)
+float shiny_ball      =   1; // --- Shininess (value)
+float dimRad_ball     =   0.050; // Radius of the ball itself
 
 // ~~ Data ~~
 uint txtr1 , txtr2 , txtr3 , txtr4 , txtr5 , txtr6; // Textures
@@ -171,37 +182,20 @@ Uint32 mouseButtonBitmask; // Mouse button state
 int    winXmouse; // -------- Mouse X position in the window
 int    winYmouse; // -------- Mouse Y position in the window
 bool   windowHasMouse; // --- Flag for whether the window has the mouse or not
-float  crossLen = 0.050; // -- Crosshair length [m]
+float  crossLen = 0.050; // - Crosshair length [m]
 int    winW , winH; // ------ Window dimensions
-float  viewXfrac = 0.0 , 
-       viewYfrac = 0.0 ;
+float  viewXfrac = 0.0 , // _ [ -1 , 1 ] : right  --to-> left
+       viewYfrac = 0.0 , // _ [ -1 , 1 ] : bottom --to-> top
+       viewXcam  = 0.0 , // _ X position of the cursor on the image plane in the camera frame
+       viewYcam  = 0.0 ; // _ Y position of the cursor on the image plane in the camera frame
+vec3e  rayDir; // ----------- Direction that a click is pointing from the eye
 
 // ___ END GLOBAL ___
 
 // ___ END INIT ____________________________________________________________________________________________________________________________
 
 
-// === FUNCTIONS ===========================================================================================================================
-
-
-
-// ___ END FUNC ____________________________________________________________________________________________________________________________
-
-
-// === CLASSES =============================================================================================================================
-
-
-
-
-// ___ END CLASS ___________________________________________________________________________________________________________________________
-
-
 // === VARIABLES & OBJECTS =================================================================================================================
-//						  float rad , const vec3e& cntr , const vec3e& colr , float shiny
-// Icosahedron_OGL icosTest{ 0.5 , vec3e{0,0,0} , vec3e{0,1,0} , 5.5 };
-// std::vector<Icosahedron_OGL*> nodules;
-// vec3e RXcolor{ 0.0/255 , 204.0/255 , 102.0/255 };
-// std::vector<RibbonBolt*> particles;
 
 // = Robot Parameters =
 // Joint:                       0   ,  1      ,  2     ,  3     ,  4      ,   5      ,  6
@@ -293,7 +287,6 @@ void display( SDL_Window* window ){
 	gluLookAt( eyeLoc[0] , eyeLoc[1] , eyeLoc[2] ,  
 			   lookPt[0] , lookPt[1] , lookPt[2] ,  
 			   upVctr[0] , upVctr[1] , upVctr[2] );
-			   
 
 	// 2. Draw the static scene
     
@@ -330,8 +323,6 @@ void display( SDL_Window* window ){
 	glLightfv( GL_LIGHT0 , GL_SPECULAR , Specular );
 	glLightfv( GL_LIGHT0 , GL_POSITION , Position );
 	
-    
-	
 	// 3. Draw the dynamic scene
 	
 	//~ // 11. Draw cloud
@@ -365,8 +356,8 @@ void display( SDL_Window* window ){
 	glWindowPos2i( 5 , 5 ); // Next raster operation relative to lower lefthand corner of the window
 	
 	PrintSDL( " emission %i , ambient %i , diffuse %i , specular %i , shininess %i | theta %i , psi %i" , 
-		   emission , ambient , diffuse , specular , shininess ,
-		   th , ps );
+              emission , ambient , diffuse , specular , shininess ,
+              th , ps );
 		   
 	// __ End Message __
 
@@ -559,7 +550,9 @@ void reshape( int width , int height ){
 	// Set the viewport to the entire window
 	glViewport( 0 , 0 , width , height );
 	// Set projection
-	Project( fov , w2h , dim );
+	Project( FOVy , w2h , dim );
+    // Calc params for lab-space position of cursor
+    X_xt = w2h * Y_xt;
 }
 
 // ___ END INTERACT ________________________________________________________________________________________________________________________
@@ -631,7 +624,7 @@ int main( int argc , char* argv[] ){
 	//~ SDL_WM_SetCaption( "More Lighting - SDL" , "sdl20" );
 	SDL_SetWindowTitle( displayWindow , "More Lighting - SDL" );
 
-	//  Set screen size
+	//  Set screen size  &&  Init
 	SDL_GetWindowSize( displayWindow , &winW , &winH );
 	reshape( winW , winH );
 
@@ -726,6 +719,22 @@ int main( int argc , char* argv[] ){
 					run = key( event.key );
 					t0 = t + 0.5; // Wait 1/2 s before repeating
 					break;
+                case SDL_MOUSEBUTTONDOWN:
+                    switch( event.button.button ){
+                        // Is 'SDL_BUTTON_LEFT' still the primary click for a left-handed mouse?
+                        case SDL_BUTTON_LEFT:
+                            cerr << endl << "LEFT CLICK!" << endl << endl;
+                            // A. Constuct a ray from the eye to the viewport
+                            viewXcam  = viewXfrac * X_xt; // X position of the cursor on the image plane in the camera frame
+                            viewYcam  = viewYfrac * Y_xt; // Y position of the cursor on the image plane in the camera frame
+                            rayDir    = vec3e( viewXcam , viewYcam , Z_xt );
+                        case SDL_BUTTON_MIDDLE:
+                        case SDL_BUTTON_RIGHT:
+                        case SDL_BUTTON_X1:
+                        case SDL_BUTTON_X2:
+                            break;
+                    }
+                    break;
 			}
 			
 			//  Repeat key every 50 ms
@@ -737,17 +746,17 @@ int main( int argc , char* argv[] ){
 
         // 3. Mouse interaction
         if( windowHasMouse ){
-            SDL_GetMouseState( &winXmouse , &winYmouse );
+            mouseButtonBitmask = SDL_GetMouseState( &winXmouse , &winYmouse );
         }else{ 
             winXmouse = -1;  winYmouse = -1;
         }
-        cerr << "Mouse X: " << winXmouse << " , Mouse Y: " << winYmouse << endl;
+        // cerr << "Mouse X: " << winXmouse << " , Mouse Y: " << winYmouse << endl;
 
 		
 		// 3. Draw
 		display( displayWindow );
 		
-        cerr << "X_frac: " << viewXfrac << " , Y_frac: " << viewYfrac << endl;
+        cerr << "viewXcam: " << viewXcam << " , viewYcam: " << viewYcam << endl;
 
 		// 4. Calculate the next frame
 		

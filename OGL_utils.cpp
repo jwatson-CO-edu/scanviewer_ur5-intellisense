@@ -504,7 +504,7 @@ unsigned int LoadTexBMP( const char* file ){
 	return texture;
 }
 
-void Project( float fov , // -- Field of view angle, in degrees, in the y direction.
+void Project( float FOVy , // - Field of view angle, in degrees, in the y direction.
 			  float w2h , // -- Aspect ratio , the field of view in the x direction. Ratio of x (width) to y (height).
 			  float dim ){ // - World dimension
 	// Set projection
@@ -516,7 +516,7 @@ void Project( float fov , // -- Field of view angle, in degrees, in the y direct
 	//  Undo previous transformations
 	glLoadIdentity();
 	
-	gluPerspective( fov , // -- Field of view angle, in degrees, in the y direction.
+	gluPerspective( FOVy , // -- Field of view angle, in degrees, in the y direction.
 					w2h , // -- Aspect ratio , the field of view in the x direction. Ratio of x (width) to y (height).
 					dim/8 , //- Specifies the distance from the viewer to the near clipping plane (always positive).
 					4*dim ); // Specifies the distance from the viewer to the far clipping plane (always positive).

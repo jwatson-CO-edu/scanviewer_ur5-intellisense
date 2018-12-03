@@ -118,6 +118,29 @@ TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original );
 
 // __ End TriMeshVFN __
 
+// == Collision Structs ==
+
+struct TargetVFN{ 
+    // TriMesh and its bounding box , AABB is to make collision checking faster
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	TriMeshVFN_ASP  mesh;
+	matXe /* --- */ aabb;
+};
+
+struct RayHits{
+    // A record of all ray-mesh intersections, including entries and exits
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	bool  anyHits; //- Were there any intersections recorded?
+	matXe enter; // -- Row-list of entry points
+	matXe exit; // --- Row-list of exit points
+	matXe n_Metric; // Generic entry metrics to be populated by client code (e.g. grasp pair angles)
+	matXe x_Metric; // Generic exit  metrics to be populated by client code (e.g. grasp pair angles)
+};
+
+// __ End Collision __
+
+
+
 // ___ End Classes _________________________________________________________________________________________________________________________
 
 
@@ -226,6 +249,17 @@ TriMeshVFN delaunay_from_V( const matXe& V );
 TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& original );
 
 // __ End Mesh __
+
+
+// == Collision Detection ==
+
+RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const TriMeshVFN_ASP& mesh );
+
+vec3e ray_intersect_AABB( const vec3e& origin , const vec3e& dir , const matXe& aabb );
+
+RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , const TargetVFN_ASP& target );
+
+// __ End Collision __
 
 
 // == Print Helpers ==

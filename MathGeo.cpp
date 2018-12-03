@@ -506,6 +506,196 @@ TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& origina
 // __ End Mesh __
 
 
+// == Collision Detection ==
+
+RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const TriMeshVFN_ASP& mesh ){
+	// Return all the intersection points with the mesh , and classify them as either entry or exit points
+	
+	bool SHOWDEBUG = false;
+	
+	RayHits rtnStruct;  rtnStruct.anyHits = false;
+	size_t numTris = mesh.F.rows();
+	matXe tri = matXe::Zero( 4 , 2 );
+	vec3e xBasis , yBasis , zBasis ,
+          v0 , v1 , v2 , 
+          interPnt ,
+          temp ;
+	vec2e intPnt2D ,
+          v0flt , v1flt , v2flt ;
+	
+	//  1. For each triangle
+	for( size_t f_i = 0 ; f_i < numTris ; f_i++ ){
+		// Get plane point and normal from the mesh
+		v0 = mesh.V.row( mesh.F( f_i , 0 ) );
+		zBasis = mesh.N.row( f_i );  zBasis.normalize();
+		//  2. Calc the intersection point
+		interPnt = line_intersect_plane( rayOrg , rayDir , v0 , zBasis , false ); // ray parallel to facet doesn't intersect in this context
+		//  3. If a valid intersection was returned
+		if( !is_err( interPnt ) ){
+			
+			if( SHOWDEBUG ){  cout << "Plane intersection at " << interPnt << endl;  }
+			
+			//  4. Determine if the intersection happens in front of the ray
+			if(  ( interPnt - rayOrg ).dot( rayDir ) >= 0.0  ){
+				
+				if( SHOWDEBUG ){  cout << "Intersection in FRONT of ray!" << endl;  }
+				
+				//  5. Get plane basis vectors from the triangle
+				v1 = mesh.V.row( mesh.F( f_i , 1 ) );
+				v2 = mesh.V.row( mesh.F( f_i , 2 ) );
+				xBasis = ( v1 - v0 ).normalized();
+				yBasis = zBasis.cross( xBasis ).normalized();
+				//  6. Project the point onto the plane
+				temp = point_basis_change( interPnt , v0 , xBasis , yBasis , zBasis );
+				intPnt2D << temp(0) , temp(1);
+				//  7. Project the triangle onto the plane
+				// v0 will always be at ( 0 , 0 ) , per above
+				// v1 will always be at ( ( v1 - v0 ) * x , 0 ) , per above
+				tri( 1 , 0 ) = ( v1 - v0 ).dot( xBasis );
+				// v2 will have ( x , y )
+				temp = point_basis_change( v2 , v0 , xBasis , yBasis , zBasis );
+				tri( 2 , 0 ) = temp( 0 );
+				tri( 2 , 1 ) = temp( 1 );
+				// v3 return to v0 for cycle = ( 0 , 0 ) , easy!
+			
+				if( SHOWDEBUG ){  
+					cout << "Flat Point: " << intPnt2D << endl
+						 << "Flat Tri" << endl
+						 << tri << endl;
+				}
+				
+				//  8. point in poly test , If the point is inside the triangle
+				if(  point_in_poly_w( intPnt2D , tri )  ){
+					
+					if( SHOWDEBUG ){  cout << "Point INSIDE tri!"  << endl
+										   << "Direction Dot: " << zBasis.dot( rayDir ) << endl;  }
+					if( !rtnStruct.anyHits ){  rtnStruct.anyHits = true;  }
+					//  9. Dot the ray with the tri norm, if negative
+					if( zBasis.dot( rayDir ) < 0 ){
+						// 10. else append to entrances
+						rtnStruct.enter = copy_V_plus_row( rtnStruct.enter , interPnt );
+						rtnStruct.n_Metric = copy_column_plus_dbbl( rtnStruct.n_Metric , angle_between( -rayDir , zBasis ) );
+						if( SHOWDEBUG ){  
+							cout << "n_Metric"  << endl
+								 << rtnStruct.n_Metric << endl;
+						}
+					}else{ 
+						// 11. Append to exits
+						rtnStruct.exit  = copy_V_plus_row( rtnStruct.exit  , interPnt );
+						rtnStruct.x_Metric = copy_column_plus_dbbl( rtnStruct.x_Metric , angle_between(  rayDir , zBasis ) );
+						if( SHOWDEBUG ){  
+							cout << "x_Metric"  << endl
+								 << rtnStruct.x_Metric << endl;
+						}
+					}
+				}else{ // else plane intersection outside of tri bounds, no action
+					if( SHOWDEBUG ){  cout << "Point OUTSIDE tri!"  << endl;  }
+				}
+			}else{ // else triangle is behind ray, no collision
+				if( SHOWDEBUG ){  cout << "Intersection BEHIND ray!" << endl;  }
+			}
+		} // else the ray missed the triangle plane
+		if( SHOWDEBUG ){  cout << endl;  }
+	}
+	if( SHOWDEBUG ){  cout << endl;  }
+	// 12. Return all hits
+	return rtnStruct;
+}
+
+vec3e ray_intersect_AABB( const vec3e& origin , const vec3e& dir , const matXe& aabb ){
+	/* 1. Fast Ray-Box Intersection
+	      by Andrew Woo
+	      from "Graphics Gems", Academic Press, 1990
+	      URL: https://web.archive.org/web/20090803054252/http://tog.acm.org/resources/GraphicsGems/gems/RayBox.c
+	   2. Adapted by Eric Haines
+	      URL: https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
+	   3. Adapted for C++ / Eigen by James Watson
+	      URL: https://bitbucket.org/robot-learning/asm_seq_plan_3d/src/master/src/Motion_Cost/src/MathGeo_ASP.cpp
+	*/
+	// Return the last point at which the ray intersects the AABB , otherwise return ( NaN , NaN , NaN )
+	
+	size_t NUMDIM     = 3 , 
+		   RIGHT      = 0 , 
+		   LEFT /*-*/ = 1 , 
+		   MIDDLE     = 2 , 
+		   i /* -- */ = 0 ,
+		   whichPlane = 0 ;
+	bool inside = true;
+	size_t quadrant[ NUMDIM ];
+	double maxT[NUMDIM];
+	double candidatePlane[NUMDIM];
+	
+	vec3e minB = aabb.row(0);
+	vec3e maxB = aabb.row(1);
+	
+	vec3e coord;
+
+	/* Find candidate planes; this loop can be avoided if rays cast all from the eye ( assume perpsective view ) */
+	for( i = 0 ; i < NUMDIM ; i++ ){
+		if( origin(i) < minB(i) ){
+			quadrant[i] = LEFT;
+			candidatePlane[i] = minB(i);
+			inside = false;
+		}else if( origin(i) > maxB(i) ){
+			quadrant[i] = RIGHT;
+			candidatePlane[i] = maxB(i);
+			inside = false;
+		}else{
+			quadrant[i] = MIDDLE;
+		}
+	}
+
+	/* Ray origin inside bounding box */
+	if( inside ){
+		//~ coord = origin;
+		//~ return (TRUE);
+		return origin;
+	}
+
+	/* Calculate T distances to candidate planes */
+	for( i = 0 ; i < NUMDIM ; i++ ){
+		if( quadrant[i] != MIDDLE && dir[i] != 0.0 ) 
+			maxT[i] = ( candidatePlane[i] - origin(i) ) / dir(i);
+		else
+			maxT[i] = -1.0;
+	}
+
+	/* Get largest of the maxT's for final choice of intersection */
+	whichPlane = 0;
+	for( i = 1 ; i < NUMDIM ; i++ ){
+		if( maxT[ whichPlane ] < maxT[i] ){  whichPlane = i;  }
+	}
+
+	/* Check final candidate actually inside box */
+	if( maxT[ whichPlane ] < 0.0){  return err_vec3();  }
+	
+	for( i = 0 ; i < NUMDIM ; i++ ){
+		if( whichPlane != i ){
+			coord(i) = origin(i) + maxT[ whichPlane ] * dir(i);
+			if(  ( coord(i) < minB(i) )  ||  ( coord(i) > maxB(i) )  ){  return err_vec3();  }
+		} else {
+			coord(i) = candidatePlane[i];
+		}
+	}
+	return coord;				/* ray hits box */
+} 
+
+RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , const TargetVFN_ASP& target ){
+	// Fast collision recording between ray and mesh-target
+	// NOTE: This function assumes that 'target' AABB and mesh concur and are up to date
+	RayHits rtnStruct;  rtnStruct.anyHits = false;
+	
+	// 1. If there is a collision with the bounding box, then we may proceed with the more costly computation of mesh collisions
+	if(  !is_err(  ray_intersect_AABB( rayOrg , rayDir , target.aabb )  )  ){
+		rtnStruct = ray_intersect_VFN( rayOrg , rayDir , target.mesh );
+	}
+	
+	return rtnStruct;
+}
+
+// __ End Collision __
+
+
 // == Print Helpers ==
 
 std::ostream& operator<<( std::ostream& os , const vec3e& vec ){ 

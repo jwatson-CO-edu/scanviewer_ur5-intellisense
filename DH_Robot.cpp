@@ -293,6 +293,8 @@ RobotLink::RobotLink( float pTheta , const vec3e& pOrigin ,
             << " , alpha axis = " << nextRotnAxis << endl;
 }
 
+RobotLink::~RobotLink(){  clearif( distalLinks );  }
+
 void RobotLink::add_distal( RobotLink* link ){  distalLinks.push_back( link );  }
 
 uint RobotLink::get_num_distal(){
@@ -427,6 +429,16 @@ UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 		cout << "Link 6 has " << Link6->get_num_distal() 
 			 << " distal links. Has draw function?: " << yesno( Link6->has_draw_func() ) << endl;
 	}
+}
+
+UR5_OGL::~UR5_OGL(){
+    // Delete all links
+    delif( Link1 );
+    delif( Link2 );
+    delif( Link3 );
+    delif( Link4 );
+    delif( Link5 );
+    delif( Link6 );
 }
 
 // ~ Rendering ~

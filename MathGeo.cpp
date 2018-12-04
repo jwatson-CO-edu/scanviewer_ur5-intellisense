@@ -95,6 +95,18 @@ TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original ){
 	return rtnStruct;
 }
 
+TriMeshVFN  copy_trimesh( const TriMeshVFN& original ){
+	TriMeshVFN rtnStruct;
+	rtnStruct.V      = original.V; // ---- N x 3 matrix in which each row is a unique point in the mesh
+	rtnStruct.F      = original.F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
+	rtnStruct.N      = original.N; // ---- List of normal vectors corresponding to F
+	rtnStruct.UV     = original.UV; // --- N x 2 matrix in which each row is the R2 <u,v> tuple assocated with same row 'V' R3 vertex
+	rtnStruct.center = original.center; // Center of the mesh, used for some expansion operations
+	rtnStruct.axis   = original.axis; // - Main axis, used for some expansion operations
+	rtnStruct.type   = original.type;
+	return rtnStruct;
+}
+
 // __ End TriMeshVFN __
 
 // ___ End Classes _________________________________________________________________________________________________________________________
@@ -187,6 +199,16 @@ vec2e sample_from_box( const matXe& box ){
 	vec2e crnr1 = box.row(0);
 	vec2e crnr2 = box.row(1);
 	return rand_corners( crnr1 , crnr2 );
+}
+
+typeF d_point_to_segment_2D( const vec2e& point , const Segment2D& segment ){
+    // Return the shortest (perpendicular) distance between 'point' and a line 'segment' 
+    // URL: http://mathworld.wolfram.com/Point-LineDistance2-Dimensional.html
+    vec2e segPt1 = segment.pnt1; 
+    vec2e segPt2 = segment.pnt2;
+    return abs( ( segPt2(0) - segPt1(0) ) * ( segPt1(1) - point(1)  ) - 
+                ( segPt1(0) - point(0)  ) * ( segPt2(1) - segPt1(1) ) ) / 
+                  sqrt( pow( segPt2(0) - segPt1(0) , 2 ) + pow( segPt2(1) - segPt1(1) , 2 ) );
 }
 
 // __ End 2D __
@@ -321,27 +343,21 @@ bool check_bases_orthonormal( const vec3e& xBasis , const vec3e& yBasis , const 
     return XYperp && YZperp && ZXperp && XYrght && YZrght && ZXrght && Xnorml && Ynorml && Znorml;
 }
 
-vec3e YPR_from_rotn_matx( const matXe& R ){
-	// Get { roll , pitch , yaw } from the rotation matrix
-	// URL: http://planning.cs.uiuc.edu/node103.html
-	/* yaw:   */ typeF alpha = atan2(  R(1,0) , R(0,0) );
-	/* pitch: */ typeF beta  = atan2( -R(2,0) , sqrt( pow( R(2,1) , 2 ) + pow( R(2,2) , 2 ) ) );
-	/* roll:  */ typeF gamma = atan2(  R(2,1) , R(2,2) );
-	return vec3e{ alpha , beta , gamma };
-}
-
-matXe rotn_matx_from_basis_vectors( const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
-	// Populate a rotation matrix from the basis vectors
-	matXe rtnMatx = matXe::Zero( 3 , 3 );
-	rtnMatx << xBasis(0) , yBasis(0) , zBasis(0) , 
-			   xBasis(1) , yBasis(1) , zBasis(1) , 
-			   xBasis(2) , yBasis(2) , zBasis(2) ;
-	return rtnMatx;
-}
-
-vec3e YPR_from_basis_vecs( const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
-	// Get { roll , pitch , yaw } from the basis vectors
-	return YPR_from_rotn_matx( rotn_matx_from_basis_vectors( xBasis , yBasis , zBasis ) );
+IndexTypeFResult closest_point_to_sq( matXe points , vec3e queryPnt ){
+	// Return the index of the point that is the closest squared distance to 'queryPnt', as well as the squared distance , linear search
+	vec3e compare = points.row(0);
+	double dist  = 0.0;
+	IndexTypeFResult rtnStruct{ 0 , ( compare - queryPnt ).squaredNorm() };
+	size_t len   = points.rows();
+	for( size_t i = 1 ; i < len ; i++ ){
+		compare = points.row(i);
+		dist = ( compare - queryPnt ).squaredNorm();
+		if( dist < rtnStruct.measure ){
+			rtnStruct.index = i;
+			rtnStruct.measure = dist;
+		}
+	}
+	return rtnStruct;
 }
 
 // __ End 3D __
@@ -508,7 +524,113 @@ TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& origina
 
 // == Collision Detection ==
 
-RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const TriMeshVFN_ASP& mesh ){
+typeF winding_num( vec2e& point , matXe& polygon ){
+    // Find the winding number of a point with respect to a polygon , works for both CW and CCWpoints
+    //  This algorithm is translation invariant, and can handle convex, nonconvex, and polygons with crossing sides.
+	//  This works by shifting the point to the origin (preserving the relative position of the polygon points), and 
+    // tracking how many times the positive x-axis is crossed
+    
+    /* NOTE: Function assumes that the points of 'polygon' are ordered. Algorithm does not work if they are not 
+	   NOTE: This algorithm does NOT handle the case when the point lies ON a polygon side. For this problem it is assumed that
+		     there are enough trial points to ignore this case */
+    
+    double w   = 0; 
+	int    len = polygon.rows();
+	matXe transformedPoly = matXe::Zero( len , 2 );
+	vec2e polyPnt;
+	vec2e ofstPnt;
+    
+    //~ for vertex in polygon: # Shift the point to the origin, preserving its relative position to polygon points
+    for( int i = 0 ; i < len ; i++ ){ 
+        //~ v_i.append( np.subtract( vertex , point ) )
+        polyPnt = polygon.row( i );
+        ofstPnt = polyPnt - point;
+        transformedPoly.row( i ) = ofstPnt;
+	}
+	
+	double x_i = 0.0;  double x_i1 = 0.0;
+	double y_i = 0.0;  double y_i1 = 0.0;
+	
+    //~ for i in range(len(v_i)): # for each of the transformed polygon points, consider segment v_i[i]-->v_i[i+1]
+    for( int i = 0 ; i < len ; i++ ){ 
+    
+		x_i  = transformedPoly( indexw( len , i   ) , 0 );
+		x_i1 = transformedPoly( indexw( len , i+1 ) , 0 );
+		y_i  = transformedPoly( indexw( len , i   ) , 1 );  
+		y_i1 = transformedPoly( indexw( len , i+1 ) , 1 );  
+        
+        // NOTE: This function ALWAYS excludes colinear points, whether this bit is set or not
+        if( eq( 0.0 , 
+				d_point_to_segment_2D( vec2e{ 0 , 0 } , 
+									   Segment2D{ vec2e{ x_i  , y_i  } , 
+												  vec2e{ x_i1 , y_i1 } } ) ) ){
+            return 0.0;
+		}
+		
+		double r = 0.0;
+		
+        if( y_i * y_i1 < 0 ){ // if the segment crosses the x-axis
+            r = x_i + ( y_i * ( x_i1 - x_i ) ) / ( y_i - y_i1 ); // location of x-axis crossing
+            if( r > 0 ){ // positive x-crossing
+                if( y_i < 0 ){
+                    w += 1; // CCW encirclement
+                } else {
+                    w -= 1; //  CW encirclement
+				}
+			}
+        // If one of the polygon points lies on the x-axis, we must look at the segments before and after to determine encirclement
+        } else if( eq( y_i , 0 ) && ( x_i > 0 ) ){ // on the positive x-axis, leaving possible crossing
+            if( y_i1 > 0 ){
+                w += 0.5; // possible CCW encirclement or switchback from a failed CW crossing
+            } else {
+                w -= 0.5; // possible CW encirclement or switchback from a failed CCW crossing
+			}
+        } else if( ( eq( y_i1 , 0.0 ) ) && ( x_i1 > 0.0 ) ){ // on the positive x-axis, approaching possible crossing
+            if( y_i < 0 ){
+                w += 0.5; // possible CCW encirclement pending
+            } else {
+                w -= 0.5; // possible  CW encirclement pending
+			}
+		}
+	}
+    return w;
+}
+
+//~ def point_in_poly_w( point , polygon ): 
+bool point_in_poly_w( vec2e& point , matXe& polygon , bool makeCycle ){
+    // Return True if the 'polygon' contains the 'point', otherwise return False, based on the winding number
+    if( makeCycle ){
+		vec2e firstPoint = polygon.row(0);
+		matXe comparePoly = copy_V_plus_row( polygon , firstPoint );
+		return !eq( winding_num( point , comparePoly ) , 0.0 ); // The winding number gives the number of times a polygon encircles a point 
+	}else{
+		return !eq( winding_num( point , polygon ) , 0.0 ); // The winding number gives the number of times a polygon encircles a point 
+	}
+}
+
+vec3e line_intersect_plane( vec3e rayOrg , vec3e rayDir , 
+							vec3e planePnt , vec3e planeNrm ,
+							bool pntParallel ){
+	// URL , Intersection point between line and plane: https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
+	// NOTE: Line is defined by a ray lying on line, though this function will return an intersection point on either side of the ray origin
+	//       whichever side it occurs
+	double d = 0.0;
+	// If the ray direction and plane normal are perpendicular, then the ray is parallel to the plane
+	if(  eq( rayDir.dot( planeNrm ) , 0.0 )  ){
+		// if the line segment between the plane point and the ray origin has no component in the plane normal direction, plane contains ray
+		if(  eq( ( planePnt - rayOrg ).dot( planeNrm ) , 0.0 )  ){  
+			if( pntParallel ){  return rayOrg;  } // If ray origin as an appropriate stand-in for the intersection of coplanar line
+			else{  return err_vec3();  } // else return no-intersection
+		} // Return ray origin for sake of convenience
+		else{  return err_vec3();  } // else the ray is apart from and parallel to the plane, no intersection to ret
+	}else{ // else the ray and plane intersect at exactly one point
+		// 1. Calculate the distance along the ray that the intersection occurs
+		d = ( ( planePnt - rayOrg ).dot( planeNrm ) ) / ( rayDir.dot( planeNrm ) );
+		return rayOrg + rayDir * d;
+	}
+}
+
+RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const TriMeshVFN& mesh ){
 	// Return all the intersection points with the mesh , and classify them as either entry or exit points
 	
 	bool SHOWDEBUG = false;
@@ -574,7 +696,7 @@ RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const Tri
 					if( zBasis.dot( rayDir ) < 0 ){
 						// 10. else append to entrances
 						rtnStruct.enter = copy_V_plus_row( rtnStruct.enter , interPnt );
-						rtnStruct.n_Metric = copy_column_plus_dbbl( rtnStruct.n_Metric , angle_between( -rayDir , zBasis ) );
+						rtnStruct.n_Metric = copy_column_plus_numF( rtnStruct.n_Metric , angle_between( -rayDir , zBasis ) );
 						if( SHOWDEBUG ){  
 							cout << "n_Metric"  << endl
 								 << rtnStruct.n_Metric << endl;
@@ -582,7 +704,7 @@ RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const Tri
 					}else{ 
 						// 11. Append to exits
 						rtnStruct.exit  = copy_V_plus_row( rtnStruct.exit  , interPnt );
-						rtnStruct.x_Metric = copy_column_plus_dbbl( rtnStruct.x_Metric , angle_between(  rayDir , zBasis ) );
+						rtnStruct.x_Metric = copy_column_plus_numF( rtnStruct.x_Metric , angle_between(  rayDir , zBasis ) );
 						if( SHOWDEBUG ){  
 							cout << "x_Metric"  << endl
 								 << rtnStruct.x_Metric << endl;
@@ -680,7 +802,21 @@ vec3e ray_intersect_AABB( const vec3e& origin , const vec3e& dir , const matXe& 
 	return coord;				/* ray hits box */
 } 
 
-RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , const TargetVFN_ASP& target ){
+TargetVFN target_mesh_from_trimesh( const TriMeshVFN& original ){
+    TargetVFN rtnStruct;
+    rtnStruct.mesh = copy_trimesh( original );
+	rtnStruct.aabb = AABB( original );
+    return rtnStruct;
+}
+
+TargetVFN* heap_target_from_trimesh( const TriMeshVFN& original ){
+    return new TargetVFN{
+        copy_trimesh( original ) , 
+        AABB( original )
+    };
+}
+
+RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , const TargetVFN& target ){
 	// Fast collision recording between ray and mesh-target
 	// NOTE: This function assumes that 'target' AABB and mesh concur and are up to date
 	RayHits rtnStruct;  rtnStruct.anyHits = false;
@@ -691,6 +827,22 @@ RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , con
 	}
 	
 	return rtnStruct;
+}
+
+IndexTypeFResult closest_index_in_hits_to( const RayHits& hits , const vec3e& point ){
+	// Find the closest entry or exit to the given point
+    // NOTE: This function does not assume that entries and exits are balanced
+
+	size_t rtnDex = 0 , 
+           numEntr , numExit;
+
+    assign_num_entries_exits( hits , numEntr , numExit );
+    
+    IndexTypeFResult closestEntr = closest_point_to_sq( hits.enter , point );
+    IndexTypeFResult closestExit = closest_point_to_sq( hits.exit  , point );
+    
+    // FIXME : START HERE
+
 }
 
 // __ End Collision __
@@ -731,6 +883,9 @@ vec3e str_to_vec3( string delimitedTriple , char delimiter ){
 
 
 // == Struct Helpers ==
+
+// Test if the error vector was returned
+bool is_err( const vec3e& query ){  return isnan( query(0) ) || isnan( query(1) ) || isnan( query(2) );  }
 
 matXe copy_V_plus_row( const matXe& pMatx , const vec3e& nuVec ){ 
 	// Extend vertices list by 1 R3 vector
@@ -787,6 +942,65 @@ matXi copy_F_plus_row( const matXi& pMatx , const vec3i& nuVec ){
 		rtnMatx.block( 0 , 0 , pRows , 3 ) = pMatx;
 		rtnMatx.row( pRows ) = nuVec;
 	}
+	return rtnMatx;
+}
+
+matXe copy_column_plus_numF( const matXe& columnMatx , typeF nuNum ){ 
+	// Extend column by 1 number , return copy
+	matXe rtnMatx;
+	size_t pRows = columnMatx.rows();
+	if( pRows < 1 ){
+		rtnMatx = matXe::Zero(1,1);
+		rtnMatx.row(0) << nuNum;
+	}else{
+		rtnMatx = matXe::Zero( pRows+1 , 1 );
+		rtnMatx.block( 0 , 0 , pRows , 1 ) = columnMatx;
+		rtnMatx.row( pRows ) << nuNum;
+	}
+	return rtnMatx;
+}
+
+RayHits& operator+=( RayHits& opLeft , const RayHits& opRght ){
+    // Combine hits in a sensible way
+    opLeft.anyHits  = opLeft.anyHits || opRght.anyHits;
+    opLeft.enter    = vstack( opLeft.enter , opRght.enter );
+    opLeft.exit     = vstack( opLeft.exit , opRght.exit );
+    opLeft.n_Metric = vstack( opLeft.n_Metric , opRght.n_Metric ); // WHAT TO DO IF BOTH OPERANDS ARE EMPTY?
+    opLeft.x_Metric = vstack( opLeft.x_Metric , opRght.x_Metric );
+    opLeft.n_Index  = vec_join( opLeft.n_Index , opRght.n_Index );
+    opLeft.x_Index  = vec_join( opLeft.x_Index , opRght.x_Index );
+    return opLeft;
+}
+
+void assign_num_entries_exits( const RayHits& hits , size_t& numEntr , size_t& numExit ){
+    // Assign the number of entries and exits recorded in 'hits' to 'numEntr' and 'numExit', respectively
+    numEntr = hits.enter.rows();
+    numExit = hits.exit.rows();
+}
+
+matXe vstack( const matXe& A , const matXe& B ){
+	// URL , Stack two matrices vertically: https://stackoverflow.com/a/21496281
+	// NOTE: This function assumes that 'A' and 'B' have the same number of columns
+	size_t Alen = A.rows() ,
+		   Blen = B.rows() ;
+	if( Alen < 1 ){  return B;  } // If either matrix is empty , return the other
+	if( Blen < 1 ){  return A;  }
+	matXe rtnMatx( Alen + Blen , A.cols() );
+	rtnMatx << A , 
+			   B ;
+	return rtnMatx;
+}
+
+matXi vstack( const matXi& A , const matXi& B ){
+	// URL , Stack two matrices vertically: https://stackoverflow.com/a/21496281
+	// NOTE: This function assumes that 'A' and 'B' have the same number of columns
+	size_t Alen = A.rows() ,
+		   Blen = B.rows() ;
+	if( Alen < 1 ){  return B;  } // If either matrix is empty , return the other
+	if( Blen < 1 ){  return A;  }
+	matXi rtnMatx( Alen + Blen , A.cols() );
+	rtnMatx << A , 
+			   B ;
 	return rtnMatx;
 }
 

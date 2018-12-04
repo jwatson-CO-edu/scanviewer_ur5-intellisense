@@ -479,6 +479,8 @@ PatchMesh::PatchMesh( string fPath , bool useTxtr ){
 	}
 }
 
+PatchMesh::~PatchMesh(){  clearif( patches );  }
+
 uint PatchMesh::load_texture( string fPath ){ 
 	uint handle;
 	//  5. Load Texture

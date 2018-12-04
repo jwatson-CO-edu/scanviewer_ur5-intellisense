@@ -50,6 +50,8 @@ public:
 			   float pD_dist , float pA_dist , const vec3e& pNextRotnAxis , float pNextRotnAngl , 
 			   void (*pDrawFunc)(const DH_Parameters& DH) );
 
+    ~RobotLink();
+
 	// ~~ Configuration ~~
 	void add_distal( RobotLink* link ); // Add a child link to this link
 	uint get_num_distal(); // Return the number of distal links attached to this link
@@ -96,6 +98,8 @@ public:
 
 	// ~ Con/Destructors ~
 	UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& params );
+    
+    ~UR5_OGL();
 
 	// ~ Rendering ~
 	void draw();

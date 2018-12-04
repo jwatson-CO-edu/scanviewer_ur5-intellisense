@@ -167,6 +167,8 @@ public:
 
     // ~ Con/Destructors ~
     PatchMesh( string fPath , bool useTxtr = false );
+
+    ~PatchMesh();
     
     uint load_texture( string fPath = "" );
     

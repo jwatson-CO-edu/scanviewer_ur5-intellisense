@@ -31,18 +31,20 @@ Template Version: 2018-07-16
 	using vec3e = Eigen::Vector3f;
 	using matXe = Eigen::MatrixXf;
 	using typeF = float;
-	#define random rand_float
-    #define nanF   nanf
-    #define eqF    eqf
+	#define random           rand_float
+    #define nanF             nanf
+    #define eqF              eqf
+    #define IndexTypeFResult IndexFloatResult
 #endif
 #ifdef MG_DUBBL
 	using vec2e = Eigen::Vector2d;
 	using vec3e = Eigen::Vector3d;
 	using matXe = Eigen::MatrixXd;
 	using typeF = double;
-	#define random rand_dbbl
-    #define nanF   nan
-    #define eqF    eq
+	#define random           rand_dbbl
+    #define nanF             nan
+    #define eqF              eq
+    #define IndexTypeFResult IndexTypeFResult
 #endif
 using vec2i = Eigen::Vector2i;
 using vec3i = Eigen::Vector3i;
@@ -56,6 +58,17 @@ const size_t CIRCLE_DIVISION     = 180; // ---- Divide each circle into 300 Segm
 const typeF  GEO_CRIT_ANG /*- */ =   0.0349; // Angle Criterion , 2deg
 
 // === Classes and Structs =================================================================================================================
+
+// == Geometric Primitives ==
+
+struct Segment2D{
+    // Represents a line segment between two endpoints
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+	vec2e pnt1; 
+	vec2e pnt2; 
+};
+
+// __ End Primitive __
 
 // == class Icosahedron_e ==
 
@@ -116,6 +129,8 @@ struct TriMeshVFN{
 
 TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original );
 
+TriMeshVFN  copy_trimesh( const TriMeshVFN& original );
+
 // __ End TriMeshVFN __
 
 // == Collision Structs ==
@@ -123,19 +138,30 @@ TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original );
 struct TargetVFN{ 
     // TriMesh and its bounding box , AABB is to make collision checking faster
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	TriMeshVFN_ASP  mesh;
-	matXe /* --- */ aabb;
+	TriMeshVFN  mesh;
+	matXe /*-*/ aabb;
 };
+
+TargetVFN  target_mesh_from_trimesh( const TriMeshVFN& original );
+TargetVFN* heap_target_from_trimesh( const TriMeshVFN& original );
 
 struct RayHits{
     // A record of all ray-mesh intersections, including entries and exits
+    // NOTE: For nonclosed meshes, there may be an uneven number of entries and exits
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	bool  anyHits; //- Were there any intersections recorded?
-	matXe enter; // -- Row-list of entry points
-	matXe exit; // --- Row-list of exit points
-	matXe n_Metric; // Generic entry metrics to be populated by client code (e.g. grasp pair angles)
-	matXe x_Metric; // Generic exit  metrics to be populated by client code (e.g. grasp pair angles)
+	bool /* --- */ anyHits = false; // Were there any intersections recorded?
+	matXe /* -- */ enter; // --------- Row-list of entry points
+	matXe /* -- */ exit; // ---------- Row-list of exit points
+	matXe /* -- */ n_Metric; // ------ Generic entry metrics to be populated by client code (e.g. grasp pair angles)
+	matXe /* -- */ x_Metric; // ------ Generic exit  metrics to be populated by client code (e.g. grasp pair angles)
+    stdvec<size_t> n_Index; // ------- Indices related to entries
+    stdvec<size_t> x_Index; // ------- Indices related to exits
 };
+
+RayHits& operator+=( RayHits& opLeft , const RayHits& opRght );
+
+// Assign the number of entries and exits recorded in 'hits' to 'numEntr' and 'numExit', respectively
+void assign_num_entries_exits( const RayHits& hits , size_t& numEntr , size_t& numExit );
 
 // __ End Collision __
 
@@ -187,7 +213,7 @@ vec2e rand_corners( const vec2e& corner1 , const vec2e& corner2 );
 
 vec2e sample_from_box( const matXe& box );
 
-std::vector<std::vector<size_t>> k_NN_2D_grid( const matXe& V );
+typeF d_point_to_segment_2D( const vec2e& point , const Segment2D& segment );
 
 // __ End 2D __
 
@@ -225,6 +251,8 @@ vec3e transform_point( const vec3e& point_A ,
 
 bool check_bases_orthonormal( const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
 
+IndexTypeFResult closest_point_to_sq( matXe points , vec3e queryPnt );
+
 // __ End 3D __
 
 
@@ -253,11 +281,19 @@ TriMeshVFN prune_big_triangles_from( typeF sizeLimit , const TriMeshVFN& origina
 
 // == Collision Detection ==
 
-RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const TriMeshVFN_ASP& mesh );
+typeF winding_num( vec2e& point , matXe& polygon ); // Return the number of times polygon winds around point
+
+bool point_in_poly_w( vec2e& point , matXe& polygon , bool makeCycle = false ); // Return true for a nonzero winding number
+
+vec3e line_intersect_plane( vec3e rayOrg , vec3e rayDir , 
+							vec3e planePnt , vec3e planeNrm ,
+							bool pntParallel = true );
+
+RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const TriMeshVFN& mesh );
 
 vec3e ray_intersect_AABB( const vec3e& origin , const vec3e& dir , const matXe& aabb );
 
-RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , const TargetVFN_ASP& target );
+RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , const TargetVFN& target );
 
 // __ End Collision __
 
@@ -280,10 +316,17 @@ vec3e str_to_vec3( string delimitedTriple , char delimiter ); // Interpret 'deli
 
 // == Struct Helpers ==
 
+bool is_err( const vec3e& query ); // Test if the error vector was returned
+
 matXe copy_V_plus_row( const matXe& pMatx , const vec3e& nuVec ); // Append 3D typeF vector to matrix
 matXe copy_V_plus_row( const matXe& pMatx , const vec2e& nuVec ); // Append 2D typeF vector to matrix
 
 matXi copy_F_plus_row( const matXi& pMatx , const vec3i& nuVec ); // Append 3D integer vector to matrix
+
+matXe copy_column_plus_numF( const matXe& columnMatx , typeF nuNum );
+
+matXe vstack( const matXe& A , const matXe& B ); // Stack two matrices vertically
+matXi vstack( const matXi& A , const matXi& B ); // Stack two matrices vertically
 
 // __ End Struct __
 

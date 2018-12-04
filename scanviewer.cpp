@@ -33,12 +33,15 @@
     [Y] Detect mouse click
     [Y] Construct a ray from the eye to the virtual cursor
     [ ] Mesh-collision detection
-        [ ] Store meshes in a list of pointers that can be iterated
+        [Y] Store meshes in a list of pointers that can be iterated
         [ ] Store collision meshes in a list of pointers that can be iterated
     [ ] Put a bounding box around the selected mesh
     [ ] Display mesh data
     [ ] Click on air deselects
     { } Highlight it somehow?
+[ ] Graphic improvements
+    [ ] Smooth shading for scans by averaging normals at each point
+[ ] Rename project to "final"
 
 Project Guidelines
 * How to run it
@@ -160,22 +163,39 @@ vec3e meshColor{ 153/255.0 , 51/255.0 , 255/255.0 };
 
 bool ENABLECAMTXTR = true;
 
-PatchMesh testScan1{ "robot_control/tallDino_WEST.txt" , ENABLECAMTXTR };
-vec3e meshColor1{ 153/255.0 , 51/255.0 , 255/255.0 };
+stdvec<PatchMesh*> scans; // ----- Shots with 2D, 3D, and robot pose data
+stdvec<TargetVFN*> scanTargets; // Collision targets representing each scan
+stdvec<size_t>     trgtDices; // - Indices of the scan associated with each patch
 
-PatchMesh testScan2{ "robot_control/tallDino_EAST.txt" , ENABLECAMTXTR };
-vec3e meshColor2{ 0/255.0, 153/255.0, 204/255.0 };
+stdvec<string> sourceList = {
+    "robot_control/tallDino_WEST.txt"  ,
+    "robot_control/tallDino_EAST.txt"  ,
+    "robot_control/tallDino_SOUTH.txt" , 
+    "robot_control/tallDino_NORTH.txt"
+};
 
-PatchMesh testScan3{ "robot_control/tallDino_SOUTH.txt" , ENABLECAMTXTR };
-vec3e meshColor3{ 0/255.0, 153/255.0, 51/255.0 };
+uint scanLen = sourceList.size();
 
-PatchMesh testScan4{ "robot_control/tallDino_NORTH.txt" , ENABLECAMTXTR };
-vec3e meshColor4{ 204/255.0, 0/255.0, 204/255.0 };
+// PatchMesh testScan1{ "robot_control/tallDino_WEST.txt" , ENABLECAMTXTR };
+// vec3e meshColor1{ 153/255.0 , 51/255.0 , 255/255.0 };
 
-bool SHOT1 = true  , 
-     SHOT2 = false , 
-     SHOT3 = false , 
-     SHOT4 = false ;
+// PatchMesh testScan2{ "robot_control/tallDino_EAST.txt" , ENABLECAMTXTR };
+// vec3e meshColor2{ 0/255.0, 153/255.0, 204/255.0 };
+
+// PatchMesh testScan3{ "robot_control/tallDino_SOUTH.txt" , ENABLECAMTXTR };
+// vec3e meshColor3{ 0/255.0, 153/255.0, 51/255.0 };
+
+// PatchMesh testScan4{ "robot_control/tallDino_NORTH.txt" , ENABLECAMTXTR };
+// vec3e meshColor4{ 204/255.0, 0/255.0, 204/255.0 };
+
+// bool SHOT1 = true  , 
+//      SHOT2 = false , 
+//      SHOT3 = false , 
+//      SHOT4 = false ;
+
+stdvec<bool> shotFlags = { true , false , false , false , false , false , false , false , false , false };
+
+uint MAXSHOTS = 10;
 
 // ~~ Interaction ~~
 Uint32 mouseButtonBitmask; // Mouse button state
@@ -330,10 +350,15 @@ void display( SDL_Window* window ){
     //~ draw_trimesh( pointsMesh , meshColor , shiny );
 
 	// 12. Draw scan
-	if( SHOT1 ) testScan1.draw( shiny );
-    if( SHOT2 ) testScan2.draw( shiny );
-    if( SHOT3 ) testScan3.draw( shiny );
-    if( SHOT4 ) testScan4.draw( shiny );
+    for( uint i = 0 ; i < MAXSHOTS ; i++ ){
+        if(  ( i < scans.size() )  &&  ( shotFlags[i] )  )
+            scans[i]->draw( shiny );
+    }
+
+	// if( SHOT1 ) testScan1.draw( shiny );
+    // if( SHOT2 ) testScan2.draw( shiny );
+    // if( SHOT3 ) testScan3.draw( shiny );
+    // if( SHOT4 ) testScan4.draw( shiny );
 
 	// N. Draw the robot
 	UR5.draw();
@@ -404,26 +429,26 @@ bool key( const SDL_KeyboardEvent& event ){
 
             case SDLK_1: 
             case SDLK_KP_1: 
-                SHOT1 = !SHOT1;
-                if( SHOT1 )  targetJointState = testScan1.get_joint_state();
+                shotFlags[0] = !shotFlags[0];
+                if( shotFlags[0] )  targetJointState = scans[0]->get_joint_state();
                 break;
 
             case SDLK_2: 
             case SDLK_KP_2: 
-                SHOT2 = !SHOT2;
-                if( SHOT2 )  targetJointState = testScan2.get_joint_state();
+                shotFlags[1] = !shotFlags[1];
+                if( shotFlags[1] )  targetJointState = scans[1]->get_joint_state();
                 break;
 
             case SDLK_3: 
             case SDLK_KP_3: 
-                SHOT3 = !SHOT3;
-                if( SHOT3 )  targetJointState = testScan3.get_joint_state();
+                shotFlags[2] = !shotFlags[2];
+                if( shotFlags[2] )  targetJointState = scans[2]->get_joint_state();
                 break;
 
             case SDLK_4: 
             case SDLK_KP_4: 
-                SHOT4 = !SHOT4;
-                if( SHOT4 )  targetJointState = testScan4.get_joint_state();
+                shotFlags[3] = !shotFlags[3];
+                if( shotFlags[3] )  targetJointState = scans[3]->get_joint_state();
                 break;
 
             // ~~ Program Controls ~~
@@ -555,6 +580,30 @@ void reshape( int width , int height ){
     X_xt = w2h * Y_xt;
 }
 
+IndexSearchResult scan_index_of_closest_patch_intersection_with_ray( const vec3e& rayOrg , const vec3e& rayDir ){
+    // Search each of the patches of each of the scans to see if it intersects , Return the closest to the camera
+    IndexSearchResult result = default_false_result();
+    RayHits /* --- */ intersections;
+    RayHits /* --- */ accumHits;
+    size_t numPatches = scanTargets.size() ,
+           numEntr    = 0                  ,
+           numExit    = 0                  ;
+    // For each of the patch targets, accumulate hits
+    for( size_t i = 0 ; i < numPatches ; i++ ){  
+        if( shotFlags[ trgtDices[i] ] ){
+            intersections = ray_intersect_TargetVFN( rayOrg , rayDir , *(scanTargets[i]) );
+            // numEntr = intersections.enter.rows();
+            // numExit = intersections.exit.rows();
+            assign_num_entries_exits( intersections , numEntr , numExit );
+            for( size_t j = 0 ; j < numEntr ; j++ ){  intersections.n_Index.push_back( i );  }
+            for( size_t j = 0 ; j < numExit ; j++ ){  intersections.x_Index.push_back( i );  }
+            accumHits += intersections;
+        }
+    }
+    // Get the row of the hit that is closest to the ray origin
+    // FIXME : START HERE
+}
+
 // ___ END INTERACT ________________________________________________________________________________________________________________________
 
 
@@ -570,10 +619,10 @@ double _last_time = 0.0;
 
 // == Test Vars ==
 
-const vec3e test1{    1.0f , 0.0f , 0.0f };
-const vec3e test2 = { 2.0f , 0.0f , 0.0f };
-	  vec3e test3{    3.0f , 0.0f , 0.0f };
-	  vec3e test4 = { 4.0f , 0.0f , 0.0f };
+// const vec3e test1{    1.0f , 0.0f , 0.0f };
+// const vec3e test2 = { 2.0f , 0.0f , 0.0f };
+// 	  vec3e test3{    3.0f , 0.0f , 0.0f };
+// 	  vec3e test4 = { 4.0f , 0.0f , 0.0f };
 
 // __ End Test __
 
@@ -582,11 +631,16 @@ const vec3e test2 = { 2.0f , 0.0f , 0.0f };
 int main( int argc , char* argv[] ){
 	rand_init(); // initialize random seed based on system clock
 
-	// Run tests
-	cerr << "test1: " << test1 << endl;
-	cerr << "test2: " << test2 << endl;
-	cerr << "test3: " << test3 << endl;
-	cerr << "test4: " << test4 << endl;
+	// Load Data
+    size_t len = 0;
+    for( uint i = 0 ; i < scanLen ; i++ ){  
+        scans.push_back( new PatchMesh( sourceList[i] , ENABLECAMTXTR ) );  
+        len = scans[i]->patches.size();
+        for( size_t j = 0 ; j < len ; j++ ){
+            scanTargets.push_back( heap_target_from_trimesh( *(scans[i]->patches[j]) ) );
+            trgtDices.push_back( i );
+        }    
+    }
 	
 	// 0. Start an OGL context
 	
@@ -653,21 +707,23 @@ int main( int argc , char* argv[] ){
 	// txtr5 = LoadTexBMP( "textures/mineralGreen.bmp" );
 	// txtr6 = LoadTexBMP( "textures/concrete.bmp" );
 	
-	testScan1.load_texture();
-	testScan2.load_texture();
-	testScan3.load_texture();
-	testScan4.load_texture();
+	// testScan1.load_texture();
+	// testScan2.load_texture();
+	// testScan3.load_texture();
+	// testScan4.load_texture();
+
+    for( uint i = 0 ; i < scans.size() ; i++ ){  scans[i]->load_texture();  }
 
     // ~ Read files ~
-    stdvec<string> fNames = { "tallDino_NORTH.txt" , "tallDino_SOUTH.txt" , 
-                              "tallDino_EAST.txt"  , "tallDino_WEST.txt"  };
+    // stdvec<string> fNames = { "tallDino_NORTH.txt" , "tallDino_SOUTH.txt" , 
+    //                           "tallDino_EAST.txt"  , "tallDino_WEST.txt"  };
     // uint numNames = fNames.size();
-    stdvec<string> lines;
+    // stdvec<string> lines;
     
-    testScan1.set_solid_color( meshColor1 );
-    testScan2.set_solid_color( meshColor2 );
-    testScan3.set_solid_color( meshColor3 );
-    testScan4.set_solid_color( meshColor4 );
+    // testScan1.set_solid_color( meshColor1 );
+    // testScan2.set_solid_color( meshColor2 );
+    // testScan3.set_solid_color( meshColor3 );
+    // testScan4.set_solid_color( meshColor4 );
 
 	
 	/// ===== Main SDL event loop ==========================================================================================================
@@ -781,6 +837,8 @@ int main( int argc , char* argv[] ){
 	
 	/// _____ END MAIN LOOP ________________________________________________________________________________________________________________
 	
+    // ~~ Cleanup ~~
+    clearif( scans );
 	
 	//  Return code
 	return 0;

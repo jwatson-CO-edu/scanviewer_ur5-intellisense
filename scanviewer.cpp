@@ -776,6 +776,7 @@ int main( int argc , char* argv[] ){
 
     bool /* ------ */ meshSelect = false; // Has a mesh been selected?
     size_t /* ---- */ clickDex   = 0; // --- What is the index of the selected mesh?
+    size_t /* ---- */ selShotDex = 0; // --- What is the index of the selected shot?
     FrameBases /*- */ cameraFrame; // ------ Camera reference frame
     IndexSearchResult clickRayInt; // ------ Results of search for hits
 	
@@ -831,8 +832,9 @@ int main( int argc , char* argv[] ){
                             // D. Unpack results
                             meshSelect = clickRayInt.result;
                             clickDex   = clickRayInt.index;
+                            selShotDex = trgtDices[ clickDex ];
                             // E. Handle Results
-                            cerr << "Hit?: " << yesno( meshSelect ) << " , Shot Index: " << clickDex << endl;
+                            cerr << "Hit?: " << yesno( meshSelect ) << " , Target Index: " << clickDex << " , Shot Index: " << selShotDex << endl;
 
                         case SDL_BUTTON_MIDDLE:
                         case SDL_BUTTON_RIGHT:

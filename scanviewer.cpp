@@ -302,7 +302,7 @@ void display( SDL_Window* window ){
 	// Calc the eye position for perspective view (Orbit [0,0,0] spherically)
 	eyeLoc = vec_sphr( camRadius , th , ps ) + lookPt;
 	// lookPt = vec3e{0,0,0};
-	lookDr = lookPt - eyeLoc;
+	lookDr = ( lookPt - eyeLoc ).normalized();
 	upVctr = ( lookDr.cross( vec3e{0,0,1}.cross( lookDr ) ) ).normalized();
 	gluLookAt( eyeLoc[0] , eyeLoc[1] , eyeLoc[2] ,  
 			   lookPt[0] , lookPt[1] , lookPt[2] ,  
@@ -601,7 +601,40 @@ IndexSearchResult scan_index_of_closest_patch_intersection_with_ray( const vec3e
         }
     }
     // Get the row of the hit that is closest to the ray origin
-    // FIXME : START HERE
+    // NOTE: Since the meshes in this 
+    IndexTypeFResult closestEntr = closest_point_to_sq( accumHits.enter , rayOrg );
+    IndexTypeFResult closestExit = closest_point_to_sq( accumHits.exit  , rayOrg );
+    if( closestEntr.result ){
+        if( closestExit.result ){
+            if( closestEntr.measure < closestExit.measure ){
+                result.result = true;
+                result.index  = accumHits.n_Index[ closestEntr.index ];
+            }else{
+                result.result = true;
+                result.index  = accumHits.x_Index[ closestExit.index ];
+            }
+        }else{
+            result.result = true;
+            result.index  = accumHits.n_Index[ closestEntr.index ];
+        }
+    }else if( closestExit.result ){
+        result.result = true;
+        result.index  = accumHits.x_Index[ closestExit.index ];
+    }else{ 
+        result.result = false;
+        result.index  = 0;
+    }
+    return result;
+}
+
+FrameBases get_current_camera_frame(){
+    // Get a right-handed coordinate system representing the camera
+    FrameBases rtnStruct;
+    rtnStruct.origin = eyeLoc;
+    rtnStruct.zBasis = lookDr;
+    rtnStruct.yBasis = upVctr;
+    rtnStruct.xBasis = rtnStruct.yBasis.cross( rtnStruct.zBasis ).normalized();
+    return rtnStruct;
 }
 
 // ___ END INTERACT ________________________________________________________________________________________________________________________
@@ -740,6 +773,11 @@ int main( int argc , char* argv[] ){
     float /* ------ */ frameSpeed;
 
 	bool QUITEARLY = false;
+
+    bool /* ------ */ meshSelect = false; // Has a mesh been selected?
+    size_t /* ---- */ clickDex   = 0; // --- What is the index of the selected mesh?
+    FrameBases /*- */ cameraFrame; // ------ Camera reference frame
+    IndexSearchResult clickRayInt; // ------ Results of search for hits
 	
 	// while the run flag is active
 	while( run ){
@@ -780,10 +818,22 @@ int main( int argc , char* argv[] ){
                         // Is 'SDL_BUTTON_LEFT' still the primary click for a left-handed mouse?
                         case SDL_BUTTON_LEFT:
                             cerr << endl << "LEFT CLICK!" << endl << endl;
+
                             // A. Constuct a ray from the eye to the viewport
                             viewXcam  = viewXfrac * X_xt; // X position of the cursor on the image plane in the camera frame
                             viewYcam  = viewYfrac * Y_xt; // Y position of the cursor on the image plane in the camera frame
                             rayDir    = vec3e( viewXcam , viewYcam , Z_xt );
+                            // B. Express the direction in the lab frame
+                            cameraFrame = get_current_camera_frame();
+                            rayDir = transform_vec( rayDir , cameraFrame.xBasis , cameraFrame.yBasis , cameraFrame.zBasis );
+                            // C. Intersect the transformed ray with all of the active meshes
+                            clickRayInt = scan_index_of_closest_patch_intersection_with_ray( cameraFrame.origin , rayDir );
+                            // D. Unpack results
+                            meshSelect = clickRayInt.result;
+                            clickDex   = clickRayInt.index;
+                            // E. Handle Results
+                            cerr << "Hit?: " << yesno( meshSelect ) << " , Shot Index: " << clickDex << endl;
+
                         case SDL_BUTTON_MIDDLE:
                         case SDL_BUTTON_RIGHT:
                         case SDL_BUTTON_X1:
@@ -812,7 +862,7 @@ int main( int argc , char* argv[] ){
 		// 3. Draw
 		display( displayWindow );
 		
-        cerr << "viewXcam: " << viewXcam << " , viewYcam: " << viewYcam << endl;
+        // cerr << "viewXcam: " << viewXcam << " , viewYcam: " << viewYcam << endl;
 
 		// 4. Calculate the next frame
 		

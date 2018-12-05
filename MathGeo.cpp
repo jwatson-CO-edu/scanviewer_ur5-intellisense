@@ -301,9 +301,16 @@ vec3e err_vec3(){  // Return a 3D vec populated with NaN
 
 vec3e basis_change( const vec3e& vec_A , 
 					const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B ){
+    // Express 'vec_A' in a frame that is contained in 'point_A''s current frame
 	vec3e rtnVec;
 	rtnVec << vec_A.dot( xBasis_B ) , vec_A.dot( yBasis_B ) , vec_A.dot( zBasis_B ) ;
 	return rtnVec;
+}
+
+vec3e transform_vec( const vec3e& vec_A , 
+                     const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis ){
+	// Express 'vec_A' in a frame that contains 'point_A's current frame
+	return ( xBasis * vec_A(0) ) + ( yBasis * vec_A(1) ) + ( zBasis * vec_A(2) );
 }
 
 vec3e point_basis_change( const vec3e& point_A  , const vec3e& origin_B , 
@@ -345,19 +352,21 @@ bool check_bases_orthonormal( const vec3e& xBasis , const vec3e& yBasis , const 
 
 IndexTypeFResult closest_point_to_sq( matXe points , vec3e queryPnt ){
 	// Return the index of the point that is the closest squared distance to 'queryPnt', as well as the squared distance , linear search
-	vec3e compare = points.row(0);
-	double dist  = 0.0;
-	IndexTypeFResult rtnStruct{ 0 , ( compare - queryPnt ).squaredNorm() };
-	size_t len   = points.rows();
-	for( size_t i = 1 ; i < len ; i++ ){
-		compare = points.row(i);
-		dist = ( compare - queryPnt ).squaredNorm();
-		if( dist < rtnStruct.measure ){
-			rtnStruct.index = i;
-			rtnStruct.measure = dist;
-		}
-	}
-	return rtnStruct;
+    if( points.rows() > 0 ){
+        vec3e compare = points.row(0);
+        double dist  = 0.0;
+        IndexTypeFResult rtnStruct{ 0 , ( compare - queryPnt ).squaredNorm() , true };
+        size_t len   = points.rows();
+        for( size_t i = 1 ; i < len ; i++ ){
+            compare = points.row(i);
+            dist = ( compare - queryPnt ).squaredNorm();
+            if( dist < rtnStruct.measure ){
+                rtnStruct.index = i;
+                rtnStruct.measure = dist;
+            }
+        }
+        return rtnStruct;
+    }else{  return IndexTypeFResult{ 0 , nanF("") , false };  }
 }
 
 // __ End 3D __
@@ -827,22 +836,6 @@ RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , con
 	}
 	
 	return rtnStruct;
-}
-
-IndexTypeFResult closest_index_in_hits_to( const RayHits& hits , const vec3e& point ){
-	// Find the closest entry or exit to the given point
-    // NOTE: This function does not assume that entries and exits are balanced
-
-	size_t rtnDex = 0 , 
-           numEntr , numExit;
-
-    assign_num_entries_exits( hits , numEntr , numExit );
-    
-    IndexTypeFResult closestEntr = closest_point_to_sq( hits.enter , point );
-    IndexTypeFResult closestExit = closest_point_to_sq( hits.exit  , point );
-    
-    // FIXME : START HERE
-
 }
 
 // __ End Collision __

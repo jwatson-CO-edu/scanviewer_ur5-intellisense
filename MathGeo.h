@@ -70,6 +70,20 @@ struct Segment2D{
 
 // __ End Primitive __
 
+
+// == Geometric Objects ==
+
+struct FrameBases{
+    // Represents a frame of reference
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    vec3e origin;
+    vec3e xBasis;
+    vec3e yBasis;
+    vec3e zBasis;
+};
+
+// __ End Objects __
+
 // == class Icosahedron_e ==
 
 // Geometry based on Paul Bourke's excellent article:
@@ -239,18 +253,27 @@ matXe verts3d_proj_to_plane_2D( matXe V ,
 
 vec3e err_vec3(); // Return a 3D vec populated with NaN
 
+// Express 'vec_A' in a (child) frame that is contained in 'point_A''s current frame
 vec3e basis_change( const vec3e& vec_A , 
 					const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B );
 
+// Express 'vec_A' in a (parent) frame that contains 'point_A's current frame
+vec3e transform_vec( const vec3e& vec_A , 
+                     const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
+
+// Express 'point_A' in a (child) frame that is contained in 'point_A''s current frame
 vec3e point_basis_change( const vec3e& point_A  , const vec3e& origin_B , 
 						  const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B );
 
+// Express 'point_A' in a (parent) frame that contains 'point_A's current frame
 vec3e transform_point( const vec3e& point_A , 
                        const vec3e& origin , 
                        const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
 
+// Return true if { 'xBasis' , 'yBasis' , 'zBasis' } form an orthonormal basis
 bool check_bases_orthonormal( const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
 
+// Return the index of the point that is the closest squared distance to 'queryPnt', as well as the squared distance , linear search
 IndexTypeFResult closest_point_to_sq( matXe points , vec3e queryPnt );
 
 // __ End 3D __

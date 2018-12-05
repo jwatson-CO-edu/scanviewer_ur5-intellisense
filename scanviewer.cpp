@@ -94,6 +94,9 @@ Parametric Curves
 // ~~ Assignment ~~
 string HWname = "HW7";
 
+// ~~ Application ~~
+bool run = true;
+
 // ~~ View ~~
 float dim /* --- */ =  2.0; // Scale Dimension
 // ~ Screen ~
@@ -419,7 +422,9 @@ bool key( const SDL_KeyboardEvent& event ){
         // 2. Repond to the event
         switch( event.keysym.sym ){
             case SDLK_ESCAPE: // Esc: Exit the program
-                exit( 0 );
+                // exit( 0 ); // NOPE. Have to clean up first!
+                run = false;
+                break;
             case SDLK_0: // 0 : Set view angles to 0
             case SDLK_KP_0: // 0 : Set view angles to 0
                 th = DFLT_THETA;
@@ -763,7 +768,6 @@ int main( int argc , char* argv[] ){
 	
 	ErrCheck( "init" );
 	
-	bool  run = true;
 	float t0  = 0.0f;
 	float dt = 1.0f / 60.0f;
 	float _time_elapsed = dt; // This is fixed time for state updates
@@ -811,7 +815,7 @@ int main( int argc , char* argv[] ){
 					run = 0;
 					break;
 				case SDL_KEYDOWN:
-					run = key( event.key );
+					key( event.key );
 					t0 = t + 0.5; // Wait 1/2 s before repeating
 					break;
                 case SDL_MOUSEBUTTONDOWN:
@@ -847,7 +851,7 @@ int main( int argc , char* argv[] ){
 			
 			//  Repeat key every 50 ms
 			if( t - t0 > 0.05 ){
-				run = key( event.key );
+				key( event.key );
 				t0  = t;
 			}
 		}
@@ -890,8 +894,12 @@ int main( int argc , char* argv[] ){
 	/// _____ END MAIN LOOP ________________________________________________________________________________________________________________
 	
     // ~~ Cleanup ~~
+    cerr << "About to clean scans ..." << endl;
     clearif( scans );
-	
+    cerr << "About to clean targets ..." << endl;
+    clearif( scanTargets );
+	cerr << "EXIT!" << endl;
+
 	//  Return code
 	return 0;
 }

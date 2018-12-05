@@ -478,6 +478,10 @@ TriMeshVFN delaunay_from_V( const matXe& V ){
     rtnStruct.N = N_from_VF( rtnStruct.V , rtnStruct.F );
     // for( int i = 0 ; i < ntri ; i++ ){  rtnStruct.N.row(i) = -rtnStruct.N.row(i);  }
 
+    // 7. Cleanup
+    delete[] p;
+    delete[] v;
+
     // N. Return
     return rtnStruct;
 }

@@ -293,7 +293,11 @@ RobotLink::RobotLink( float pTheta , const vec3e& pOrigin ,
             << " , alpha axis = " << nextRotnAxis << endl;
 }
 
-RobotLink::~RobotLink(){  clearif( distalLinks );  }
+RobotLink::~RobotLink(){  
+    // clearif( distalLinks );  // UR5_OGL deletes these! , 'clearif' doesn't work here because 'distalLinks' still holds addresses, 
+    //                             though the data at some of those addresses is gone by the time that the links call their destructors
+    distalLinks.clear(); // THIS IS FINE, see '~UR5_OGL'
+}
 
 void RobotLink::add_distal( RobotLink* link ){  distalLinks.push_back( link );  }
 
@@ -433,12 +437,12 @@ UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 
 UR5_OGL::~UR5_OGL(){
     // Delete all links
-    delif( Link1 );
-    delif( Link2 );
-    delif( Link3 );
-    delif( Link4 );
-    delif( Link5 );
     delif( Link6 );
+    delif( Link5 );
+    delif( Link4 );
+    delif( Link3 );
+    delif( Link2 );
+    delif( Link1 );
 }
 
 // ~ Rendering ~

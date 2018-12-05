@@ -14,9 +14,9 @@
 	[Y] Create a UR5 class , This should emulate the the homework assignment
 	[Y] Test HW3 funtionality
 	[Y] Gut  HW6 elements
-    [Y] Find brushed textures
+    [Y] Find brushed textures - NOT USED
     [ ] FIX THE BLUE LIGHTING ISSUE , IT MAKES EVERYTHING BLUE , >>EVEN TEXT WHY<<
-[Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync
+[Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync - NOTE: Used heartbeat to time sim progress
 [Y] Display Scan Data
     [Y] Get scans working on the robot
     [Y] Determine file format
@@ -34,11 +34,10 @@
     [Y] Construct a ray from the eye to the virtual cursor
     [ ] Mesh-collision detection
         [Y] Store meshes in a list of pointers that can be iterated
-        [ ] Store collision meshes in a list of pointers that can be iterated
+        [Y] Store collision meshes in a list of pointers that can be iterated
     [ ] Put a bounding box around the selected mesh
-    [ ] Display mesh data
-    [ ] Click on air deselects
-    { } Highlight it somehow?
+    [ ] Display mesh data { Num. Vertices , Num. Tris , BBox Volume }
+    [Y] Click on air deselects
 [ ] Graphic improvements
     [ ] Smooth shading for scans by averaging normals at each point
 [ ] Rename project to "final"

@@ -169,6 +169,9 @@ stdvec<PatchMesh*> scans; // ----- Shots with 2D, 3D, and robot pose data
 stdvec<TargetVFN*> scanTargets; // Collision targets representing each scan
 stdvec<size_t>     trgtDices; // - Indices of the scan associated with each patch
 
+matXe scanBbox;
+matXe trgtBbox;
+
 stdvec<string> sourceList = {
     "robot_control/tallDino_WEST.txt"  ,
     "robot_control/tallDino_EAST.txt"  ,
@@ -177,23 +180,6 @@ stdvec<string> sourceList = {
 };
 
 uint scanLen = sourceList.size();
-
-// PatchMesh testScan1{ "robot_control/tallDino_WEST.txt" , ENABLECAMTXTR };
-// vec3e meshColor1{ 153/255.0 , 51/255.0 , 255/255.0 };
-
-// PatchMesh testScan2{ "robot_control/tallDino_EAST.txt" , ENABLECAMTXTR };
-// vec3e meshColor2{ 0/255.0, 153/255.0, 204/255.0 };
-
-// PatchMesh testScan3{ "robot_control/tallDino_SOUTH.txt" , ENABLECAMTXTR };
-// vec3e meshColor3{ 0/255.0, 153/255.0, 51/255.0 };
-
-// PatchMesh testScan4{ "robot_control/tallDino_NORTH.txt" , ENABLECAMTXTR };
-// vec3e meshColor4{ 204/255.0, 0/255.0, 204/255.0 };
-
-// bool SHOT1 = true  , 
-//      SHOT2 = false , 
-//      SHOT3 = false , 
-//      SHOT4 = false ;
 
 stdvec<bool> shotFlags = { true , false , false , false , false , false , false , false , false , false };
 
@@ -211,6 +197,12 @@ float  viewXfrac = 0.0 , // _ [ -1 , 1 ] : right  --to-> left
        viewXcam  = 0.0 , // _ X position of the cursor on the image plane in the camera frame
        viewYcam  = 0.0 ; // _ Y position of the cursor on the image plane in the camera frame
 vec3e  rayDir; // ----------- Direction that a click is pointing from the eye
+// ~ Mesh Selection ~
+bool /* ------ */ meshSelect = false; // Has a mesh been selected?
+size_t /* ---- */ clickDex   = 0; // --- What is the index of the selected mesh?
+size_t /* ---- */ selShotDex = 0; // --- What is the index of the selected shot?
+FrameBases /*- */ cameraFrame; // ------ Camera reference frame
+IndexSearchResult clickRayInt; // ------ Results of search for hits
 
 // ___ END GLOBAL ___
 
@@ -365,12 +357,17 @@ void display( SDL_Window* window ){
 	// N. Draw the robot
 	UR5.draw();
 	
-
+    // N. Turn off lighting
 	glDisable( GL_LIGHTING );
 
 	// N. Draw the origin
 	draw_origin( 0.5 );
 
+    // N. Draw the selected bounding boxes
+    if( meshSelect ){
+        draw_aabb( scanBbox , vec3e{1,1,1}                         , 2.0 );
+        draw_aabb( trgtBbox , vec3e{0/255.0, 2040/255.0, 00/255.0} , 2.0 );
+    }
 
 	// == Status Message ==
 
@@ -656,15 +653,12 @@ double _last_time = 0.0;
 
 // == Test Vars ==
 
-// const vec3e test1{    1.0f , 0.0f , 0.0f };
-// const vec3e test2 = { 2.0f , 0.0f , 0.0f };
-// 	  vec3e test3{    3.0f , 0.0f , 0.0f };
-// 	  vec3e test4 = { 4.0f , 0.0f , 0.0f };
+
 
 // __ End Test __
 
 
-// Start up GLUT and tell it what to do
+// Start up SDL2 and tell it what to do
 int main( int argc , char* argv[] ){
 	rand_init(); // initialize random seed based on system clock
 
@@ -713,7 +707,7 @@ int main( int argc , char* argv[] ){
 	}
 	
 	//~ SDL_WM_SetCaption( "More Lighting - SDL" , "sdl20" );
-	SDL_SetWindowTitle( displayWindow , "More Lighting - SDL" );
+	SDL_SetWindowTitle( displayWindow , "Final Project, James Watson" );
 
 	//  Set screen size  &&  Init
 	SDL_GetWindowSize( displayWindow , &winW , &winH );
@@ -735,32 +729,9 @@ int main( int argc , char* argv[] ){
 	shininess =  3;
 	
 	// ~~ Init Work ~~
-	
-	// ~ Load textures ~
-	// txtr1 = LoadTexBMP( "textures/triBrownHuge.bmp" );
-	// txtr2 = LoadTexBMP( "textures/triDirtHuge.bmp" );
-	// txtr3 = LoadTexBMP( "textures/oldBoxesSml.bmp" );
-	// txtr4 = LoadTexBMP( "textures/triRando.bmp" );
-	// txtr5 = LoadTexBMP( "textures/mineralGreen.bmp" );
-	// txtr6 = LoadTexBMP( "textures/concrete.bmp" );
-	
-	// testScan1.load_texture();
-	// testScan2.load_texture();
-	// testScan3.load_texture();
-	// testScan4.load_texture();
 
+    // Load the textures onto each of the clusters associated with each shot
     for( uint i = 0 ; i < scans.size() ; i++ ){  scans[i]->load_texture();  }
-
-    // ~ Read files ~
-    // stdvec<string> fNames = { "tallDino_NORTH.txt" , "tallDino_SOUTH.txt" , 
-    //                           "tallDino_EAST.txt"  , "tallDino_WEST.txt"  };
-    // uint numNames = fNames.size();
-    // stdvec<string> lines;
-    
-    // testScan1.set_solid_color( meshColor1 );
-    // testScan2.set_solid_color( meshColor2 );
-    // testScan3.set_solid_color( meshColor3 );
-    // testScan4.set_solid_color( meshColor4 );
 
 	
 	/// ===== Main SDL event loop ==========================================================================================================
@@ -775,13 +746,9 @@ int main( int argc , char* argv[] ){
     stdvec<float>      diffQ = { 0,0,0,0,0,0 };
     float /* ------ */ frameSpeed;
 
-	bool QUITEARLY = false;
+	// bool QUITEARLY = false;
 
-    bool /* ------ */ meshSelect = false; // Has a mesh been selected?
-    size_t /* ---- */ clickDex   = 0; // --- What is the index of the selected mesh?
-    size_t /* ---- */ selShotDex = 0; // --- What is the index of the selected shot?
-    FrameBases /*- */ cameraFrame; // ------ Camera reference frame
-    IndexSearchResult clickRayInt; // ------ Results of search for hits
+    
 	
 	// while the run flag is active
 	while( run ){
@@ -836,8 +803,10 @@ int main( int argc , char* argv[] ){
                             meshSelect = clickRayInt.result;
                             clickDex   = clickRayInt.index;
                             selShotDex = trgtDices[ clickDex ];
-                            // E. Handle Results
+                            // E. Load AABB for the patch and for the shot
                             cerr << "Hit?: " << yesno( meshSelect ) << " , Target Index: " << clickDex << " , Shot Index: " << selShotDex << endl;
+                            scanBbox = scans[ selShotDex ]->aabb;
+                            trgtBbox = AABB( *scanTargets[ clickDex ] );
 
                         case SDL_BUTTON_MIDDLE:
                         case SDL_BUTTON_RIGHT:
@@ -882,12 +851,11 @@ int main( int argc , char* argv[] ){
         currQ += diffQ; // Update current angle towards desired
 		UR5.set_joint_state( currQ ); // Send angle to robot
 
+        // N-1. Error check
+		ErrCheck( "loop" ); // DEV: Will this slow the program down?
 
 		// N. Sleep for remainder
 		hb.sleep_remainder(); // Not really needed with VSYNC, but just in case
-
-		// N+1. Quit for Debug
-		if( QUITEARLY ){  break;  }
 	}
 	
 	/// _____ END MAIN LOOP ________________________________________________________________________________________________________________
@@ -897,6 +865,8 @@ int main( int argc , char* argv[] ){
     clearif( scans );
     cerr << "About to clean targets ..." << endl;
     clearif( scanTargets );
+    cerr << "About to check errors ... ";
+    cerr << ( ErrCheck( "exit" ) ? "Error(s) found!" : "OK!" ) << endl;
 	cerr << "EXIT!" << endl;
 
 	//  Return code

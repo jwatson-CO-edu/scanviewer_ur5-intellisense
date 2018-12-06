@@ -620,14 +620,40 @@ void draw_aabb( const matXe& bbox , const vec3e& color , typeF lineWidth ){
     glLineWidth( lineWidth );
     glClr3e( color );
 
-    std::vector<std::vector<size_t>> indices = enumerate_in_base( 3 , 2 );
+    // 1. Init
+    uint  numEdges     = 12;
+    matXe cuboidPoints = matXe::Zero( 8        , 3 );
+    matXi cuboidEdges  = matXi::Zero( numEdges , 2 );
+    
+    // 2. Calc points and edges
+    cuboidPoints << bbox( 0 , 0 ) , bbox( 0 , 1 ) , bbox( 0 , 2 ) , // vertex 0    3-------2      # NOTE: Z+ is UP
+                    bbox( 1 , 0 ) , bbox( 0 , 1 ) , bbox( 0 , 2 ) , // vertex 1    !\      !\     #
+                    bbox( 0 , 0 ) , bbox( 0 , 1 ) , bbox( 1 , 2 ) , // vertex 2    ! \     Z \    #
+                    bbox( 1 , 0 ) , bbox( 0 , 1 ) , bbox( 1 , 2 ) , // vertex 3    !  7=======6   #
+                    bbox( 0 , 0 ) , bbox( 1 , 1 ) , bbox( 0 , 2 ) , // vertex 4    1--|X---0  |   #
+                    bbox( 1 , 0 ) , bbox( 1 , 1 ) , bbox( 0 , 2 ) , // vertex 5     \ |     \ |   #
+                    bbox( 0 , 0 ) , bbox( 1 , 1 ) , bbox( 1 , 2 ) , // vertex 6      \|      Y|   #
+                    bbox( 1 , 0 ) , bbox( 1 , 1 ) , bbox( 1 , 2 ) ; // vertex 7       5=======4   #
+    cuboidEdges << 3 , 2 , 
+                   2 , 6 , 
+                   6 , 7 , 
+                   7 , 3 , 
+                   3 , 1 , 
+                   2 , 0 , 
+                   6 , 4 , 
+                   7 , 5 , 
+                   0 , 4 , 
+                   4 , 5 , 
+                   5 , 1 , 
+                   1 , 0 ; 
 
+    // 3. Draw all edges
+    vec3e bgn , end;
 	glBegin( GL_LINES );
-        for( size_t i = 1 ; i < indices.size() ; i++ ){
-            // Bgn
-            glVertex3d( bbox( indices[i-1][0] , 0 ) , bbox( indices[i-1][1] , 0 ) , bbox( indices[i-1][2] , 2 ) );
-            // End
-            glVertex3d( bbox( indices[i  ][0] , 0 ) , bbox( indices[i  ][1] , 0 ) , bbox( indices[i  ][2] , 2 ) ); 
+        for( uint i = 0 ; i < numEdges ; i++ ){
+            bgn = cuboidPoints.row( cuboidEdges( i , 0 ) );
+            end = cuboidPoints.row( cuboidEdges( i , 1 ) );
+            glVec3e( bgn ); /* --to-> */ glVec3e( end );
         }
 	glEnd();
 }

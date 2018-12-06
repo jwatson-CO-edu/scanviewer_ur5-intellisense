@@ -468,6 +468,16 @@ PatchMesh::PatchMesh( string fPath , bool useTxtr ){
     //  9. Read the last patch, if it exists
     if( patchLines.size() > 0 ){  process_lines();  }
 
+    // 10. Calc the AABB
+    size_t len = patches.size();
+    for( size_t i = 0 ; i < len ; i++ ){
+        if( i == 0 ){
+            aabb = AABB( patches[i]->V );
+        }else{
+            aabb = AABB_union( aabb , AABB( patches[i]->V ) );
+        }
+    }
+
     if( SHOWDEBUG ){
 		// How many patches are there?  
 		cout << "There are " << patches.size() << " patches to render" << endl;  

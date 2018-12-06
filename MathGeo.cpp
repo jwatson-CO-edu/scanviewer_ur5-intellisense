@@ -251,6 +251,15 @@ matXe AABB( const matXe& V ){
 // Return the minimum and maximum corners of an AA Bounding Box of 'mesh'
 matXe AABB( const TriMeshVFN& mesh ){  return AABB( mesh.V );  } 
 
+matXe AABB( const TargetVFN& trgt ){  return trgt.aabb;  } // NOTE: This function assumes that the AABB has already been computed
+
+matXe AABB_union( const matXe& aabb1 , const matXe& aabb2 ){
+    // Return an AABB that encompasses both AABBs
+    // NOTE: This function assumes that 'aabb1' and 'aabb2' are of the same dimensionality
+    matXe allPts = vstack( aabb1 , aabb2 );
+    return AABB( allPts );
+}
+
 matXe sample_from_AABB( size_t N , const matXe& aabb ){
 	// Return 'N' uniform, random samples from AABB
 	matXe rtnMatx = matXe::Zero( N , 3 );

@@ -242,6 +242,9 @@ vec3e vec3e_rand_corners( const vec3e& corner1 , const vec3e& corner2 );
 
 matXe AABB( const matXe& V );
 matXe AABB( const TriMeshVFN& mesh );
+matXe AABB( const TargetVFN&  trgt );
+
+matXe AABB_union( const matXe& aabb1 , const matXe& aabb2 ); // Return an AABB that encompasses both AABBs
 
 matXe sample_from_AABB( size_t N , const matXe& aabb );
 vec3e sample_from_AABB( const matXe& aabb );

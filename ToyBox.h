@@ -184,6 +184,7 @@ public:
     // ~~ Public Members ~~
     // ~ Geometry ~
     stdvec<TriMeshVFN*> patches; // Hold each processed scan segment associated with the camera shot
+    matXe /* ------- */ aabb;
     // ~ Texture ~
     bool hasTextr = false;
 

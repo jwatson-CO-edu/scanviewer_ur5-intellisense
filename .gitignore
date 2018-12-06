@@ -180,3 +180,7 @@ robot_control/pyntcloud_plot.config.json
 robot_control/pyntcloud_plot.html
 robot_control/pyntcloud_plot_assets/
 scanviewer.zip
+Presentation/PresentationNotes.log
+Presentation/texput.log
+Presentation/PresentationNotes.aux
+Presentation/PresentationNotes.synctex.gz

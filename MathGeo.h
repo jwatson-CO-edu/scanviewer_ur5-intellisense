@@ -44,7 +44,7 @@ Template Version: 2018-07-16
 	#define random           rand_dbbl
     #define nanF             nan
     #define eqF              eq
-    #define IndexTypeFResult IndexTypeFResult
+    #define IndexTypeFResult IndexDbblResult
 #endif
 using vec2i = Eigen::Vector2i;
 using vec3i = Eigen::Vector3i;
@@ -125,6 +125,7 @@ protected:
 
 // __ End Icosahedron_e __
 
+
 // == struct TriMeshVFN ==
 
 enum MESHTYPE{ GENERIC }; //- Default mesh type
@@ -146,6 +147,7 @@ TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original );
 TriMeshVFN  copy_trimesh( const TriMeshVFN& original );
 
 // __ End TriMeshVFN __
+
 
 // == Collision Structs ==
 
@@ -178,7 +180,6 @@ RayHits& operator+=( RayHits& opLeft , const RayHits& opRght );
 void assign_num_entries_exits( const RayHits& hits , size_t& numEntr , size_t& numExit );
 
 // __ End Collision __
-
 
 
 // ___ End Classes _________________________________________________________________________________________________________________________

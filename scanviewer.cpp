@@ -32,10 +32,10 @@
 [ ] Make the 3D meshes selectable
     [Y] Detect mouse click
     [Y] Construct a ray from the eye to the virtual cursor
-    [ ] Mesh-collision detection
+    [Y] Mesh-collision detection
         [Y] Store meshes in a list of pointers that can be iterated
         [Y] Store collision meshes in a list of pointers that can be iterated
-    [ ] Put a bounding box around the selected mesh
+    [Y] Put a bounding box around the selected mesh
     [ ] Display mesh data { Num. Vertices , Num. Tris , BBox Volume }
     [Y] Click on air deselects
 [ ] Graphic improvements

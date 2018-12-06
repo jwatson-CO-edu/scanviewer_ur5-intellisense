@@ -1,0 +1,90 @@
+\documentclass{hw_grad}
+
+% === RECIPES ==============================================================================================================================
+
+% ~~ FIGURE ~~
+%\begin{figure}[h]
+%	\centering
+%	\includegraphics[scale=0.45]{imaginativeAndGenerative}
+%	\caption{Relationship between Generative and Imaginative}
+%	\label{imaginativeAndGenerative}
+%\end{figure}
+
+% ~~ Answer Boxes ~~
+% Inside Eq: \boxed{}
+% Text:      \fbox{}
+% Region:    \begin{framed} ... \end{framed}
+%            - OR -
+%            \fbox{% Will complain is there is not a comment at the end of the open bracket line
+%            	...
+%			 }
+
+% ___ END RECIPES __________________________________________________________________________________________________________________________
+
+
+\title{Presentation Notes}
+\duedate{Due: 2018-12-13}
+\class{CSCI-5229: Computer Graphics, Fall 2018}
+\institute{University of Colorado Boulder}
+\author{James Watson, 105754866}
+
+\begin{document}
+	\maketitle
+	
+	\begin{enumerate}
+		\item Demo
+		\begin{enumerate}
+			\item Purpose\\
+			The purpose of this project
+			\item Features
+			\item Process
+			\begin{enumerate}
+				\item Data Reading \& Processing
+				\item Mesh Construction \& UV-Matching
+				\item Event Loop
+			\end{enumerate}
+		\end{enumerate}
+		\item Cover things that you did in your project that I did not talk about in class
+		\begin{itemize}
+			\item Processing mouse clicks in the camera frame
+		\end{itemize}
+		\item Cover "gotchas" - things that did not work initially, how you figured out the problem, and how you fix it
+		\begin{enumerate}
+			\item SDL2 function calls are all different from SDL1
+			\item There are two ways to handle keyboard input in SDL2, Keyboard State \& Event Queue
+			\begin{itemize}
+				\item Keyboard State
+				\item Event Queue
+			\end{itemize}
+			\item Difference between screen coordinates, orthogonal (flat) coordinates, and model (projection) coordinates
+		\end{enumerate}
+		\item Cover stuff related to your project that has nothing to do with Computer Graphics
+		\begin{itemize}
+			\item Delaunay Triangulation, courtesy of Paul Bourke
+			\begin{itemize}
+				\item Paul Bourke is a big name in computational geometry, and he posts a lot code online with helpful diagrams
+				\item A common method to connect a collection of points in triangular mesh
+				\item It is the dual of Voronoi Cells
+			\end{itemize}
+			\item Hierarchical Collision Detection
+			\begin{enumerate}
+				\item Intersection of AABB and ray
+				\item Triangle-wise collision detection \\
+				For each triangle
+				\begin{enumerate}
+					\item Construct a plane from triangle and its normal
+					\item Get the intersection point between the ray and the plane
+					\item Compute winding number (point-in-polygon) \\
+					This works for any closed polygon, polygon can self-cross
+					\begin{enumerate}
+						\item New 2D reference frame with the query point at $\left( 0 , 0 \right)$ 
+						\item Follow segments CW around the polygon and count $ \texttt{+} \vx $
+					\end{enumerate}
+				\end{enumerate}
+			\end{enumerate}
+		\end{itemize}
+	\end{enumerate}
+	
+	
+	
+\end{document}

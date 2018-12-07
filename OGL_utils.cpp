@@ -577,7 +577,7 @@ void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHand
           curNrm       ;
     
     // 1. Set the color
-    glPushAttrib( GL_TEXTURE_BIT );
+    // glPushAttrib( GL_TEXTURE_BIT );
     // GL_COLOR_MATERIAL | GL_CURRENT_BIT | GL_LIGHTING_BIT | 
 
     // 2. Set material props
@@ -614,7 +614,8 @@ void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHand
     }
     glEnd();
 
-    glPopAttrib();
+    glDisable( GL_TEXTURE_2D );
+    // glPopAttrib();
     
     if( SHOWDEBUG )  cerr << "Painted triangles!" << endl;
 }

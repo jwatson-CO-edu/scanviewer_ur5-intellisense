@@ -577,12 +577,13 @@ void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHand
           curNrm       ;
     
     // 1. Set the color
-    // glClr3e( color );
+    glPushAttrib( GL_TEXTURE_BIT );
+    // GL_COLOR_MATERIAL | GL_CURRENT_BIT | GL_LIGHTING_BIT | 
 
     // 2. Set material props
     glMaterialf(  GL_FRONT , GL_SHININESS , shiny      ); // Set the material shininess
 	glMaterialfv( GL_FRONT , GL_SPECULAR  , MATL_WHITE ); // Set the color of the specular reflection
-	glMaterialfv( GL_FRONT , GL_EMISSION  , MATL_BLACK );
+	//glMaterialfv( GL_FRONT , GL_EMISSION  , MATL_BLACK );
 
     // 3. Set texture
     glColor4f( 1,1,1,1 ); // Set all color channels to full
@@ -612,6 +613,8 @@ void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHand
         glVec3e( p2 );     
     }
     glEnd();
+
+    glPopAttrib();
     
     if( SHOWDEBUG )  cerr << "Painted triangles!" << endl;
 }

@@ -41,6 +41,8 @@
 [ ] Graphic improvements
     [ ] Smooth shading for scans by averaging normals at each point
 [Y] Rename project to "final"
+[ ] Reshoot with the correct TCP offsets (without force sensor)
+[ ] Shoot MORE objects
 
 Project Guidelines
 * How to run it

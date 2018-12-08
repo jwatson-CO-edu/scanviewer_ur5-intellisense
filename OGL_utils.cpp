@@ -662,6 +662,47 @@ void draw_aabb( const matXe& bbox , const vec3e& color , typeF lineWidth ){
 	glEnd();
 }
 
+void populate_smooth_N( TriMeshVFN& mesh ){ 
+    // Populate normals for the sake of smooth lighting
+    // NOTE: This function assumes that 'mesh.N' has been populated
+
+    vec3e  curNrm , curNrg , tmpNrm;
+    size_t numVerts  = mesh.V.rows() , 
+           numFacet  = mesh.F.rows() ,
+           vtxNdx    = 0             ,
+           vtxCount  = 0             ;    
+    //  0. Initialize the per-vertex structure
+    stdvec<size_t> normCount = vec_index_zeros( numVerts ); 
+    //  1. Initialize the render normals
+    mesh.N_rn = matXe::Zero( numVerts , 3 );
+    //  2. For each facet
+    for( size_t i = 0 ; i < numFacet ; i++ ){
+        //  3. Fetch the facet norm
+        curNrm = mesh.N.row(i);
+        //  4. For each vertex
+        for( size_t j = 0 ; j < 3 ; j++ ){
+            //  5. Fetch the vertex index
+            vtxNdx = mesh.F(i,j);
+            //  6. If there were no normals cached, then just cache the current normal without modification and increment the normal count
+            if( normCount[ vtxNdx ] == 0 ){  
+                mesh.N_rn.row( vtxNdx ) = curNrm;  
+                normCount[ vtxNdx ] += 1;
+            }
+            //  7. else we previously stored a normal for this vertex, so there is math to do
+            else{
+                //  8. Fetch current normal average
+                curNrg = mesh.N_rn.row( vtxNdx ); 
+                //  9. Weight the current normal average
+                tmpNrm = curNrg * ( (float) normCount[ vtxNdx ] );
+                // 10. Increment normal count
+                normCount[ vtxNdx ] += 1;
+                // 11. Calc the new vector average
+                mesh.N_rn.row( vtxNdx ) = ( ( tmpNrm + curNrm ) / ( (float) normCount[ vtxNdx ] ) ).normalized();
+            }
+        }
+    }
+}
+
 /// ##### OLD CODE ###############################################################################################################
 
 void draw_cylinder( const vec3e& origin  , typeF length , typeF radius , uint facets ,

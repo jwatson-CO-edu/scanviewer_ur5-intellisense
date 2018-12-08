@@ -155,6 +155,7 @@
 					\item Never feed the matrices after midnight
 				\end{enumerate}
 			\end{itemize}
+			\item Make absolutely sure to call {\tt glDisable( GL\_TEXTURE\_2D )} when you are done drawing with textures, otherwise the color leaks out into the entire state machine. Ew! Blue!
 		\end{enumerate}
 		
 	\end{enumerate}

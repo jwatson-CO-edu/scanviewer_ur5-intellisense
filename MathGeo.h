@@ -136,6 +136,7 @@ struct TriMeshVFN{
 	matXe    V; // ---- N x 3 matrix in which each row is a unique point in the mesh
 	matXi    F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
 	matXe    N; // ---- List of normal vectors corresponding to F
+    matXe    N_rn; // - List of normal vectors corresponding to V (for rendering purposes)
     matXe    UV; // --- N x 2 matrix in which each row is the R2 <u,v> tuple assocated with same row 'V' R3 vertex
 	vec3e    center; // Center of the mesh, used for some expansion operations
 	vec3e    axis; // - Main axis, used for some expansion operations

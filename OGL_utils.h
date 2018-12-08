@@ -110,6 +110,8 @@ void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHand
 
 void draw_aabb( const matXe& bbox , const vec3e& color , typeF lineWidth );
 
+void populate_smooth_N( TriMeshVFN& mesh ); // Populate normals for the sake of smooth lighting
+
 // ___ End Func ____________________________________________________________________________________________________________________________
 
 

@@ -9,13 +9,13 @@
 [Y] Clean program
 	[Y] Remove GLUT remnants
 	[Y] Remove Spare Parts
-[ ] Re-implement robot & Animate , Create an illuminated robot
+[Y] Re-implement robot & Animate , Create an illuminated robot
 	[Y] Correct Errors
 	[Y] Create a UR5 class , This should emulate the the homework assignment
 	[Y] Test HW3 funtionality
 	[Y] Gut  HW6 elements
     [Y] Find brushed textures - NOT USED
-    [ ] FIX THE BLUE LIGHTING ISSUE , IT MAKES EVERYTHING BLUE , >>EVEN TEXT WHY<<
+    [Y] FIX THE BLUE LIGHTING ISSUE , IT MAKES EVERYTHING BLUE - SOLVED: Forgot to 'glDisable( GL_TEXTURE_2D )'
 [Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync - NOTE: Used heartbeat to time sim progress
 [Y] Display Scan Data
     [Y] Get scans working on the robot
@@ -36,11 +36,15 @@
         [Y] Store meshes in a list of pointers that can be iterated
         [Y] Store collision meshes in a list of pointers that can be iterated
     [Y] Put a bounding box around the selected mesh
-    [ ] Display mesh data { Num. Vertices , Num. Tris , BBox Volume }
     [Y] Click on air deselects
+    [ ] Deselect if the user stops showing a selected shot
+    [ ] Display mesh data { Num. Vertices , Num. Tris , BBox Volume }
 [ ] Graphic improvements
     [ ] Smooth shading for scans by averaging normals at each point
+        [ ] Toggle smooth mesh shading to show the difference
+    [ ] Make the axes on the robot smaller, except for the last link
 [Y] Rename project to "final"
+[ ] Choose a beginning configuration that shows the goods
 [ ] Reshoot with the correct TCP offsets (without force sensor)
 [ ] Shoot MORE objects
 

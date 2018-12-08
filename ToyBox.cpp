@@ -445,11 +445,15 @@ PatchMesh::PatchMesh( string fPath , bool useTxtr ){
 
         //  C. Trash triangles that span disconnected parts of the mesh
         camPatch = prune_big_triangles_from( MESHSIZE * 1.2f , camPatch );
-        
         if( SHOWDEBUG ){  cout << "Pruned triangles!" << endl;  }
-        //  D. Store
+
+        //  D. Calc smooth normals
+        populate_smooth_N( camPatch );
+        
+        //  E. Store
         patches.push_back( copy_mesh_to_heap( camPatch ) );
         if( SHOWDEBUG ){  cout << "Stowed patch!" << endl;  }
+
     }; // ~~~~~~ NOTE: Lambda expression must end with a semicolon ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     //  5. Read the mesh points

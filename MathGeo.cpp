@@ -88,6 +88,7 @@ TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original ){
 	rtnStruct->V      = original.V; // ---- N x 3 matrix in which each row is a unique point in the mesh
 	rtnStruct->F      = original.F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
 	rtnStruct->N      = original.N; // ---- List of normal vectors corresponding to F
+    rtnStruct->N_rn   = original.N_rn; // - List of normal vectors corresponding to V (for rendering purposes)
 	rtnStruct->UV     = original.UV; // --- N x 2 matrix in which each row is the R2 <u,v> tuple assocated with same row 'V' R3 vertex
 	rtnStruct->center = original.center; // Center of the mesh, used for some expansion operations
 	rtnStruct->axis   = original.axis; // - Main axis, used for some expansion operations
@@ -100,6 +101,7 @@ TriMeshVFN  copy_trimesh( const TriMeshVFN& original ){
 	rtnStruct.V      = original.V; // ---- N x 3 matrix in which each row is a unique point in the mesh
 	rtnStruct.F      = original.F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
 	rtnStruct.N      = original.N; // ---- List of normal vectors corresponding to F
+    rtnStruct.N_rn   = original.N_rn; // - List of normal vectors corresponding to V (for rendering purposes)
 	rtnStruct.UV     = original.UV; // --- N x 2 matrix in which each row is the R2 <u,v> tuple assocated with same row 'V' R3 vertex
 	rtnStruct.center = original.center; // Center of the mesh, used for some expansion operations
 	rtnStruct.axis   = original.axis; // - Main axis, used for some expansion operations

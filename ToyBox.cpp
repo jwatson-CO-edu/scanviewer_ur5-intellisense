@@ -433,7 +433,7 @@ PatchMesh::PatchMesh( string fPath , bool useTxtr ){
         if( hasTextr ){  
             camPatch.UV = compute_UV_for_trimesh( camPatch.V , FOVHORZDEG , FOVVERTDEG );  
             if( SHOWDEBUG ){  cout << "Computed UV!" << endl
-                                    << "Num UV Coords: " << camPatch.UV.rows() << endl;  }
+                                   << "Num UV Coords: " << camPatch.UV.rows() << endl;  }
         }
 
         //  B. Transform back into lab frame

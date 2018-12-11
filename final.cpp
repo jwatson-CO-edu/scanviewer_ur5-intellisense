@@ -44,9 +44,9 @@
         [Y] Toggle smooth mesh shading to show the difference
     [Y] Make the axes on the robot smaller, except for the last link
 [Y] Rename project to "final"
-[ ] Configurations that show the goods
-    [ ] Choose a beginning config
-    [ ] Numbered configs for 
+[Y] Configurations that show the goods
+    [Y] Choose a beginning config
+    [Y] Numbered configs for parts of the presentation
 [ ] Reshoot with the correct TCP offsets (without force sensor)
 [ ] Shoot MORE objects
 
@@ -100,17 +100,19 @@ Parametric Curves
 
 struct CamPose{
     // Represents the position of the camera in spherical coordinates
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     float rad;
-    float theta;
-    float psi;
-}
+    int   theta;
+    int   psi;
+    vec3e lookAt;
+};
 
 // ___ END STRUCT ___
 
 // === GLOBALS ===
 
 // ~~ Assignment ~~
-string HWname = "HW7";
+string HWname = "final";
 
 // ~~ Application ~~
 bool run = true;
@@ -135,11 +137,25 @@ int   ps /* ---- */ = DFLT_PSI; // - Elevation of view angle
 
 vec3e eyeLoc{ 0 , 0 , 0 }; // ------ Camera location (world frame)
 
-vec3e lookPt{ 0.42 , -0.48 , -0.08 }; // ------ Focus of camera (world frame)
-// vec3e lookPt{ 0.0 , 0.0 , 0.0 }; // ------ Focus of camera (world frame)
+
+vec3e scanLocn{  0.42 , -0.48 , -0.08 }; 
+vec3e robtBase{  0.00 ,  0.00 ,  0.00 };
+vec3e midwLocn = ( scanLocn + robtBase ) / 2.0f;
+
+vec3e lookPt = scanLocn; // ------ Focus of camera (world frame)
 
 vec3e upVctr{ 0 , 0 , 0 }; // ------ Direction of "up"
 vec3e lookDr; // ------------------- Direction that the camera is looking (not always used)
+
+void assign_camera_pose( const CamPose& desPose ){
+    // Set the spherical coordinates of the camera
+    camRadius = desPose.rad;
+    th /*- */ = desPose.theta;
+    ps /*- */ = desPose.psi;
+    lookPt    = desPose.lookAt;
+}
+
+stdvec<CamPose> preparedCamAngles;
 
 // ~~ Scene ~~
 vec3e gridColor{ 165.0/255 , 189.0/255 , 226.0/255 }; // Color of the world grid lines
@@ -441,10 +457,15 @@ bool key( const SDL_KeyboardEvent& event ){
 
         // 2. Repond to the event
         switch( event.keysym.sym ){
+            
+            // ~ Exit ~
             case SDLK_ESCAPE: // Esc: Exit the program
                 // exit( 0 ); // NOPE. Have to clean up first!
                 run = false;
                 break;
+            
+            // ~ Camera Presets ~
+
             case SDLK_0: // 0 : Set view angles to 0
             case SDLK_KP_0: // 0 : Set view angles to 0
                 th = DFLT_THETA;
@@ -452,8 +473,20 @@ bool key( const SDL_KeyboardEvent& event ){
                 printf( "theta and psi reset!\n" );                
                 break;
 
-            case SDLK_1: 
+            // NOTE: The following camera presets are in presentation order
+
             case SDLK_KP_1: 
+                assign_camera_pose( preparedCamAngles[0] ); // Set the initial camera angle
+                break;
+            case SDLK_KP_2: 
+                assign_camera_pose( preparedCamAngles[1] ); // Scan inspection
+                break;
+            case SDLK_KP_3: 
+            case SDLK_KP_4: 
+            case SDLK_KP_5: 
+            case SDLK_KP_6: 
+
+            case SDLK_1: 
                 if( !SHIFTPRESS ){
                     shotFlags[0] = !shotFlags[0];
                     if( shotFlags[0] )  targetJointState = scans[0]->get_joint_state();
@@ -464,7 +497,6 @@ bool key( const SDL_KeyboardEvent& event ){
                 break;
 
             case SDLK_2: 
-            case SDLK_KP_2: 
                 if( !SHIFTPRESS ){
                     shotFlags[1] = !shotFlags[1];
                     if( shotFlags[1] )  targetJointState = scans[1]->get_joint_state();
@@ -475,7 +507,6 @@ bool key( const SDL_KeyboardEvent& event ){
                 break;
 
             case SDLK_3: 
-            case SDLK_KP_3: 
                 if( !SHIFTPRESS ){
                     shotFlags[2] = !shotFlags[2];
                     if( shotFlags[2] )  targetJointState = scans[2]->get_joint_state();
@@ -486,7 +517,6 @@ bool key( const SDL_KeyboardEvent& event ){
                 break;
 
             case SDLK_4: 
-            case SDLK_KP_4: 
                 if( !SHIFTPRESS ){
                     shotFlags[3] = !shotFlags[3];
                     if( shotFlags[3] )  targetJointState = scans[3]->get_joint_state();
@@ -497,12 +527,10 @@ bool key( const SDL_KeyboardEvent& event ){
                 break;
 
             case SDLK_5: 
-            case SDLK_KP_5: 
                 if( SHIFTPRESS ){  CURJOINT = JOINT5;  }
                 break;
 
             case SDLK_6: 
-            case SDLK_KP_6: 
                 if( SHIFTPRESS ){  CURJOINT = JOINT6;  }
                 break;
 
@@ -744,6 +772,13 @@ int main( int argc , char* argv[] ){
             trgtDices.push_back( i );
         }    
     }
+
+    // Set up camera angles for presentation
+    /* 1. Robot motion */  preparedCamAngles.push_back( CamPose{ 1.0 , -315 , 25 , midwLocn + vec3e{ 0 , 0 , 0.25 } } );
+    /* 1. Scan select  */  preparedCamAngles.push_back( CamPose{ 0.4 , -250 , 15 , scanLocn + vec3e{ 0 , 0 , 0.05 } } );
+
+
+    assign_camera_pose( preparedCamAngles[0] ); // Set the initial camera angle
 	
 	// 0. Start an OGL context
 	
@@ -778,7 +813,6 @@ int main( int argc , char* argv[] ){
         cout << "BAD SDL WINDOW!" << endl;
 	}
 	
-	//~ SDL_WM_SetCaption( "More Lighting - SDL" , "sdl20" );
 	SDL_SetWindowTitle( displayWindow , "Final Project, James Watson" );
 
 	//  Set screen size  &&  Init

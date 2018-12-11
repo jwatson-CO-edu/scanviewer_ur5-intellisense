@@ -47,6 +47,7 @@
 [Y] Configurations that show the goods
     [Y] Choose a beginning config
     [Y] Numbered configs for parts of the presentation
+[ ] Disable VSync
 [ ] Reshoot with the correct TCP offsets (without force sensor)
 [ ] Shoot MORE objects
 
@@ -181,7 +182,7 @@ float dimRad_ball     =   0.050; // Radius of the ball itself
 uint txtr1 , txtr2 , txtr3 , txtr4 , txtr5 , txtr6; // Textures
 
 stdvec<float> targetJointState = { 0 , 0 , 0 , 0 , 0 , 0 };
-float maxAngSpeed = 30.0; // [deg/s]
+float maxAngSpeed = 40.0; // [deg/s]
 
 // ~~ Control ~~
 // ~ Flags ~
@@ -799,11 +800,10 @@ int main( int argc , char* argv[] ){
 
 	displayRenderer = SDL_CreateRenderer( displayWindow , -1 , SDL_RENDERER_PRESENTVSYNC ); 
 
-	// SDL_GL_SetSwapInterval( 0 ); // Immediate updates
-	SDL_GL_SetSwapInterval( 1 ); // Updates synchronized with the vertical retrace
+	SDL_GL_SetSwapInterval( 0 ); // Immediate updates
+	// SDL_GL_SetSwapInterval( 1 ); // Updates synchronized with the vertical retrace
 
 	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE , 32 ); // minimum number of bits in the depth buffer
-
 
     SDL_GetRendererInfo( displayRenderer , &displayRendererInfo );
     /* TODO: Check that we have OpenGL */
@@ -942,14 +942,15 @@ int main( int argc , char* argv[] ){
         // cerr << "viewXcam: " << viewXcam << " , viewYcam: " << viewYcam << endl;
 
 		// 4. Calculate the next frame
-		
+		_time_elapsed = (float) hb.seconds_elapsed();
+
 		// ~ Update light ball ~
 		if( BALLMOVAUTO ){  th_ball += _time_elapsed * ballOrbitSpeed;  }
 		th_ball = fmod( th_ball , 360.0f );
 
 		// ~ Move the joints ~
         diffQ = targetJointState - currQ; // Get the difference between current and desired
-        frameSpeed = (float) hb.seconds_elapsed() * maxAngSpeed; // Calc max angle we can move this frame
+        frameSpeed = _time_elapsed * maxAngSpeed; // Calc max angle we can move this frame
         diffQ = clamp_vec( diffQ , -frameSpeed ,  frameSpeed ); // Limit difference to max angle
         currQ += diffQ; // Update current angle towards desired
 		UR5.set_joint_state( currQ ); // Send angle to robot
@@ -957,8 +958,8 @@ int main( int argc , char* argv[] ){
         // N-1. Error check
 		// ErrCheck( "loop" ); // DEV: Will this slow the program down?
 
-		// N. Sleep for remainder
-		hb.sleep_remainder(); // Not really needed with VSYNC, but just in case
+		// N. Mark time for next update interval
+        hb.mark_time();
 	}
 	
 	/// _____ END MAIN LOOP ________________________________________________________________________________________________________________

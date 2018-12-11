@@ -688,8 +688,7 @@ void populate_smooth_N( TriMeshVFN& mesh ){
     vec3e  curNrm , curNrg , tmpNrm;
     size_t numVerts  = mesh.V.rows() , 
            numFacet  = mesh.F.rows() ,
-           vtxNdx    = 0             ,
-           vtxCount  = 0             ;    
+           vtxNdx    = 0             ;    
     //  0. Initialize the per-vertex structure
     stdvec<size_t> normCount = vec_index_zeros( numVerts ); 
     //  1. Initialize the render normals

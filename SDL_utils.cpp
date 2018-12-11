@@ -16,7 +16,8 @@ Template Version: 2018-06-07
 
 SDL_Heartbeat::SDL_Heartbeat( typeF interval ){
 	// Create a heartbeat with a minimum inteval
-	interval_s = interval;
+	interval_s = (double) interval;
+    mark_time();
 }
 
 // ~ Timekeeping ~
@@ -28,13 +29,15 @@ void SDL_Heartbeat::sleep_remainder(){
 	// Sleep the remaining time to maintain the interval
 	typeF currTime = SDL_GetTicks() / 1000.0;
 	typeF deltaT = currTime - lastMark_s;
-	if( deltaT < interval_s ){  SDL_Delay( (uint) ( ( interval_s - deltaT ) * 1000.0 ) );  }
-	mark_time();
+	if( deltaT < interval_s ){  
+        SDL_Delay( (uint) ( ( interval_s - deltaT ) * 1000.0 ) );  
+    }
+    mark_time();
 }
 
 typeF SDL_Heartbeat::seconds_elapsed(){
     // Get the number of seconds elapsed from the last mark
-    return SDL_GetTicks() / 1000.0 - lastMark_s;
+    return (typeF) SDL_GetTicks() / 1000.0 - lastMark_s;
 }
 
 // __ End SDL_Heartbeat __

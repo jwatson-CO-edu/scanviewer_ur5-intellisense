@@ -61,8 +61,8 @@ public:
 
 private:
 	
-	typeF interval_s = 1.0; // Minimum time between calls
-	typeF lastMark_s = 0.0; // Last time that 'sleep_remainder' was called
+	double interval_s = 1.0; // Minimum time between calls
+	double lastMark_s = 0.0; // Last time that 'sleep_remainder' was called
 	
 };
 

@@ -6,7 +6,7 @@
 
 #~ echo ( find -type f | grep -P '\.c|\.h|\.cpp' )
 
-NAME=scanviewer
+NAME=final
 
 # Zip only matching files
 # find -type f | grep -P '\.c|\.h|\.cpp|\.txt|\.pdf|makefile' | zip $NAME.zip -@

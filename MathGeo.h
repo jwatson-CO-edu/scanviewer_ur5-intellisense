@@ -27,21 +27,21 @@ Template Version: 2018-07-16
 // ~~ Shortcuts and Aliases ~~
 // ~ Eigen ~
 #ifdef MG_FLOAT
-	using vec2e = Eigen::Vector2f;
-	using vec3e = Eigen::Vector3f;
-	using matXe = Eigen::MatrixXf;
-	using typeF = float;
-	#define random           rand_float
+    using vec2e = Eigen::Vector2f;
+    using vec3e = Eigen::Vector3f;
+    using matXe = Eigen::MatrixXf;
+    using typeF = float;
+    #define random           rand_float
     #define nanF             nanf
     #define eqF              eqf
     #define IndexTypeFResult IndexFloatResult
 #endif
 #ifdef MG_DUBBL
-	using vec2e = Eigen::Vector2d;
-	using vec3e = Eigen::Vector3d;
-	using matXe = Eigen::MatrixXd;
-	using typeF = double;
-	#define random           rand_dbbl
+    using vec2e = Eigen::Vector2d;
+    using vec3e = Eigen::Vector3d;
+    using matXe = Eigen::MatrixXd;
+    using typeF = double;
+    #define random           rand_dbbl
     #define nanF             nan
     #define eqF              eq
     #define IndexTypeFResult IndexDbblResult
@@ -63,9 +63,9 @@ const typeF  GEO_CRIT_ANG /*- */ =   0.0349; // Angle Criterion , 2deg
 
 struct Segment2D{
     // Represents a line segment between two endpoints
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	vec2e pnt1; 
-	vec2e pnt2; 
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    vec2e pnt1; 
+    vec2e pnt2; 
 };
 
 // __ End Primitive __
@@ -92,35 +92,35 @@ struct FrameBases{
 
 class Icosahedron_e{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	// ~ Constants ~
-	typeF sqrt5 = (typeF) sqrt( 5.0d ); // ----------------------------------- Square root of 5
-	typeF phi   = (typeF)( 1.0d + sqrt5 ) * 0.5d; // ------------------------- The Golden Ratio
-	typeF ratio = (typeF)sqrt( 10.0d + ( 2.0d * sqrt5 ) ) / ( 4.0d * phi ); // ratio of edge length to radius
-	
-	// ~ Variables ~
-	vec3e center;
-	typeF /* -- */ radius;
-	typeF /* -- */ a; 
-	typeF /* -- */ b; 
-	matXe V; // Points of the mesh
-	matXi F; // Facets corresponding to the points V
-	matXe N; // Mesh normals
-	
-	// ~ Constructors & Destructors ~
-	Icosahedron_e(); // ------------------------------ Default constructor
-	Icosahedron_e( typeF rad , const vec3e& cntr ); // Parameter constructor
-	~Icosahedron_e(); // ----------------------------- Destructor
-	
-	// ~ Getters ~
-	matXe& get_vertices();
-	matXi& get_facets();
-	matXe& get_normals();
-	
+    // ~ Constants ~
+    typeF sqrt5 = (typeF) sqrt( 5.0d ); // ----------------------------------- Square root of 5
+    typeF phi   = (typeF)( 1.0d + sqrt5 ) * 0.5d; // ------------------------- The Golden Ratio
+    typeF ratio = (typeF)sqrt( 10.0d + ( 2.0d * sqrt5 ) ) / ( 4.0d * phi ); // ratio of edge length to radius
+    
+    // ~ Variables ~
+    vec3e center;
+    typeF /* -- */ radius;
+    typeF /* -- */ a; 
+    typeF /* -- */ b; 
+    matXe V; // Points of the mesh
+    matXi F; // Facets corresponding to the points V
+    matXe N; // Mesh normals
+    
+    // ~ Constructors & Destructors ~
+    Icosahedron_e(); // ------------------------------ Default constructor
+    Icosahedron_e( typeF rad , const vec3e& cntr ); // Parameter constructor
+    ~Icosahedron_e(); // ----------------------------- Destructor
+    
+    // ~ Getters ~
+    matXe& get_vertices();
+    matXi& get_facets();
+    matXe& get_normals();
+    
 protected:
-	// ~ Init ~
-	void _init( typeF rad , const vec3e& cntr );
+    // ~ Init ~
+    void _init( typeF rad , const vec3e& cntr );
 };
 
 // __ End Icosahedron_e __
@@ -132,15 +132,15 @@ enum MESHTYPE{ GENERIC }; //- Default mesh type
 
 struct TriMeshVFN{
     // Trimesh with some extra structure
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	matXe    V; // ---- N x 3 matrix in which each row is a unique point in the mesh
-	matXi    F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
-	matXe    N; // ---- List of normal vectors corresponding to F
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    matXe    V; // ---- N x 3 matrix in which each row is a unique point in the mesh
+    matXi    F; // ---- M x 3 matrix in which each row is a list of indices of 'V' that comprise the facet
+    matXe    N; // ---- List of normal vectors corresponding to F
     matXe    N_rn; // - List of normal vectors corresponding to V (for rendering purposes)
     matXe    UV; // --- N x 2 matrix in which each row is the R2 <u,v> tuple assocated with same row 'V' R3 vertex
-	vec3e    center; // Center of the mesh, used for some expansion operations
-	vec3e    axis; // - Main axis, used for some expansion operations
-	MESHTYPE type = GENERIC;
+    vec3e    center; // Center of the mesh, used for some expansion operations
+    vec3e    axis; // - Main axis, used for some expansion operations
+    MESHTYPE type = GENERIC;
 };
 
 TriMeshVFN* copy_mesh_to_heap( const TriMeshVFN& original );
@@ -154,9 +154,9 @@ TriMeshVFN  copy_trimesh( const TriMeshVFN& original );
 
 struct TargetVFN{ 
     // TriMesh and its bounding box , AABB is to make collision checking faster
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	TriMeshVFN  mesh;
-	matXe /*-*/ aabb;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    TriMeshVFN  mesh;
+    matXe /*-*/ aabb;
 };
 
 TargetVFN  target_mesh_from_trimesh( const TriMeshVFN& original );
@@ -165,12 +165,12 @@ TargetVFN* heap_target_from_trimesh( const TriMeshVFN& original );
 struct RayHits{
     // A record of all ray-mesh intersections, including entries and exits
     // NOTE: For nonclosed meshes, there may be an uneven number of entries and exits
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	bool /* --- */ anyHits = false; // Were there any intersections recorded?
-	matXe /* -- */ enter; // --------- Row-list of entry points
-	matXe /* -- */ exit; // ---------- Row-list of exit points
-	matXe /* -- */ n_Metric; // ------ Generic entry metrics to be populated by client code (e.g. grasp pair angles)
-	matXe /* -- */ x_Metric; // ------ Generic exit  metrics to be populated by client code (e.g. grasp pair angles)
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    bool /* --- */ anyHits = false; // Were there any intersections recorded?
+    matXe /* -- */ enter; // --------- Row-list of entry points
+    matXe /* -- */ exit; // ---------- Row-list of exit points
+    matXe /* -- */ n_Metric; // ------ Generic entry metrics to be populated by client code (e.g. grasp pair angles)
+    matXe /* -- */ x_Metric; // ------ Generic exit  metrics to be populated by client code (e.g. grasp pair angles)
     stdvec<size_t> n_Index; // ------- Indices related to entries
     stdvec<size_t> x_Index; // ------- Indices related to exits
 };
@@ -254,13 +254,13 @@ vec3e sample_from_AABB( const matXe& aabb );
 vec3e get_any_perpendicular( const vec3e& query , typeF CRIT_ANG = GEO_CRIT_ANG );
 
 matXe verts3d_proj_to_plane_2D( matXe V , 
-								vec3e planePnt , vec3e normal , vec3e xBasis );
+                                vec3e planePnt , vec3e normal , vec3e xBasis );
 
 vec3e err_vec3(); // Return a 3D vec populated with NaN
 
 // Express 'vec_A' in a (child) frame that is contained in 'point_A''s current frame
 vec3e basis_change( const vec3e& vec_A , 
-					const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B );
+                    const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B );
 
 // Express 'vec_A' in a (parent) frame that contains 'point_A's current frame
 vec3e transform_vec( const vec3e& vec_A , 
@@ -268,7 +268,7 @@ vec3e transform_vec( const vec3e& vec_A ,
 
 // Express 'point_A' in a (child) frame that is contained in 'point_A''s current frame
 vec3e point_basis_change( const vec3e& point_A  , const vec3e& origin_B , 
-						  const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B );
+                          const vec3e& xBasis_B , const vec3e& yBasis_B , const vec3e& zBasis_B );
 
 // Express 'point_A' in a (parent) frame that contains 'point_A's current frame
 vec3e transform_point( const vec3e& point_A , 
@@ -314,8 +314,8 @@ typeF winding_num( vec2e& point , matXe& polygon ); // Return the number of time
 bool point_in_poly_w( vec2e& point , matXe& polygon , bool makeCycle = false ); // Return true for a nonzero winding number
 
 vec3e line_intersect_plane( vec3e rayOrg , vec3e rayDir , 
-							vec3e planePnt , vec3e planeNrm ,
-							bool pntParallel = true );
+                            vec3e planePnt , vec3e planeNrm ,
+                            bool pntParallel = true );
 
 RayHits ray_intersect_VFN( const vec3e& rayOrg , const vec3e& rayDir , const TriMeshVFN& mesh );
 

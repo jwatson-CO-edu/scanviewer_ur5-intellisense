@@ -7,13 +7,13 @@
 ~~ DEV PLAN ~~
 [Y] Migrate to Repo
 [Y] Clean program
-	[Y] Remove GLUT remnants
-	[Y] Remove Spare Parts
+    [Y] Remove GLUT remnants
+    [Y] Remove Spare Parts
 [Y] Re-implement robot & Animate , Create an illuminated robot
-	[Y] Correct Errors
-	[Y] Create a UR5 class , This should emulate the the homework assignment
-	[Y] Test HW3 funtionality
-	[Y] Gut  HW6 elements
+    [Y] Correct Errors
+    [Y] Create a UR5 class , This should emulate the the homework assignment
+    [Y] Test HW3 funtionality
+    [Y] Gut  HW6 elements
     [Y] Find brushed textures - NOT USED
     [Y] FIX THE BLUE LIGHTING ISSUE , IT MAKES EVERYTHING BLUE - SOLVED: Forgot to 'glDisable( GL_TEXTURE_2D )'
 [Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync - NOTE: Used heartbeat to time sim progress
@@ -77,10 +77,10 @@ Parametric Curves
 
 // ~~ System-Specific Includes ~~
 #ifdef __APPLE__ // This constant is always defined on Apple machines
-	#include <GLUT/glut.h> // GLUT is in a different place on Apple machines
+    #include <GLUT/glut.h> // GLUT is in a different place on Apple machines
 #else
-	#include <GL/glut.h>
-	#include <GL/glext.h>	
+    #include <GL/glut.h>
+    #include <GL/glext.h>	
 #endif
 
 // ~~ SDL2 ~~
@@ -325,78 +325,78 @@ void crosshairs( int mouseX , int mouseY , float hairLen ,
 }
 
 void display( SDL_Window* window ){
-	// Display the scene
-	
-	//  Clear the image
-	glClearDepth( 1.0f );
-	glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	
-	//  Reset previous transforms to the identity matrix
-	glLoadIdentity();
-	
-	// ==== Redraw ====
-	
-	// 1. Calculate the user view
-	// Calc the eye position for perspective view (Orbit [0,0,0] spherically)
-	eyeLoc = vec_sphr( camRadius , th , ps ) + lookPt;
-	// lookPt = vec3e{0,0,0};
-	lookDr = ( lookPt - eyeLoc ).normalized();
-	upVctr = ( lookDr.cross( vec3e{0,0,1}.cross( lookDr ) ) ).normalized();
-	gluLookAt( eyeLoc[0] , eyeLoc[1] , eyeLoc[2] ,  
-			   lookPt[0] , lookPt[1] , lookPt[2] ,  
-			   upVctr[0] , upVctr[1] , upVctr[2] );
+    // Display the scene
+    
+    //  Clear the image
+    glClearDepth( 1.0f );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    
+    //  Reset previous transforms to the identity matrix
+    glLoadIdentity();
+    
+    // ==== Redraw ====
+    
+    // 1. Calculate the user view
+    // Calc the eye position for perspective view (Orbit [0,0,0] spherically)
+    eyeLoc = vec_sphr( camRadius , th , ps ) + lookPt;
+    // lookPt = vec3e{0,0,0};
+    lookDr = ( lookPt - eyeLoc ).normalized();
+    upVctr = ( lookDr.cross( vec3e{0,0,1}.cross( lookDr ) ) ).normalized();
+    gluLookAt( eyeLoc[0] , eyeLoc[1] , eyeLoc[2] ,  
+               lookPt[0] , lookPt[1] , lookPt[2] ,  
+               upVctr[0] , upVctr[1] , upVctr[2] );
 
-	// 2. Draw the static scene
+    // 2. Draw the static scene
     
     // glColor3f( 1,1,1 );
 
-	glPushMatrix();
-	glTranslated( 0,0,-1 );
-	draw_grid_org_XY( 0.250 , 20 , 20 , 0.5 , gridColor );
-	glPopMatrix();
-			   
-	// 2. Lighting Calcs
-	//  Translate intensity to color vectors
-	float Ambient[]  = { 0.01f*ambient  , 0.01f*ambient  , 0.01f*ambient  , 1.0f };
-	float Diffuse[]  = { 0.01f*diffuse  , 0.01f*diffuse  , 0.01f*diffuse  , 1.0f };
-	float Specular[] = { 0.01f*specular , 0.01f*specular , 0.01f*specular , 1.0f };
-	//  Draw light position as ball (still no lighting here)
-	// Calculate the ball position and render ball
-	center_ball = vec_sphr( rad_bal , th_ball , ps_ball );
-	light_ball( center_ball(0) , center_ball(1) , center_ball(2) , dimRad_ball ,
-				emission , shiny );
-	//  Light position
-	float Position[]  = { center_ball(0) , center_ball(1) , center_ball(2) , 1.0f };
-	//  OpenGL should normalize normal vectors
-	glEnable( GL_NORMALIZE );
-	//  Enable lighting , From this point until 'glDisable' lighting is applied
-	glEnable( GL_LIGHTING );
-	glColorMaterial( GL_FRONT_AND_BACK , GL_AMBIENT_AND_DIFFUSE );
-	glEnable( GL_COLOR_MATERIAL );
-	//  Enable light 0
-	glEnable( GL_LIGHT0 );
-	//  Set ambient, diffuse, specular components and position of light 0
-	glLightfv( GL_LIGHT0 , GL_AMBIENT  , Ambient  );
-	glLightfv( GL_LIGHT0 , GL_DIFFUSE  , Diffuse  );
-	glLightfv( GL_LIGHT0 , GL_SPECULAR , Specular );
-	glLightfv( GL_LIGHT0 , GL_POSITION , Position );
-	
-	// 3. Draw the dynamic scene
+    glPushMatrix();
+    glTranslated( 0,0,-1 );
+    draw_grid_org_XY( 0.250 , 20 , 20 , 0.5 , gridColor );
+    glPopMatrix();
+               
+    // 2. Lighting Calcs
+    //  Translate intensity to color vectors
+    float Ambient[]  = { 0.01f*ambient  , 0.01f*ambient  , 0.01f*ambient  , 1.0f };
+    float Diffuse[]  = { 0.01f*diffuse  , 0.01f*diffuse  , 0.01f*diffuse  , 1.0f };
+    float Specular[] = { 0.01f*specular , 0.01f*specular , 0.01f*specular , 1.0f };
+    //  Draw light position as ball (still no lighting here)
+    // Calculate the ball position and render ball
+    center_ball = vec_sphr( rad_bal , th_ball , ps_ball );
+    light_ball( center_ball(0) , center_ball(1) , center_ball(2) , dimRad_ball ,
+                emission , shiny );
+    //  Light position
+    float Position[]  = { center_ball(0) , center_ball(1) , center_ball(2) , 1.0f };
+    //  OpenGL should normalize normal vectors
+    glEnable( GL_NORMALIZE );
+    //  Enable lighting , From this point until 'glDisable' lighting is applied
+    glEnable( GL_LIGHTING );
+    glColorMaterial( GL_FRONT_AND_BACK , GL_AMBIENT_AND_DIFFUSE );
+    glEnable( GL_COLOR_MATERIAL );
+    //  Enable light 0
+    glEnable( GL_LIGHT0 );
+    //  Set ambient, diffuse, specular components and position of light 0
+    glLightfv( GL_LIGHT0 , GL_AMBIENT  , Ambient  );
+    glLightfv( GL_LIGHT0 , GL_DIFFUSE  , Diffuse  );
+    glLightfv( GL_LIGHT0 , GL_SPECULAR , Specular );
+    glLightfv( GL_LIGHT0 , GL_POSITION , Position );
+    
+    // 3. Draw the dynamic scene
 
-	// 12. Draw scan
+    // 12. Draw scan
     for( uint i = 0 ; i < MAXSHOTS ; i++ ){
         if(  ( i < scans.size() )  &&  ( shotFlags[i] )  )
             scans[i]->draw( shiny , SMOOTHMESHL );
     }
 
-	// N. Draw the robot
-	UR5.draw();
-	
+    // N. Draw the robot
+    UR5.draw();
+    
     // N. Turn off lighting
-	glDisable( GL_LIGHTING );
+    glDisable( GL_LIGHTING );
 
-	// N. Draw the origin
-	draw_origin( 0.5 );
+    // N. Draw the origin
+    draw_origin( 0.5 );
 
     // N. Draw the selected bounding boxes
     if( meshSelect ){
@@ -404,17 +404,17 @@ void display( SDL_Window* window ){
         draw_aabb( trgtBbox , vec3e{0/255.0, 2040/255.0, 00/255.0} , 2.0 );
     }
 
-	// == Status Message ==
+    // == Status Message ==
 
-	// NOTE: Text color MUST be specified before raster position for bitmap text
-	// https://www.opengl.org/archives/resources/features/KilgardTechniques/oglpitfall/
-	
-	glColor3f( 249/255.0 , 255/255.0 , 99/255.0 ); // Text Yellow
-	
-	//  Display status
-	glWindowPos2i( 5 , 5 ); // Next raster operation relative to lower lefthand corner of the window
-	
-	PrintSDL( " emission %i , ambient %i , diffuse %i , specular %i , shininess %i | theta %i , psi %i" , 
+    // NOTE: Text color MUST be specified before raster position for bitmap text
+    // https://www.opengl.org/archives/resources/features/KilgardTechniques/oglpitfall/
+    
+    glColor3f( 249/255.0 , 255/255.0 , 99/255.0 ); // Text Yellow
+    
+    //  Display status
+    glWindowPos2i( 5 , 5 ); // Next raster operation relative to lower lefthand corner of the window
+    
+    PrintSDL( " emission %i , ambient %i , diffuse %i , specular %i , shininess %i | theta %i , psi %i" , 
               emission , ambient , diffuse , specular , shininess ,
               th , ps );
 
@@ -424,18 +424,17 @@ void display( SDL_Window* window ){
         glWindowPos2i(   5 ,  80 ); 
         PrintSDL( "Facets: _ %i" , scanTargets[ clickDex ]->mesh.F.rows() );
     }
-	// __ End Message __
+    // __ End Message __
 
     // ~ Draw crosshairs ~
     if( windowHasMouse ){  crosshairs( winXmouse , winYmouse , crossLen , viewXfrac , viewYfrac );  }
 
-	// ____ End Draw ____
+    // ____ End Draw ____
 
-	// Check for errors, Flush, and swap
-	ErrCheck( "display" );
-	glFlush();
-	// glutSwapBuffers();
-	SDL_GL_SwapWindow( window );
+    // Check for errors, Flush, and swap
+    ErrCheck( "display" );
+    glFlush();
+    SDL_GL_SwapWindow( window );
 }
 
 // ___ END DRAW ____________________________________________________________________________________________________________________________
@@ -444,13 +443,13 @@ void display( SDL_Window* window ){
 // === INTERACTION =========================================================================================================================
 
 bool key( const SDL_KeyboardEvent& event ){
-	// SDL calls this routine when a key is pressed
-	// Exit on ESC
-	// NOTE: Must account for shift combinations
+    // SDL calls this routine when a key is pressed
+    // Exit on ESC
+    // NOTE: Must account for shift combinations
 
-	// 1. Fetch the key state
-	const Uint8 *state = SDL_GetKeyboardState( NULL );
-	bool  SHIFTPRESS   = state[ SDL_SCANCODE_LSHIFT ]  ||  state[ SDL_SCANCODE_RSHIFT ];
+    // 1. Fetch the key state
+    const Uint8 *state = SDL_GetKeyboardState( NULL );
+    bool  SHIFTPRESS   = state[ SDL_SCANCODE_LSHIFT ]  ||  state[ SDL_SCANCODE_RSHIFT ];
 
     // NOTE: SDL2 seems to hear random keyboard events?, but we can corroborate by checking if it also heard a press
     // URL , Was a key pressed?: https://wiki.libsdl.org/SDL_KeyboardEvent
@@ -540,12 +539,12 @@ bool key( const SDL_KeyboardEvent& event ){
             case SDLK_MINUS:
             case SDLK_KP_MINUS:
                 if( CURJOINT != NONE ) targetJointState[CURJOINT] -= DEGRINCR;
-			    break;
+                break;
 
             case SDLK_EQUALS:
             case SDLK_KP_PLUS:
                 if( CURJOINT != NONE ) targetJointState[CURJOINT] += DEGRINCR;
-			    break;
+                break;
 
             // ~~ Program Controls ~~
 
@@ -664,20 +663,20 @@ bool key( const SDL_KeyboardEvent& event ){
         }
     }
 
-	//  Translate shininess power to value (-1 => 0)
-	shiny = shininess<0 ? 0 : pow(2.0,shininess);
+    //  Translate shininess power to value (-1 => 0)
+    shiny = shininess<0 ? 0 : pow(2.0,shininess);
 
-	return true;
+    return true;
 }
 
 void reshape( int width , int height ){
-	// GLUT calls this routine when the window is resized
-	// Calc the aspect ratio: width to the height of the window
-	w2h = ( height > 0 ) ? (float) width / height : 1;
-	// Set the viewport to the entire window
-	glViewport( 0 , 0 , width , height );
-	// Set projection
-	Project( FOVy , w2h , dim );
+    // GLUT calls this routine when the window is resized
+    // Calc the aspect ratio: width to the height of the window
+    w2h = ( height > 0 ) ? (float) width / height : 1;
+    // Set the viewport to the entire window
+    glViewport( 0 , 0 , width , height );
+    // Set projection
+    Project( FOVy , w2h , dim );
     // Calc params for lab-space position of cursor
     X_xt = w2h * Y_xt;
 }
@@ -761,9 +760,9 @@ double _last_time = 0.0;
 
 // Start up SDL2 and tell it what to do
 int main( int argc , char* argv[] ){
-	rand_init(); // initialize random seed based on system clock
+    rand_init(); // initialize random seed based on system clock
 
-	// Load Data
+    // Load Data
     size_t len = 0;
     for( uint i = 0 ; i < scanLen ; i++ ){  
         scans.push_back( new PatchMesh( sourceList[i] , ENABLECAMTXTR ) );  
@@ -780,16 +779,16 @@ int main( int argc , char* argv[] ){
 
 
     assign_camera_pose( preparedCamAngles[0] ); // Set the initial camera angle
-	
-	// 0. Start an OGL context
-	
-	//  Initialize SDL
-	SDL_Init( SDL_INIT_VIDEO );
+    
+    // 0. Start an OGL context
+    
+    //  Initialize SDL
+    SDL_Init( SDL_INIT_VIDEO );
     SDL_Window*      displayWindow;
     SDL_Renderer*    displayRenderer;
     SDL_RendererInfo displayRendererInfo;
 
-	displayWindow = SDL_CreateWindow(
+    displayWindow = SDL_CreateWindow(
         ( "James Watson , " + HWname ).c_str() , // window title
         SDL_WINDOWPOS_UNDEFINED, // --------------- initial x position
         SDL_WINDOWPOS_UNDEFINED, // --------------- initial y position
@@ -798,12 +797,12 @@ int main( int argc , char* argv[] ){
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE // flags , see below
     ); 
 
-	displayRenderer = SDL_CreateRenderer( displayWindow , -1 , SDL_RENDERER_PRESENTVSYNC ); 
+    displayRenderer = SDL_CreateRenderer( displayWindow , -1 , SDL_RENDERER_PRESENTVSYNC ); 
 
-	SDL_GL_SetSwapInterval( 0 ); // Immediate updates
-	// SDL_GL_SetSwapInterval( 1 ); // Updates synchronized with the vertical retrace
+    SDL_GL_SetSwapInterval( 0 ); // Immediate updates
+    // SDL_GL_SetSwapInterval( 1 ); // Updates synchronized with the vertical retrace
 
-	SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE , 32 ); // minimum number of bits in the depth buffer
+    SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE , 32 ); // minimum number of bits in the depth buffer
 
     SDL_GetRendererInfo( displayRenderer , &displayRendererInfo );
     /* TODO: Check that we have OpenGL */
@@ -811,62 +810,62 @@ int main( int argc , char* argv[] ){
         ( displayRendererInfo.flags & SDL_RENDERER_TARGETTEXTURE ) == 0 ){
         /*TODO: Handle this. We have no render surface and not accelerated. */
         cout << "BAD SDL WINDOW!" << endl;
-	}
-	
-	SDL_SetWindowTitle( displayWindow , "Final Project, James Watson" );
+    }
+    
+    SDL_SetWindowTitle( displayWindow , "Final Project, James Watson" );
 
-	//  Set screen size  &&  Init
-	SDL_GetWindowSize( displayWindow , &winW , &winH );
-	reshape( winW , winH );
+    //  Set screen size  &&  Init
+    SDL_GetWindowSize( displayWindow , &winW , &winH );
+    reshape( winW , winH );
 
     // Hide cursor in the window
     SDL_ShowCursor( SDL_DISABLE );
-	
-	// Set heartbeat for 60 fps
-	SDL_Heartbeat hb{ 1.0f / 60.0f };  hb.mark_time();
-	
-	glEnable( GL_DEPTH_TEST ); // https://stackoverflow.com/a/46036674
+    
+    // Set heartbeat for 60 fps
+    SDL_Heartbeat hb{ 1.0f / 60.0f };  hb.mark_time();
+    
+    glEnable( GL_DEPTH_TEST ); // https://stackoverflow.com/a/46036674
 
-	// Start in Pretty Mode
-	emission  =  0;
-	ambient   = 25;
-	diffuse   = 90;
-	specular  =  5;
-	shininess =  3;
-	
-	// ~~ Init Work ~~
+    // Start in Pretty Mode
+    emission  =  0;
+    ambient   = 25;
+    diffuse   = 90;
+    specular  =  5;
+    shininess =  3;
+    
+    // ~~ Init Work ~~
 
     // Load the textures onto each of the clusters associated with each shot
     for( uint i = 0 ; i < scans.size() ; i++ ){  scans[i]->load_texture();  }
 
-	
-	/// ===== Main SDL event loop ==========================================================================================================
-	
-	ErrCheck( "init" );
-	
-	float t0 /* ---- */ = 0.0f;
-	float dt /* ---- */ = 1.0f / 60.0f;
-	float _time_elapsed = dt; // This is fixed time for state updates
+    
+    /// ===== Main SDL event loop ==========================================================================================================
+    
+    ErrCheck( "init" );
+    
+    float t0 /* ---- */ = 0.0f;
+    float dt /* ---- */ = 1.0f / 60.0f; // NOPE
+    float _time_elapsed = dt; // This is fixed time for state updates
 
-	std::vector<float> currQ = { 0,0,0,0,0,0 }; // Joint state to send to the robot
+    std::vector<float> currQ = { 0,0,0,0,0,0 }; // Joint state to send to the robot
     stdvec<float>      diffQ = { 0,0,0,0,0,0 }; // Difference between the current and the desired joint state
     float /* ------ */ frameSpeed;
 
-	// while the run flag is active
-	while( run ){
-		
-		// 1. Get elapsed time in seconds
-		double t = SDL_GetTicks() / 1000.0;
-		
-		// 2. Process all pending events
-		SDL_Event event;
-		while( SDL_PollEvent( &event ) ){
-			switch( event.type ){
-				case SDL_WINDOWEVENT:
-					switch( event.window.event ){
-						case SDL_WINDOWEVENT_RESIZED:
-							reshape( event.window.data1 , event.window.data2 );
-							break;
+    // while the run flag is active
+    while( run ){
+        
+        // 1. Get elapsed time in seconds
+        double t = SDL_GetTicks() / 1000.0;
+        
+        // 2. Process all pending events
+        SDL_Event event;
+        while( SDL_PollEvent( &event ) ){
+            switch( event.type ){
+                case SDL_WINDOWEVENT:
+                    switch( event.window.event ){
+                        case SDL_WINDOWEVENT_RESIZED:
+                            reshape( event.window.data1 , event.window.data2 );
+                            break;
                         // URL , SDL2 mouse enter and leave window: http://lazyfoo.net/tutorials/SDL/35_window_events/index.php
                         case SDL_WINDOWEVENT_ENTER: 
                             windowHasMouse = true;
@@ -874,18 +873,18 @@ int main( int argc , char* argv[] ){
                         case SDL_WINDOWEVENT_LEAVE:
                             windowHasMouse = false;
                             break;
-						default:
-							// Do nothing , Do not notify unhandled events
-							break;
-					}
-					break;
-				case SDL_QUIT:
-					run = 0;
-					break;
-				case SDL_KEYDOWN:
-					key( event.key );
-					t0 = t + 0.5; // Wait 1/2 s before repeating
-					break;
+                        default:
+                            // Do nothing , Do not notify unhandled events
+                            break;
+                    }
+                    break;
+                case SDL_QUIT:
+                    run = 0;
+                    break;
+                case SDL_KEYDOWN:
+                    key( event.key );
+                    t0 = t + 0.5; // Wait 1/2 s before repeating
+                    break;
                 case SDL_MOUSEBUTTONDOWN:
                     switch( event.button.button ){
                         // Is 'SDL_BUTTON_LEFT' still the primary click for a left-handed mouse?
@@ -918,14 +917,14 @@ int main( int argc , char* argv[] ){
                             break;
                     }
                     break;
-			}
-			
-			//  Repeat key every 50 ms
-			if( t - t0 > 0.05 ){
-				key( event.key );
-				t0  = t;
-			}
-		}
+            }
+            
+            //  Repeat key every 50 ms
+            if( t - t0 > 0.05 ){
+                key( event.key );
+                t0  = t;
+            }
+        }
 
         // 3. Mouse interaction
         if( windowHasMouse ){
@@ -935,35 +934,35 @@ int main( int argc , char* argv[] ){
         }
         // cerr << "Mouse X: " << winXmouse << " , Mouse Y: " << winYmouse << endl;
 
-		
-		// 3. Draw
-		display( displayWindow );
-		
+        
+        // 3. Draw
+        display( displayWindow );
+        
         // cerr << "viewXcam: " << viewXcam << " , viewYcam: " << viewYcam << endl;
 
-		// 4. Calculate the next frame
-		_time_elapsed = (float) hb.seconds_elapsed();
+        // 4. Calculate the next frame
+        _time_elapsed = (float) hb.seconds_elapsed();
 
-		// ~ Update light ball ~
-		if( BALLMOVAUTO ){  th_ball += _time_elapsed * ballOrbitSpeed;  }
-		th_ball = fmod( th_ball , 360.0f );
+        // ~ Update light ball ~
+        if( BALLMOVAUTO ){  th_ball += _time_elapsed * ballOrbitSpeed;  }
+        th_ball = fmod( th_ball , 360.0f );
 
-		// ~ Move the joints ~
+        // ~ Move the joints ~
         diffQ = targetJointState - currQ; // Get the difference between current and desired
         frameSpeed = _time_elapsed * maxAngSpeed; // Calc max angle we can move this frame
         diffQ = clamp_vec( diffQ , -frameSpeed ,  frameSpeed ); // Limit difference to max angle
         currQ += diffQ; // Update current angle towards desired
-		UR5.set_joint_state( currQ ); // Send angle to robot
+        UR5.set_joint_state( currQ ); // Send angle to robot
 
         // N-1. Error check
-		// ErrCheck( "loop" ); // DEV: Will this slow the program down?
+        // ErrCheck( "loop" ); // DEV: Will this slow the program down?
 
-		// N. Mark time for next update interval
+        // N. Mark time for next update interval
         hb.mark_time();
-	}
-	
-	/// _____ END MAIN LOOP ________________________________________________________________________________________________________________
-	
+    }
+    
+    /// _____ END MAIN LOOP ________________________________________________________________________________________________________________
+    
     // ~~ Cleanup ~~
     cerr << "About to clean scans ..." << endl;
     clearif( scans );
@@ -971,10 +970,10 @@ int main( int argc , char* argv[] ){
     clearif( scanTargets );
     cerr << "About to check errors ... ";
     cerr << ( ErrCheck( "exit" ) ? "Error(s) found!" : "OK!" ) << endl;
-	cerr << "EXIT!" << endl;
+    cerr << "EXIT!" << endl;
 
-	//  Return code
-	return 0;
+    //  Return code
+    return 0;
 }
 
 // ___ END MAIN ____________________________________________________________________________________________________________________________

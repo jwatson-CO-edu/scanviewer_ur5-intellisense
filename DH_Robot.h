@@ -27,10 +27,10 @@ Template Version: 2018-07-16
 
 // == struct DH_Parameters ==
 struct DH_Parameters{
-	std::vector<float> alpha; 
-	std::vector<float> a; 
-	std::vector<float> d; 
-	std::vector<float> theta; 
+    std::vector<float> alpha; 
+    std::vector<float> a; 
+    std::vector<float> d; 
+    std::vector<float> theta; 
 };
 
 DH_Parameters copy_dh_params( const DH_Parameters& origParams ); // Copy DH parameters into a new structure
@@ -43,46 +43,46 @@ bool dh_populated( const DH_Parameters& origParams ); // Are there params and ar
 
 class RobotLink{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-		
-	// ~~ Con/Destructors ~~
-	RobotLink( float pTheta , const vec3e& pOrigin , 
-			   float pD_dist , float pA_dist , const vec3e& pNextRotnAxis , float pNextRotnAngl , 
-			   void (*pDrawFunc)(const DH_Parameters& DH) );
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        
+    // ~~ Con/Destructors ~~
+    RobotLink( float pTheta , const vec3e& pOrigin , 
+               float pD_dist , float pA_dist , const vec3e& pNextRotnAxis , float pNextRotnAngl , 
+               void (*pDrawFunc)(const DH_Parameters& DH) );
 
     ~RobotLink();
 
-	// ~~ Configuration ~~
-	void add_distal( RobotLink* link ); // Add a child link to this link
-	uint get_num_distal(); // Return the number of distal links attached to this link
-	bool is_leaf(); // Return true if there are no links distal to this, Otherwise return false
+    // ~~ Configuration ~~
+    void add_distal( RobotLink* link ); // Add a child link to this link
+    uint get_num_distal(); // Return the number of distal links attached to this link
+    bool is_leaf(); // Return true if there are no links distal to this, Otherwise return false
 
-	// ~~ Robot Motion ~~
-	void set_theta( float pTheta );
-	
-	// ~~ Drawing ~~
-	bool has_draw_func();
-	void draw( const DH_Parameters& DH );
+    // ~~ Robot Motion ~~
+    void set_theta( float pTheta );
+    
+    // ~~ Drawing ~~
+    bool has_draw_func();
+    void draw( const DH_Parameters& DH );
 
-	// ~~ Member Vars ~~
-	bool enableLinkDraw = true;
+    // ~~ Member Vars ~~
+    bool enableLinkDraw = true;
 
 protected:
-	// ~ Proximal Joint ~
-	float /* ----------- */ theta = 0.0;
-	// ~ Relative Location ~
-	vec3e /* ----------- */ origin;
-	// ~ Distal Joint ~
-	float /* ----------- */ d_dist = 0.0;
-	float /* ----------- */ a_dist = 0.0;
-	vec3e /* ----------- */ nextRotnAxis;
-	float /* ----------- */ nextRotnAngl = 0.0;
-	// ~ Distal Links ~
-	std::vector<RobotLink*> distalLinks;
-	// ~ Rendering ~
-	void /* ------------ */ (*drawFunc)(const DH_Parameters& DH);
-	// ~ Bookkeeping ~
-	uint /* ------------ */ index = 0;
+    // ~ Proximal Joint ~
+    float /* ----------- */ theta = 0.0;
+    // ~ Relative Location ~
+    vec3e /* ----------- */ origin;
+    // ~ Distal Joint ~
+    float /* ----------- */ d_dist = 0.0;
+    float /* ----------- */ a_dist = 0.0;
+    vec3e /* ----------- */ nextRotnAxis;
+    float /* ----------- */ nextRotnAngl = 0.0;
+    // ~ Distal Links ~
+    std::vector<RobotLink*> distalLinks;
+    // ~ Rendering ~
+    void /* ------------ */ (*drawFunc)(const DH_Parameters& DH);
+    // ~ Bookkeeping ~
+    uint /* ------------ */ index = 0;
 };
 
 // __ End RobotLink __
@@ -92,38 +92,38 @@ protected:
 
 class UR5_OGL{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	// ~~ Functions ~~
+    // ~~ Functions ~~
 
-	// ~ Con/Destructors ~
-	UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& params );
+    // ~ Con/Destructors ~
+    UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& params );
     
     ~UR5_OGL();
 
-	// ~ Rendering ~
-	void draw();
+    // ~ Rendering ~
+    void draw();
 
-	// ~~ Members ~~
+    // ~~ Members ~~
 
-	// ~ Joint State ~
-	std::vector<float> q    = {   0.0 ,	 0.0 ,	0.0 ,  0.0 ,  0.0 ,	 0.0 }; // deg
-	std::vector<float> qDot = {  30.0 , 30.0 , 30.0 , 30.0 , 30.0 , 30.0 }; // deg/sec
+    // ~ Joint State ~
+    std::vector<float> q    = {   0.0 ,	 0.0 ,	0.0 ,  0.0 ,  0.0 ,	 0.0 }; // deg
+    std::vector<float> qDot = {  30.0 , 30.0 , 30.0 , 30.0 , 30.0 , 30.0 }; // deg/sec
 
-	void set_joint_state( const std::vector<float>& qNu );
+    void set_joint_state( const std::vector<float>& qNu );
 
-	// ~ Pose ~
-	vec3e basePos; // Position of the base , Lab Frame
+    // ~ Pose ~
+    vec3e basePos; // Position of the base , Lab Frame
 
 protected:
-	DH_Parameters params;
-	// ~ Links ~
-	RobotLink* Link1 = nullptr;
-	RobotLink* Link2 = nullptr;
-	RobotLink* Link3 = nullptr;
-	RobotLink* Link4 = nullptr;
-	RobotLink* Link5 = nullptr;
-	RobotLink* Link6 = nullptr;
+    DH_Parameters params;
+    // ~ Links ~
+    RobotLink* Link1 = nullptr;
+    RobotLink* Link2 = nullptr;
+    RobotLink* Link3 = nullptr;
+    RobotLink* Link4 = nullptr;
+    RobotLink* Link5 = nullptr;
+    RobotLink* Link6 = nullptr;
 };
 
 // __ End UR5_OGL __

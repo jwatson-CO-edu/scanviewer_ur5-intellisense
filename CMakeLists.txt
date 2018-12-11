@@ -18,12 +18,12 @@ set( COMMON_FLAGS "-O3 -Wall -lm" )
 # Platform-specific flags
 if(WIN32)
     message( "Setting compiler flags for Windows ..." )
-	set( MORE_FLAGS "${COMMON_FLAGS} -lglut32cu -lglu32 -lopengl32" )
+    set( MORE_FLAGS "${COMMON_FLAGS} -lglut32cu -lglu32 -lopengl32" )
 endif(WIN32)
 
 if(APPLE)
-	message( "Setting compiler flags for Apple ..." )
-	set( MORE_FLAGS "${COMMON_FLAGS} -Wno-deprecated-declarations -framework GLUT -framework OpenGL" )
+    message( "Setting compiler flags for Apple ..." )
+    set( MORE_FLAGS "${COMMON_FLAGS} -Wno-deprecated-declarations -framework GLUT -framework OpenGL" )
 endif(APPLE)
 
 if(UNIX)
@@ -74,7 +74,7 @@ include_directories( ${SDL2_INCLUDE_DIRS} )
 # Eigen3
 # NOTE: Probably super overkill for this class, but I get to use my old U of Utah stuff
 include_directories( eigen # ------------- Core
-					 eigen/unsupported ) # OpenGL support
+                     eigen/unsupported ) # OpenGL support
 
 # cpp_helpers
 include_directories( cpp_helpers ) 
@@ -126,10 +126,10 @@ add_executable( ${PROJECT_NAME} ${PROJECT_NAME}.cpp
                 ${DELAUNAY_CPP} ) # Others'
 
 target_link_libraries( ${PROJECT_NAME} 
-					   m
-					   ${OPENGL_gl_LIBRARY}
-					   ${OPENGL_glu_LIBRARY} 
-					   ${GLUT_LIBRARY} 
+                       m
+                       ${OPENGL_gl_LIBRARY}
+                       ${OPENGL_glu_LIBRARY} 
+                       ${GLUT_LIBRARY} 
                        ${SDL2_LIBRARIES} ) 
 
 # ___ END LINK BUILD _______________________________________________________________________________________________________________________

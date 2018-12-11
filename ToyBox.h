@@ -30,22 +30,22 @@ const typeF FOVVERTDEG = 42.5;
 // == class PegBlock ==
 
 class PegBlock{
-	// A LEGO brick for space children
+    // A LEGO brick for space children
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	PegBlock( float minSide , float maxSide , const matXe& bbox );
-	
-	void draw();
+    PegBlock( float minSide , float maxSide , const matXe& bbox );
+    
+    void draw();
 
 protected:
-	vec3e center;
-	float th;
-	float ph;
-	float side; // This is the scale
-	std::vector<float> pegLen;
-	vec3e fillColor;
-	vec3e lineColor;
+    vec3e center;
+    float th;
+    float ph;
+    float side; // This is the scale
+    std::vector<float> pegLen;
+    vec3e fillColor;
+    vec3e lineColor;
 };
 
 // __ End PegBlock __
@@ -55,46 +55,46 @@ protected:
 
 class Icosahedron_OGL{
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-	// ~~ Functions ~~
-	
-	// ~ Con/Destructors ~
-	Icosahedron_OGL( float rad , const vec3e& cntr , const vec3e& colr , float shiny );
+    // ~~ Functions ~~
+    
+    // ~ Con/Destructors ~
+    Icosahedron_OGL( float rad , const vec3e& cntr , const vec3e& colr , float shiny );
 
-	// ~ Setters ~
-	void set_th_ph( float thNu , float phNu ); // ---- Set theta and phi to 'thNu' and 'phNu'
-	void turn_th_ph( float thIncr , float phIncr ); // Increment theta and phi by 'thIncr' and 'phIncr'
-	void set_emission_color( const vec3e& emitClr );
-	void set_emission_intensity( float intnsty );
-	
-	// ~ Textures ~
-	void assign_face_textures_randomly( uint txtrHandle , float patchRad , uint xDim , uint yDim );
-	
-	// ~ Rendering ~
-	void draw( float shiny = 0.0f ); // Render the icosahedron
-	
+    // ~ Setters ~
+    void set_th_ph( float thNu , float phNu ); // ---- Set theta and phi to 'thNu' and 'phNu'
+    void turn_th_ph( float thIncr , float phIncr ); // Increment theta and phi by 'thIncr' and 'phIncr'
+    void set_emission_color( const vec3e& emitClr );
+    void set_emission_intensity( float intnsty );
+    
+    // ~ Textures ~
+    void assign_face_textures_randomly( uint txtrHandle , float patchRad , uint xDim , uint yDim );
+    
+    // ~ Rendering ~
+    void draw( float shiny = 0.0f ); // Render the icosahedron
+    
 
-	// ~~ Public Members ~~
-	Icosahedron_e icosGeo;
+    // ~~ Public Members ~~
+    Icosahedron_e icosGeo;
 
 protected:
-	// ~ Geometry ~
-	vec3e center;
-	float theta    = 0.0;
-	float phi      = 0.0;
-	vec3e color;
-	uint  numFaces = 20;
-	// ~ Lighting ~
-	float shininess;
-	vec3e emitColor{0,0,0};
-	float intensity    = 0.0;
-	float emitArray[4] = { 0.0 , 0.0 , 0.0 , 1.0 };
-	// ~ Textures ~
-	bool   hasTextr = false;
-	uint   textureHandle;
-	matXe  txtrVerts;
-	string txtrFile; 
+    // ~ Geometry ~
+    vec3e center;
+    float theta    = 0.0;
+    float phi      = 0.0;
+    vec3e color;
+    uint  numFaces = 20;
+    // ~ Lighting ~
+    float shininess;
+    vec3e emitColor{0,0,0};
+    float intensity    = 0.0;
+    float emitArray[4] = { 0.0 , 0.0 , 0.0 , 1.0 };
+    // ~ Textures ~
+    bool   hasTextr = false;
+    uint   textureHandle;
+    matXe  txtrVerts;
+    string txtrFile; 
 };
 
 // __ End Icosahedron_OGL __
@@ -103,48 +103,48 @@ protected:
 // == class RibbonBolt ==
 
 class RibbonBolt{
-	// Class for representing a glowing beam
+    // Class for representing a glowing beam
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	
-	// ~ Con/Destructors ~
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    
+    // ~ Con/Destructors ~
 
-	RibbonBolt( const vec3e& orgn , 
-				const vec3e& clr , float intns ,
-				float lenTravelMin , float lenTravelMax , float travelSpeed ,
-				float width , float lengthMin , float lengthMax );
-				
-	
-	// ~ Animation ~
-	void advance( float time_in_sec );
-	
-	void set_emission_intensity( float intnsty );
-	
-	void activate();
-	void deactivate();
-	
-	void draw();
-	
+    RibbonBolt( const vec3e& orgn , 
+                const vec3e& clr , float intns ,
+                float lenTravelMin , float lenTravelMax , float travelSpeed ,
+                float width , float lengthMin , float lengthMax );
+                
+    
+    // ~ Animation ~
+    void advance( float time_in_sec );
+    
+    void set_emission_intensity( float intnsty );
+    
+    void activate();
+    void deactivate();
+    
+    void draw();
+    
 protected:
 
-	void _reset_random();
-	bool  active = false; // Flag for whether the beam should be painted
-	vec3e origin; // ----- Beam starts at this point
-	vec3e dirctn; // ----- Beam travels in this direction
-	vec3e bColor; // ----- Beam color
-	float intens; // ----- Surface emission intensity
-	float travlMin; // --- Beam disappears at this distance
-	float travlMax; 
-	float curTravl;
-	float bSpeed; // ----- Speed in [units/s]
-	float wdBeam; // ----- Beam width
-	float lenMin; // ----- Beam length
-	float lenMax; 
-	float curLen;
-	float progrs = 0.0; // Progress from 0 to lnTrav + lnBeam
-	vec3e crFlat; // ----- Current direction of flatness 
-	matXe sampleBox; // -- Sample directions from this
-	float emColor[4] = { 0.0f , 0.0f , 0.0f , 1.0f };
+    void _reset_random();
+    bool  active = false; // Flag for whether the beam should be painted
+    vec3e origin; // ----- Beam starts at this point
+    vec3e dirctn; // ----- Beam travels in this direction
+    vec3e bColor; // ----- Beam color
+    float intens; // ----- Surface emission intensity
+    float travlMin; // --- Beam disappears at this distance
+    float travlMax; 
+    float curTravl;
+    float bSpeed; // ----- Speed in [units/s]
+    float wdBeam; // ----- Beam width
+    float lenMin; // ----- Beam length
+    float lenMax; 
+    float curLen;
+    float progrs = 0.0; // Progress from 0 to lnTrav + lnBeam
+    vec3e crFlat; // ----- Current direction of flatness 
+    matXe sampleBox; // -- Sample directions from this
+    float emColor[4] = { 0.0f , 0.0f , 0.0f , 1.0f };
 };
 
 // __ End RibbonBolt __
@@ -163,7 +163,7 @@ matXe compute_UV_for_trimesh( const matXe& Vcamera , typeF horz_FOVdeg , typeF v
 class PatchMesh{
     // Scanned objects for display
 public:
-	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     // ~ Con/Destructors ~
     PatchMesh( string fPath , bool useTxtr = false );
@@ -197,9 +197,9 @@ protected:
     // ~ Texture ~
     string txtrPath;
     uint   textureHandle;
-	matXe  txtrVerts;
-	// ~ Render ~
-	vec3e colorSolid; // Color to use for rendering if no texture has been applied
+    matXe  txtrVerts;
+    // ~ Render ~
+    vec3e colorSolid; // Color to use for rendering if no texture has been applied
     // ~ Other ~
     stdvec<float> joint_state; // Represents the pose of the robot when the shot was taken
 };

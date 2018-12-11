@@ -30,10 +30,10 @@ Template Version: 2018-07-16
 // ~~ Shortcuts and Aliases ~~
 // ~~ Shortcuts and Aliases ~~
 #ifdef SDL_FLOAT
-	using typeF = float;
+    using typeF = float;
 #endif
 #ifdef SDL_DUBBL
-	using typeF = double;
+    using typeF = double;
 #endif
 
 // ~~ Constants ~~
@@ -44,26 +44,26 @@ Template Version: 2018-07-16
 // == class SDL_Heartbeat ==
 
 class SDL_Heartbeat{
-	// Class to maintain a maximum framerate
+    // Class to maintain a maximum framerate
 public:
 
-	// ~ Con/Dstructors ~
-	
-	SDL_Heartbeat( typeF interval ); // Create a heartbeat with a minimum inteval
-	
-	// ~ Timekeeping ~
-	
-	void  mark_time(); // Mark the current time as the beginning of the current interval
-	
-	void  sleep_remainder(); // Sleep the remaining time to maintain the interval
+    // ~ Con/Dstructors ~
+    
+    SDL_Heartbeat( typeF interval ); // Create a heartbeat with a minimum inteval
+    
+    // ~ Timekeeping ~
+    
+    void  mark_time(); // Mark the current time as the beginning of the current interval
+    
+    void  sleep_remainder(); // Sleep the remaining time to maintain the interval
 
     typeF seconds_elapsed(); // Get the number of seconds elapsed from the last mark
 
 private:
-	
-	double interval_s = 1.0; // Minimum time between calls
-	double lastMark_s = 0.0; // Last time that 'sleep_remainder' was called
-	
+    
+    double interval_s = 1.0; // Minimum time between calls
+    double lastMark_s = 0.0; // Last time that 'sleep_remainder' was called
+    
 };
 
 // __ End SDL_Heartbeat __

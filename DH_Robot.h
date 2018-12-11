@@ -1,9 +1,9 @@
 #pragma once // This also helps things not to be loaded twice , but not always . See below
 
 /***********  
-HEADER_TEMPLATE.h
-James Watson , YYYY MONTHNAME
-A ONE-LINE DESRIPTION OF THE FILE
+DH_Robot.h
+James Watson , 2018 November
+Represents the UR5 Robot with simple shapes
 
 Template Version: 2018-07-16
 ***********/
@@ -42,6 +42,7 @@ bool dh_populated( const DH_Parameters& origParams ); // Are there params and ar
 // == class RobotLink ==
 
 class RobotLink{
+    // Represents a single rigid link in a serial manipulator
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
         
@@ -69,20 +70,20 @@ public:
 
 protected:
     // ~ Proximal Joint ~
-    float /* ----------- */ theta = 0.0;
+    float theta = 0.0;
     // ~ Relative Location ~
-    vec3e /* ----------- */ origin;
+    vec3e origin;
     // ~ Distal Joint ~
-    float /* ----------- */ d_dist = 0.0;
-    float /* ----------- */ a_dist = 0.0;
-    vec3e /* ----------- */ nextRotnAxis;
-    float /* ----------- */ nextRotnAngl = 0.0;
+    float d_dist = 0.0;
+    float a_dist = 0.0;
+    vec3e nextRotnAxis;
+    float nextRotnAngl = 0.0;
     // ~ Distal Links ~
     std::vector<RobotLink*> distalLinks;
     // ~ Rendering ~
-    void /* ------------ */ (*drawFunc)(const DH_Parameters& DH);
+    void (*drawFunc)(const DH_Parameters& DH);
     // ~ Bookkeeping ~
-    uint /* ------------ */ index = 0;
+    uint index = 0;
 };
 
 // __ End RobotLink __
@@ -91,6 +92,7 @@ protected:
 // == class UR5_OGL ==
 
 class UR5_OGL{
+    // Represents the UR5
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -99,10 +101,10 @@ public:
     // ~ Con/Destructors ~
     UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& params );
     
-    ~UR5_OGL();
+    ~UR5_OGL(); // Delete all links , Distal-->Proximal (Order important!)
 
     // ~ Rendering ~
-    void draw();
+    void draw(); // Render the robot
 
     // ~~ Members ~~
 

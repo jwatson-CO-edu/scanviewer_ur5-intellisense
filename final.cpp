@@ -1,53 +1,10 @@
 /*****************************
- scanviewer.cpp
- James Watson, 2018 November
+ final.cpp
+ James Watson, 2018 December
  View scan data from the robot
  ****************************/ 
 /*
 ~~ DEV PLAN ~~
-[Y] Migrate to Repo
-[Y] Clean program
-    [Y] Remove GLUT remnants
-    [Y] Remove Spare Parts
-[Y] Re-implement robot & Animate , Create an illuminated robot
-    [Y] Correct Errors
-    [Y] Create a UR5 class , This should emulate the the homework assignment
-    [Y] Test HW3 funtionality
-    [Y] Gut  HW6 elements
-    [Y] Find brushed textures - NOT USED
-    [Y] FIX THE BLUE LIGHTING ISSUE , IT MAKES EVERYTHING BLUE - SOLVED: Forgot to 'glDisable( GL_TEXTURE_2D )'
-[Y] Troubleshoot hearbeat - Heartbeat works fine, but SDL2 has its own version of VSync - NOTE: Used heartbeat to time sim progress
-[Y] Display Scan Data
-    [Y] Get scans working on the robot
-    [Y] Determine file format
-    [Y] Load files
-    [Y] Display scan meshes
-    [Y] Load texture files
-    [Y] Compute texture triangles
-    [Y] Apply textures
-[Y] Robot Control
-    [Y] The robot configuration can be visualized in the configuration of each shot, 
-    [Y] or moved to arbitrary configurations if the user wishes to assess its freedom in the workspace.
-        [Y] Reinstate control from HW3
-[Y] Make the 3D meshes selectable
-    [Y] Detect mouse click
-    [Y] Construct a ray from the eye to the virtual cursor
-    [Y] Mesh-collision detection
-        [Y] Store meshes in a list of pointers that can be iterated
-        [Y] Store collision meshes in a list of pointers that can be iterated
-    [Y] Put a bounding box around the selected mesh
-    [Y] Click on air deselects
-    [Y] Display mesh data { Num. Vertices , Num. Tris , BBox Volume }
-    [Y] Deselect if the user stops showing a selected shot
-[Y] Graphic improvements
-    [Y] Smooth shading for scans by averaging normals at each point - COMPLETE: There is a marked difference and this is cool to point out
-        [Y] Toggle smooth mesh shading to show the difference
-    [Y] Make the axes on the robot smaller, except for the last link
-[Y] Rename project to "final"
-[Y] Configurations that show the goods
-    [Y] Choose a beginning config
-    [Y] Numbered configs for parts of the presentation
-[ ] Disable VSync
 [ ] Reshoot with the correct TCP offsets (without force sensor)
 [ ] Shoot MORE objects
 
@@ -97,6 +54,7 @@ Parametric Curves
 
 // ___ End Include ___
 
+
 // === STRUCTS ===
 
 struct CamPose{
@@ -109,6 +67,7 @@ struct CamPose{
 };
 
 // ___ END STRUCT ___
+
 
 // === GLOBALS ===
 
@@ -138,7 +97,7 @@ int   ps /* ---- */ = DFLT_PSI; // - Elevation of view angle
 
 vec3e eyeLoc{ 0 , 0 , 0 }; // ------ Camera location (world frame)
 
-
+// Important scene locations to look at
 vec3e scanLocn{  0.42 , -0.48 , -0.08 }; 
 vec3e robtBase{  0.00 ,  0.00 ,  0.00 };
 vec3e midwLocn = ( scanLocn + robtBase ) / 2.0f;
@@ -156,7 +115,7 @@ void assign_camera_pose( const CamPose& desPose ){
     lookPt    = desPose.lookAt;
 }
 
-stdvec<CamPose> preparedCamAngles;
+stdvec<CamPose> preparedCamAngles; // Vector of prepared camera angles for the presentation
 
 // ~~ Scene ~~
 vec3e gridColor{ 165.0/255 , 189.0/255 , 226.0/255 }; // Color of the world grid lines
@@ -195,10 +154,10 @@ JNTNUMBR CURJOINT = NONE;
 float DEGRINCR = 2.0;
 
 // ~~ Geometry ~~
-float AXESSCALE     =   1.17;
+float AXESSCALE = 1.17;
 matXe testPoints;
 vec3e cloudClr{ 102/255.0, 204/255.0, 255/255.0 };
-float cloudSiz = 5.0f;
+float cloudSiz  = 5.0f;
 
 TriMeshVFN pointsMesh;
 vec3e meshColor{ 153/255.0 , 51/255.0 , 255/255.0 };
@@ -275,7 +234,7 @@ void crosshairs( int mouseX , int mouseY , float hairLen ,
 
     // Save transform attributes (Matrix Mode and Enabled Modes)
     glPushAttrib( GL_TRANSFORM_BIT | GL_ENABLE_BIT );
-
+    // Paint the cursor no matter what OpenGL thinks is in front of it
     glDisable( GL_DEPTH_TEST );
 
     // Save projection matrix and set unit transform
@@ -346,10 +305,7 @@ void display( SDL_Window* window ){
                lookPt[0] , lookPt[1] , lookPt[2] ,  
                upVctr[0] , upVctr[1] , upVctr[2] );
 
-    // 2. Draw the static scene
-    
-    // glColor3f( 1,1,1 );
-
+    // 2. Draw a grid for visual reference of camera motion
     glPushMatrix();
     glTranslated( 0,0,-1 );
     draw_grid_org_XY( 0.250 , 20 , 20 , 0.5 , gridColor );
@@ -381,24 +337,22 @@ void display( SDL_Window* window ){
     glLightfv( GL_LIGHT0 , GL_SPECULAR , Specular );
     glLightfv( GL_LIGHT0 , GL_POSITION , Position );
     
-    // 3. Draw the dynamic scene
-
-    // 12. Draw scan
+    // 3. Draw scans
     for( uint i = 0 ; i < MAXSHOTS ; i++ ){
         if(  ( i < scans.size() )  &&  ( shotFlags[i] )  )
             scans[i]->draw( shiny , SMOOTHMESHL );
     }
 
-    // N. Draw the robot
+    // 4. Draw the robot
     UR5.draw();
     
-    // N. Turn off lighting
+    // 5. Turn off lighting
     glDisable( GL_LIGHTING );
 
-    // N. Draw the origin
+    // 6. Draw the origin
     draw_origin( 0.5 );
 
-    // N. Draw the selected bounding boxes
+    // 7. Draw the selection bounding boxes
     if( meshSelect ){
         draw_aabb( scanBbox , vec3e{1,1,1}                         , 2.0 );
         draw_aabb( trgtBbox , vec3e{0/255.0, 2040/255.0, 00/255.0} , 2.0 );
@@ -411,13 +365,14 @@ void display( SDL_Window* window ){
     
     glColor3f( 249/255.0 , 255/255.0 , 99/255.0 ); // Text Yellow
     
-    //  Display status
+    // 8. Display status
     glWindowPos2i( 5 , 5 ); // Next raster operation relative to lower lefthand corner of the window
     
     PrintSDL( " emission %i , ambient %i , diffuse %i , specular %i , shininess %i | theta %i , psi %i" , 
               emission , ambient , diffuse , specular , shininess ,
               th , ps );
 
+    // 9. Display mesh data if one is selected by the user
     if( meshSelect ){
         glWindowPos2i(   5 , 100 ); 
         PrintSDL( "Vertices: %i" , scanTargets[ clickDex ]->mesh.V.rows() );
@@ -426,12 +381,12 @@ void display( SDL_Window* window ){
     }
     // __ End Message __
 
-    // ~ Draw crosshairs ~
+    // ~ 10. Draw crosshairs ~
     if( windowHasMouse ){  crosshairs( winXmouse , winYmouse , crossLen , viewXfrac , viewYfrac );  }
 
     // ____ End Draw ____
 
-    // Check for errors, Flush, and swap
+    // 11. Check for errors, Flush, and swap
     ErrCheck( "display" );
     glFlush();
     SDL_GL_SwapWindow( window );
@@ -447,8 +402,8 @@ bool key( const SDL_KeyboardEvent& event ){
     // Exit on ESC
     // NOTE: Must account for shift combinations
 
-    // 1. Fetch the key state
-    const Uint8 *state = SDL_GetKeyboardState( NULL );
+    // 1. Fetch the key state and determine if the user has either [Shift] key held down
+    const Uint8 *state = SDL_GetKeyboardState( NULL ); 
     bool  SHIFTPRESS   = state[ SDL_SCANCODE_LSHIFT ]  ||  state[ SDL_SCANCODE_RSHIFT ];
 
     // NOTE: SDL2 seems to hear random keyboard events?, but we can corroborate by checking if it also heard a press
@@ -670,7 +625,7 @@ bool key( const SDL_KeyboardEvent& event ){
 }
 
 void reshape( int width , int height ){
-    // GLUT calls this routine when the window is resized
+    // Call this routine when the window is resized
     // Calc the aspect ratio: width to the height of the window
     w2h = ( height > 0 ) ? (float) width / height : 1;
     // Set the viewport to the entire window
@@ -693,8 +648,6 @@ IndexSearchResult scan_index_of_closest_patch_intersection_with_ray( const vec3e
     for( size_t i = 0 ; i < numPatches ; i++ ){  
         if( shotFlags[ trgtDices[i] ] ){
             intersections = ray_intersect_TargetVFN( rayOrg , rayDir , *(scanTargets[i]) );
-            // numEntr = intersections.enter.rows();
-            // numExit = intersections.exit.rows();
             assign_num_entries_exits( intersections , numEntr , numExit );
             for( size_t j = 0 ; j < numEntr ; j++ ){  intersections.n_Index.push_back( i );  }
             for( size_t j = 0 ; j < numExit ; j++ ){  intersections.x_Index.push_back( i );  }
@@ -744,19 +697,12 @@ FrameBases get_current_camera_frame(){
 // === SIMULATION ==========================================================================================================================
 
 double _time_elapsed;
-double _last_time = 0.0;
+// double _last_time = 0.0;
 
 // ___ END SIM _____________________________________________________________________________________________________________________________
 
 
 // === MAIN ================================================================================================================================
-
-// == Test Vars ==
-
-
-
-// __ End Test __
-
 
 // Start up SDL2 and tell it what to do
 int main( int argc , char* argv[] ){
@@ -775,8 +721,7 @@ int main( int argc , char* argv[] ){
 
     // Set up camera angles for presentation
     /* 1. Robot motion */  preparedCamAngles.push_back( CamPose{ 1.0 , -315 , 25 , midwLocn + vec3e{ 0 , 0 , 0.25 } } );
-    /* 1. Scan select  */  preparedCamAngles.push_back( CamPose{ 0.4 , -250 , 15 , scanLocn + vec3e{ 0 , 0 , 0.05 } } );
-
+    /* 2. Scan select  */  preparedCamAngles.push_back( CamPose{ 0.4 , -250 , 15 , scanLocn + vec3e{ 0 , 0 , 0.05 } } );
 
     assign_camera_pose( preparedCamAngles[0] ); // Set the initial camera angle
     
@@ -788,6 +733,7 @@ int main( int argc , char* argv[] ){
     SDL_Renderer*    displayRenderer;
     SDL_RendererInfo displayRendererInfo;
 
+    // Setup winow
     displayWindow = SDL_CreateWindow(
         ( "James Watson , " + HWname ).c_str() , // window title
         SDL_WINDOWPOS_UNDEFINED, // --------------- initial x position
@@ -797,9 +743,11 @@ int main( int argc , char* argv[] ){
         SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE // flags , see below
     ); 
 
+    // Setup renderer && bind to window
     displayRenderer = SDL_CreateRenderer( displayWindow , -1 , SDL_RENDERER_PRESENTVSYNC ); 
 
-    SDL_GL_SetSwapInterval( 0 ); // Immediate updates
+    // VSYNC
+    SDL_GL_SetSwapInterval( 0 ); // Immediate updates (No VSYNC)
     // SDL_GL_SetSwapInterval( 1 ); // Updates synchronized with the vertical retrace
 
     SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE , 32 ); // minimum number of bits in the depth buffer
@@ -821,7 +769,8 @@ int main( int argc , char* argv[] ){
     // Hide cursor in the window
     SDL_ShowCursor( SDL_DISABLE );
     
-    // Set heartbeat for 60 fps
+    // Set a timer for marking time 
+    // NOTE: No longer using 'SDL_Delay' to enforce a framerate
     SDL_Heartbeat hb{ 1.0f / 60.0f };  hb.mark_time();
     
     glEnable( GL_DEPTH_TEST ); // https://stackoverflow.com/a/46036674
@@ -932,13 +881,9 @@ int main( int argc , char* argv[] ){
         }else{ 
             winXmouse = -1;  winYmouse = -1;
         }
-        // cerr << "Mouse X: " << winXmouse << " , Mouse Y: " << winYmouse << endl;
-
         
         // 3. Draw
         display( displayWindow );
-        
-        // cerr << "viewXcam: " << viewXcam << " , viewYcam: " << viewYcam << endl;
 
         // 4. Calculate the next frame
         _time_elapsed = (float) hb.seconds_elapsed();
@@ -954,10 +899,7 @@ int main( int argc , char* argv[] ){
         currQ += diffQ; // Update current angle towards desired
         UR5.set_joint_state( currQ ); // Send angle to robot
 
-        // N-1. Error check
-        // ErrCheck( "loop" ); // DEV: Will this slow the program down?
-
-        // N. Mark time for next update interval
+        // 5. Mark time for next update interval
         hb.mark_time();
     }
     

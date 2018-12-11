@@ -207,7 +207,9 @@ void sphere2( float x , float y , float z , float r ){
 void cube( float x , float y , float z ,
            float dx , float dy , float dz ,
            float fillColor[3] , float lineColor[3] ){
-    // Draw a cube at (x,y,z) dimensions (dx,dy,dz) 
+    // Draw a cube at (x,y,z) dimensions (dx,dy,dz) and an outline
+    // Based on code provided by Willem A. (Vlakkies) Schreüder  
+
     float lineOffset = 1.005;
     //  Save transformation
     glPushMatrix();
@@ -528,7 +530,7 @@ void Project( float FOVy , // - Field of view angle, in degrees, in the y direct
 }
 
 void draw_point_cloud( const matXe& cloud , typeF pntSize , const vec3e& color ){
-    // Render a bunch of points
+    // Render a bunch of points of uniform color
     
     glPointSize( pntSize ); 
     glClr3e( color );
@@ -543,7 +545,7 @@ void draw_point_cloud( const matXe& cloud , typeF pntSize , const vec3e& color )
 }
 
 void draw_trimesh( const TriMeshVFN& mesh , const vec3e& color , float shiny ){
-    // Draw the mesh from VFN data
+    // Draw the mesh from VFN data in uniform color, simple shading
     size_t len = mesh.F.rows();
     vec3e p0 , p1 , p2 ,
           curNrm       ;
@@ -568,7 +570,7 @@ void draw_trimesh( const TriMeshVFN& mesh , const vec3e& color , float shiny ){
 }
 
 void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHandle , bool smoothN ){
-    // Draw the mesh from VFN data
+    // Draw the mesh from VFN data with texture
     // NOTE: This fuction assumes that 'mesh.N_rn' if 'smoothN == true' 
     
     bool SHOWDEBUG = false; 
@@ -640,6 +642,8 @@ void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHand
 }
 
 void draw_aabb( const matXe& bbox , const vec3e& color , typeF lineWidth ){
+    // Draw the Axis-Aligned Bounding Box represented by 'bbox'
+
     glLineWidth( lineWidth );
     glClr3e( color );
 

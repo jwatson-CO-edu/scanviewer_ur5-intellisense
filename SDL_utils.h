@@ -74,9 +74,9 @@ private:
 
 // === Functions ===========================================================================================================================
 
-void PrintEvent( const SDL_Event * event );
+void PrintEvent( const SDL_Event * event ); // Print information about a window event
 
-void PrintSDL( const char* format , ... );
+void PrintSDL( const char* format , ... ); // Convenience routine to output raster text
 
 // ___ End Func ____________________________________________________________________________________________________________________________
 

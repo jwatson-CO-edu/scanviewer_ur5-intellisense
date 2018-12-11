@@ -169,6 +169,7 @@ vec3e vec_sphr( typeF r , typeF th , typeF ps ){
 }
 
 matXi equilateral_tri_pixels( const vec2e& center , typeF radius ){  
+    // Compute the corners of
     matXe fltVerts = equilateral_tri_vertices( center , radius );
     matXi rtnMatx = fltVerts.cast<int>();
     return rtnMatx;
@@ -179,25 +180,28 @@ matXi equilateral_tri_pixels( const vec2e& center , typeF radius ){
 
 // == Trigonometry ==
 
-typeF degrees( typeF angRad ){  return (typeF)angRad * 180.0 / M_PI;  }
-typeF radians( typeF angDeg ){  return (typeF)angDeg * M_PI / 180.0;  }
+typeF degrees( typeF angRad ){  return (typeF)angRad * 180.0 / M_PI;  } // radians --> degrees
+typeF radians( typeF angDeg ){  return (typeF)angDeg * M_PI / 180.0;  } // degrees --> radians
 
 // __ End Trig __
 
 
 // == Geo 2D ==
 
+// Compute the vertices of an equlateral triangle that is circumscribed by a circle with 'center' and 'radius' 
 matXe equilateral_tri_vertices( const vec2e& center , typeF radius ){  return circ_space( 2.0*radius , 3 , center );  }
 
-vec2e vec2e_random(){  return vec2e( random() , random() );  }
+vec2e vec2e_random(){  return vec2e( random() , random() );  } // Return a random 2D vector sampled uniformly, element-wise on [0,1)
 
 vec2e rand_corners( const vec2e& corner1 , const vec2e& corner2 ){
+    // Return a random 2D point sampled uniformly, element-wise from the given bounding box , 'corner2' is the upper bound
     vec2e span = corner2 - corner1;
     vec2e sample = vec2e_random();
     return vec2e{ corner1(0)+span(0)*sample(0) , corner1(1)+span(1)*sample(1) };
 }
 
 vec2e sample_from_box( const matXe& box ){
+    // Return a random 2D point sampled uniformly, element-wise from the given bounding box
     vec2e crnr1 = box.row(0);
     vec2e crnr2 = box.row(1);
     return rand_corners( crnr1 , crnr2 );
@@ -227,9 +231,10 @@ typeF angle_between( const vec3e& vec1 , const vec3e& vec2 ){
     }else{  return (typeF)angle;  }
 }
 
-vec3e vec3e_random(){  return vec3e( random() , random() , random() );  }
+vec3e vec3e_random(){  return vec3e( random() , random() , random() );  } // Return a random 3D vector sampled uniformly, element-wise on [0,1)
 
 vec3e rand_corners( const vec3e& corner1 , const vec3e& corner2 ){
+    // Return a random 3D point sampled uniformly, element-wise from the given bounding box , 'corner2' is the upper bound
     vec3e span = corner2 - corner1;
     vec3e sample = vec3e_random();
     return vec3e{ corner1(0)+span(0)*sample(0) , corner1(1)+span(1)*sample(1) , corner1(2)+span(2)*sample(2) };
@@ -253,6 +258,7 @@ matXe AABB( const matXe& V ){
 // Return the minimum and maximum corners of an AA Bounding Box of 'mesh'
 matXe AABB( const TriMeshVFN& mesh ){  return AABB( mesh.V );  } 
 
+// Return the minimum and maximum corners of an AA Bounding Box for a mesh collision target
 matXe AABB( const TargetVFN& trgt ){  return trgt.aabb;  } // NOTE: This function assumes that the AABB has already been computed
 
 matXe AABB_union( const matXe& aabb1 , const matXe& aabb2 ){
@@ -274,7 +280,7 @@ matXe sample_from_AABB( size_t N , const matXe& aabb ){
 }
 
 vec3e sample_from_AABB( const matXe& aabb ){
-    // Return a uniform, random samples from AABB
+    // Return one uniform, random sample from AABB
     vec3e crnr1 = aabb.row(0);
     vec3e crnr2 = aabb.row(1);
     return rand_corners( crnr1 , crnr2 );
@@ -289,6 +295,8 @@ vec3e get_any_perpendicular( const vec3e& query , typeF CRIT_ANG ){
 
 matXe verts3d_proj_to_plane_2D( matXe V , 
                                 vec3e planePnt , vec3e normal , vec3e xBasis ){
+    // Project all vertices 'V' to the defined plane given the X basis parallel to the plane
+    // NOTE: This function assumes that 'planePnt' is the origin of the 2D plane
     size_t len = V.rows();
     matXe rtnMatx = matXe::Zero( len , 2 );
     vec3e queryPnt;
@@ -386,12 +394,14 @@ IndexTypeFResult closest_point_to_sq( matXe points , vec3e queryPnt ){
 // == Mesh Operations ==
 
 vec3e get_CCW_tri_norm( const vec3e& v0 , const vec3e& v1 , const vec3e& v2 ){
+    // Return the counterclockwise normal of the defined triangle
     vec3e xBasis = ( v1 - v0 ).normalized();
     vec3e vecB   = ( v2 - v0 ).normalized();
     return xBasis.cross( vecB ).normalized(); // This should already be normalized
 }
 
 vec3e get_CCW_tri_norm( const matXe& V ){
+    // Return the counterclockwise normal of the defined triangle
     vec3e v0 = V.row(0);
     vec3e v1 = V.row(1);
     vec3e v2 = V.row(2);
@@ -399,6 +409,7 @@ vec3e get_CCW_tri_norm( const matXe& V ){
 }
 
 matXe N_from_VF( const matXe& V , const matXi& F ){
+    // Given vertices 'V' and facets 'F' defined in matrix row format, return a list of normals corresponding to 'F'
     size_t len = F.rows();
     matXe allNorms = matXe::Zero( len , 3 );
     vec3e v0 , v1 , v2;
@@ -440,7 +451,8 @@ matXe V_in_parent_frame( const matXe& V ,
 }
 
 TriMeshVFN delaunay_from_V( const matXe& V ){
-    // FIXME: Maybe this only drapes in X-Y ????
+    // Perform the Delaunay Triangulation on the vertices 'V', uses code by Paul Bourke
+    // NOTE: This is a 2D triangulation in X-Y with facets "draped" over the points from +Z
 
     bool SHOWDEBUG = true;
 
@@ -756,7 +768,7 @@ vec3e ray_intersect_AABB( const vec3e& origin , const vec3e& dir , const matXe& 
        2. Adapted by Eric Haines
           URL: https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
        3. Adapted for C++ / Eigen by James Watson
-          URL: https://bitbucket.org/robot-learning/asm_seq_plan_3d/src/master/src/Motion_Cost/src/MathGeo_ASP.cpp
+          URL: https://bitbucket.org/jwatson_utah_edu/scanviewer_ur5-intellisense/src/master/MathGeo.cpp
     */
     // Return the last point at which the ray intersects the AABB , otherwise return ( NaN , NaN , NaN )
     
@@ -827,6 +839,7 @@ vec3e ray_intersect_AABB( const vec3e& origin , const vec3e& dir , const matXe& 
 } 
 
 TargetVFN target_mesh_from_trimesh( const TriMeshVFN& original ){
+    // Convert the mesh to target with bounding box
     TargetVFN rtnStruct;
     rtnStruct.mesh = copy_trimesh( original );
     rtnStruct.aabb = AABB( original );
@@ -834,6 +847,7 @@ TargetVFN target_mesh_from_trimesh( const TriMeshVFN& original ){
 }
 
 TargetVFN* heap_target_from_trimesh( const TriMeshVFN& original ){
+    // Allocate && Convert the mesh to target with bounding box
     return new TargetVFN{
         copy_trimesh( original ) , 
         AABB( original )
@@ -859,11 +873,13 @@ RayHits ray_intersect_TargetVFN( const vec3e& rayOrg , const vec3e& rayDir , con
 // == Print Helpers ==
 
 std::ostream& operator<<( std::ostream& os , const vec3e& vec ){ 
+     // Print a 3D vector to a stream
     os << "[ " << vec(0) <<  " , " << vec(1) <<  " , " << vec(2) << " ]";
     return os;
 }
 
 std::ostream& operator<<( std::ostream& os , const vec2e& vec ){ 
+     // Print a 2D vector to a stream
     os << "[ " << vec(0) <<  " , " << vec(1) << " ]";
     return os;
 }

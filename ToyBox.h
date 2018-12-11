@@ -69,7 +69,8 @@ public:
     void set_emission_intensity( float intnsty );
     
     // ~ Textures ~
-    void assign_face_textures_randomly( uint txtrHandle , float patchRad , uint xDim , uint yDim );
+    // Pick a patch from a (big) texture and assign it to each face
+    void assign_face_textures_randomly( uint txtrHandle , float patchRad , uint xDim , uint yDim ); 
     
     // ~ Rendering ~
     void draw( float shiny = 0.0f ); // Render the icosahedron
@@ -116,34 +117,34 @@ public:
                 
     
     // ~ Animation ~
-    void advance( float time_in_sec );
+    void advance( float time_in_sec ); // If active, Advance the animation by 'time_in_sec' and check for a reset
     
-    void set_emission_intensity( float intnsty );
+    void set_emission_intensity( float intnsty ); // Load the array that controls surface glow
     
-    void activate();
-    void deactivate();
+    void activate(); // - Ensure that bolt is active and ready to animate
+    void deactivate(); // Shut down animation and hide
     
     void draw();
     
 protected:
 
-    void _reset_random();
+    void _reset_random(); // Point the beam in a random direction and set params for a new emission
     bool  active = false; // Flag for whether the beam should be painted
-    vec3e origin; // ----- Beam starts at this point
-    vec3e dirctn; // ----- Beam travels in this direction
-    vec3e bColor; // ----- Beam color
-    float intens; // ----- Surface emission intensity
-    float travlMin; // --- Beam disappears at this distance
+    vec3e origin; // ------- Beam starts at this point
+    vec3e dirctn; // ------- Beam travels in this direction
+    vec3e bColor; // ------- Beam color
+    float intens; // ------- Surface emission intensity
+    float travlMin; // ----- Beam disappears at this distance
     float travlMax; 
     float curTravl;
-    float bSpeed; // ----- Speed in [units/s]
-    float wdBeam; // ----- Beam width
-    float lenMin; // ----- Beam length
+    float bSpeed; // ------- Speed in [units/s]
+    float wdBeam; // ------- Beam width
+    float lenMin; // ------- Beam length
     float lenMax; 
     float curLen;
-    float progrs = 0.0; // Progress from 0 to lnTrav + lnBeam
-    vec3e crFlat; // ----- Current direction of flatness 
-    matXe sampleBox; // -- Sample directions from this
+    float progrs = 0.0; // - Progress from 0 to lnTrav + lnBeam
+    vec3e crFlat; // ------- Current direction of flatness 
+    matXe sampleBox; // ---- Sample directions from this
     float emColor[4] = { 0.0f , 0.0f , 0.0f , 1.0f };
 };
 
@@ -152,12 +153,15 @@ protected:
 
 // == class PatchMesh == 
 
+// Build a matrix from a vector of lines of text assumed to contain floats
 matXe matx_from_lines( const stdvec<string>& lines , char separator , size_t numCols );
 
+// Express the points in the camera frame so that it can be meshed properly
 TriMeshVFN V_to_mesh_in_cam_frame( const matXe& V , 
                                    const vec3e& origin , 
                                    const vec3e& xBasis , const vec3e& yBasis , const vec3e& zBasis );
 
+// For each of the vertices in 'Vcamera', compute the UV position within [0,1] and return correspinding UV
 matXe compute_UV_for_trimesh( const matXe& Vcamera , typeF horz_FOVdeg , typeF vert_FOVdeg );
 
 class PatchMesh{

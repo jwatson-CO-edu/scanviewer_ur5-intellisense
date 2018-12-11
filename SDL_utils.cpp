@@ -437,8 +437,10 @@ static GLubyte letters[][14] = {
 };
 
 #define LEN 8192  //  Maximum length of text string
-void PrintSDL(const char* format , ...)
-{
+void PrintSDL(const char* format , ...){
+    /* Convenience routine to output raster text
+     * Use VARARGS to make this more flexible
+     * Author: Willem A. (Vlakkies) Schreüder  */
    char    buf[LEN];
    va_list args;
    //  Turn the parameters into a character string

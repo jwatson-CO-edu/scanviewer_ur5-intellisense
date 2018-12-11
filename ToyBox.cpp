@@ -45,56 +45,9 @@ void PegBlock::draw(){
     cube( 0 , 0 , 0 ,
           side , side , side ,
           fill , line );
-    // 3. For each cube face
-        // 4. Rotate into face
+
+    // ~~ DEAD CODE HERE : NOT USED FOR FINAL PROJECT ~~
         
-        //~ // 5. Draw 4 pegs
-        //~ draw_cylinder( vec3e{ side/4.0f , side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ -side/4.0f , side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ side/4.0f , -side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ -side/4.0f , -side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ // 6. Pop
-        
-        //~ glRotated( 180 , 1 , 0 , 0 ); // 2. Rotate around the X axis
-        //~ // 5. Draw 4 pegs
-        //~ draw_cylinder( vec3e{ side/4.0f , side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ -side/4.0f , side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ side/4.0f , -side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ -side/4.0f , -side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-                       
-        //~ glRotated( -90 , 1 , 0 , 0 ); // 2. Rotate around the X axis
-        //~ // 5. Draw 4 pegs
-        //~ draw_cylinder( vec3e{ side/4.0f , side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ -side/4.0f , side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ side/4.0f , -side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-        //~ draw_cylinder( vec3e{ -side/4.0f , -side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                       //~ fillColor , lineColor );  pegDex++;
-                       
-        //~ for( uint i = 0 ; i < 3 ; i++ ){
-            //~ glRotated( -90 , 0 , 1 , 0 ); // 2. Rotate around the X axis
-            //~ // 5. Draw 4 pegs
-            //~ draw_cylinder( vec3f{ side/4.0f , side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                           //~ fillColor , lineColor );  pegDex++;
-            //~ draw_cylinder( vec3f{ -side/4.0f , side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                           //~ fillColor , lineColor );  pegDex++;
-            //~ draw_cylinder( vec3f{ side/4.0f , -side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                           //~ fillColor , lineColor );  pegDex++;
-            //~ draw_cylinder( vec3f{ -side/4.0f , -side/4.0f , side/2.0f }  , pegLen[ pegDex ] , side/8.0 , NUMCYLFACETS ,
-                           //~ fillColor , lineColor );  pegDex++;
-        //~ }
-        
-    
     // 7. Pop
     glPopMatrix();
 }

@@ -1,7 +1,7 @@
 /***********  
-SOURCE_TEMPLATE.cpp
-James Watson , YYYY MONTHNAME
-A ONE-LINE DESRIPTION OF THE FILE
+DH_Robot.cpp
+James Watson , 2018 November
+Represents the UR5 Robot with simple shapes
 
 Template Version: 2018-06-07
 ***********/
@@ -299,7 +299,7 @@ RobotLink::~RobotLink(){
     distalLinks.clear(); // THIS IS FINE, see '~UR5_OGL'
 }
 
-void RobotLink::add_distal( RobotLink* link ){  distalLinks.push_back( link );  }
+void RobotLink::add_distal( RobotLink* link ){  distalLinks.push_back( link );  } // Add a child link to this link
 
 uint RobotLink::get_num_distal(){
     // Return the number of distal links attached to this link
@@ -320,41 +320,32 @@ void RobotLink::draw( const DH_Parameters& DH ){
 
     // 2. Transform link
     glRotated( theta , 0 , 0 , 1 ); // ------------------ 2 , end
-    
-    // glTranslated( origin[0] , origin[1] , origin[2] ); // 1 , bgn 
     glTranslated( origin(0) , origin(1) , origin(2) ); // 1 , bgn 
     
     // 3. Render link
     if( enableLinkDraw ) drawFunc( DH );
+
     // 4. Downstream link transform
-    
     glTranslated( a_dist , 0 , 0 ); // ------------------------- 1 , bgn 
     glTranslated( 0 , 0 , d_dist ); // ------------------------- 1 , bgn 
-
     glRotated( nextRotnAngl , // ------------------------------------ 2 , end
             //    nextRotnAxis[0] , nextRotnAxis[1] , nextRotnAxis[2] );
                nextRotnAxis(0) , nextRotnAxis(1) , nextRotnAxis(2) );
     
+    // 5. Draw the coordinate axes for the CHILD link
     if( is_leaf() )
         draw_origin( AXESSCLBG );
     else
         draw_origin( AXESSCLSM );
-    
-    // Capture the transform if we are at the final link
-    // if( is_leaf() ){  
-    // 	glGetFloatv( GL_MODELVIEW_MATRIX , OGLmat );  
-    // 	for( uint i = 0 ; i < 16 ; i++ ){  modelMat[i] = OGLmat[i];  }
-    // }
 
-    // 4. For each distal link
     uint numDistl = distalLinks.size();
-    // 5. Draw the link *relative* to this link!
+    // 6. For each distal link: Draw the link *relative* to this link!
     for( uint i = 0 ; i < numDistl ; i++ ){  distalLinks[i]->draw( DH );  }
     // 6. Untransform from link frame
     glPopMatrix();
 }
 
-bool RobotLink::is_leaf(){  return distalLinks.size() == 0;  }
+bool RobotLink::is_leaf(){  return distalLinks.size() == 0;  } // Return true if there are no links distal to this, Otherwise return false
 
 // __ End RobotLink __
 
@@ -439,7 +430,7 @@ UR5_OGL::UR5_OGL( const vec3e& baseOrigin , const DH_Parameters& pParams ){
 }
 
 UR5_OGL::~UR5_OGL(){
-    // Delete all links
+    // Delete all links , Distal-->Proximal (Order important!)
     delif( Link6 );
     delif( Link5 );
     delif( Link4 );

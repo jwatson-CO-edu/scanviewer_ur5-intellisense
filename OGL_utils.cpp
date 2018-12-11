@@ -567,8 +567,9 @@ void draw_trimesh( const TriMeshVFN& mesh , const vec3e& color , float shiny ){
     glEnd();
 }
 
-void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHandle ){
+void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHandle , bool smoothN ){
     // Draw the mesh from VFN data
+    // NOTE: This fuction assumes that 'mesh.N_rn' if 'smoothN == true' 
     
     bool SHOWDEBUG = false; 
     
@@ -598,17 +599,35 @@ void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHand
     // 4. Draw triangles
     glBegin( GL_TRIANGLES );
     for( size_t i = 0 ; i < len ; i++ ){
-        curNrm = mesh.N.row(i);
-        glNrm3e( curNrm );
+        
+        
+        if( !smoothN ){  
+            curNrm = mesh.N.row(i);
+            glNrm3e( curNrm );
+        }
+        
         p0 = mesh.V.row( mesh.F(i,0) );  p1 = mesh.V.row( mesh.F(i,1) );  p2 = mesh.V.row( mesh.F(i,2) );  
         
         // NOTE: 'glTexCoord2f' MUST be called BEFORE the associated 'glVertex3f' so that the state machine matches them!
+        
+        if( smoothN ){  
+            curNrm = mesh.N_rn.row( mesh.F(i,0) );
+            glNrm3e( curNrm );
+        }
         glTexCoord2f( mesh.UV( mesh.F(i,0) , 0 ) , mesh.UV( mesh.F(i,0) , 1 ) );
         glVec3e( p0 );                   
 
+        if( smoothN ){  
+            curNrm = mesh.N_rn.row( mesh.F(i,1) );
+            glNrm3e( curNrm );
+        }
         glTexCoord2f( mesh.UV( mesh.F(i,1) , 0 ) , mesh.UV( mesh.F(i,1) , 1 ) );
         glVec3e( p1 );                   
 
+        if( smoothN ){  
+            curNrm = mesh.N_rn.row( mesh.F(i,2) );
+            glNrm3e( curNrm );
+        }
         glTexCoord2f( mesh.UV( mesh.F(i,2) , 0 ) , mesh.UV( mesh.F(i,2) , 1 ) );
         glVec3e( p2 );     
     }

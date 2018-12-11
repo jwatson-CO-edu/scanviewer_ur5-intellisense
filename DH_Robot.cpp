@@ -308,7 +308,8 @@ uint RobotLink::get_num_distal(){
 
 void RobotLink::set_theta( float pTheta ){  theta = fmod( pTheta , 360.0f );  } // Set the angle of the joint at the base of the link
 
-static float AXESSCALE = 0.5;
+static float AXESSCLBG = 0.50f;
+static float AXESSCLSM = 0.25f;
 
 bool RobotLink::has_draw_func(){  return drawFunc;  }
 
@@ -334,8 +335,10 @@ void RobotLink::draw( const DH_Parameters& DH ){
 			//    nextRotnAxis[0] , nextRotnAxis[1] , nextRotnAxis[2] );
 			   nextRotnAxis(0) , nextRotnAxis(1) , nextRotnAxis(2) );
 	
-	draw_origin( AXESSCALE );
-	
+    if( is_leaf() )
+	    draw_origin( AXESSCLBG );
+    else
+        draw_origin( AXESSCLSM );
 	
 	// Capture the transform if we are at the final link
 	// if( is_leaf() ){  

@@ -106,7 +106,7 @@ void draw_point_cloud( const matXe& cloud , typeF pntSize , const vec3e& color )
 
 void draw_trimesh( const TriMeshVFN& mesh , const vec3e& color , float shiny );
 
-void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHandle );
+void draw_textured_trimesh( const TriMeshVFN& mesh , float shiny , uint txtrHandle , bool smoothN = false );
 
 void draw_aabb( const matXe& bbox , const vec3e& color , typeF lineWidth );
 

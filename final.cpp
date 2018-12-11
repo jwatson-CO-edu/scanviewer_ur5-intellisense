@@ -29,7 +29,7 @@
     [Y] The robot configuration can be visualized in the configuration of each shot, 
     [Y] or moved to arbitrary configurations if the user wishes to assess its freedom in the workspace.
         [Y] Reinstate control from HW3
-[ ] Make the 3D meshes selectable
+[Y] Make the 3D meshes selectable
     [Y] Detect mouse click
     [Y] Construct a ray from the eye to the virtual cursor
     [Y] Mesh-collision detection
@@ -37,14 +37,16 @@
         [Y] Store collision meshes in a list of pointers that can be iterated
     [Y] Put a bounding box around the selected mesh
     [Y] Click on air deselects
-    [ ] Deselect if the user stops showing a selected shot
-    [ ] Display mesh data { Num. Vertices , Num. Tris , BBox Volume }
-[ ] Graphic improvements
-    [ ] Smooth shading for scans by averaging normals at each point
-        [ ] Toggle smooth mesh shading to show the difference
-    [ ] Make the axes on the robot smaller, except for the last link
+    [Y] Display mesh data { Num. Vertices , Num. Tris , BBox Volume }
+    [Y] Deselect if the user stops showing a selected shot
+[Y] Graphic improvements
+    [Y] Smooth shading for scans by averaging normals at each point - COMPLETE: There is a marked difference and this is cool to point out
+        [Y] Toggle smooth mesh shading to show the difference
+    [Y] Make the axes on the robot smaller, except for the last link
 [Y] Rename project to "final"
-[ ] Choose a beginning configuration that shows the goods
+[ ] Configurations that show the goods
+    [ ] Choose a beginning config
+    [ ] Numbered configs for 
 [ ] Reshoot with the correct TCP offsets (without force sensor)
 [ ] Shoot MORE objects
 
@@ -93,6 +95,17 @@ Parametric Curves
 #include "SDL_utils.h" // _ Utility functions for SDL2
 
 // ___ End Include ___
+
+// === STRUCTS ===
+
+struct CamPose{
+    // Represents the position of the camera in spherical coordinates
+    float rad;
+    float theta;
+    float psi;
+}
+
+// ___ END STRUCT ___
 
 // === GLOBALS ===
 
@@ -158,6 +171,7 @@ float maxAngSpeed = 30.0; // [deg/s]
 // ~ Flags ~
 bool BALLMOVAUTO = true;
 bool ANIMATBEAMS = true;
+bool SMOOTHMESHL = true;
 // ~ Enums ~
 enum JNTNUMBR{ JOINT1 , JOINT2 , JOINT3 , JOINT4 , JOINT5 , JOINT6 , NONE };
 JNTNUMBR CURJOINT = NONE;
@@ -190,7 +204,7 @@ stdvec<string> sourceList = {
 
 uint scanLen = sourceList.size();
 
-stdvec<bool> shotFlags = { true , false , false , false , false , false , false , false , false , false };
+stdvec<bool> shotFlags = { false , false , false , false , false , false , false , false , false , false };
 
 uint MAXSHOTS = 10;
 
@@ -351,21 +365,12 @@ void display( SDL_Window* window ){
 	glLightfv( GL_LIGHT0 , GL_POSITION , Position );
 	
 	// 3. Draw the dynamic scene
-	
-	//~ // 11. Draw cloud
-	//~ draw_point_cloud( testPoints , cloudSiz , cloudClr );
-    //~ draw_trimesh( pointsMesh , meshColor , shiny );
 
 	// 12. Draw scan
     for( uint i = 0 ; i < MAXSHOTS ; i++ ){
         if(  ( i < scans.size() )  &&  ( shotFlags[i] )  )
-            scans[i]->draw( shiny );
+            scans[i]->draw( shiny , SMOOTHMESHL );
     }
-
-	// if( SHOT1 ) testScan1.draw( shiny );
-    // if( SHOT2 ) testScan2.draw( shiny );
-    // if( SHOT3 ) testScan3.draw( shiny );
-    // if( SHOT4 ) testScan4.draw( shiny );
 
 	// N. Draw the robot
 	UR5.draw();
@@ -395,7 +400,13 @@ void display( SDL_Window* window ){
 	PrintSDL( " emission %i , ambient %i , diffuse %i , specular %i , shininess %i | theta %i , psi %i" , 
               emission , ambient , diffuse , specular , shininess ,
               th , ps );
-		   
+
+    if( meshSelect ){
+        glWindowPos2i(   5 , 100 ); 
+        PrintSDL( "Vertices: %i" , scanTargets[ clickDex ]->mesh.V.rows() );
+        glWindowPos2i(   5 ,  80 ); 
+        PrintSDL( "Facets: _ %i" , scanTargets[ clickDex ]->mesh.F.rows() );
+    }
 	// __ End Message __
 
     // ~ Draw crosshairs ~
@@ -446,6 +457,7 @@ bool key( const SDL_KeyboardEvent& event ){
                 if( !SHIFTPRESS ){
                     shotFlags[0] = !shotFlags[0];
                     if( shotFlags[0] )  targetJointState = scans[0]->get_joint_state();
+                    else if( selShotDex == 0 )  meshSelect = false;
                 }else{ 
                     CURJOINT = JOINT1;
                 }
@@ -456,6 +468,7 @@ bool key( const SDL_KeyboardEvent& event ){
                 if( !SHIFTPRESS ){
                     shotFlags[1] = !shotFlags[1];
                     if( shotFlags[1] )  targetJointState = scans[1]->get_joint_state();
+                    else if( selShotDex == 1 )  meshSelect = false;
                 }else{ 
                     CURJOINT = JOINT2;
                 }
@@ -466,6 +479,7 @@ bool key( const SDL_KeyboardEvent& event ){
                 if( !SHIFTPRESS ){
                     shotFlags[2] = !shotFlags[2];
                     if( shotFlags[2] )  targetJointState = scans[2]->get_joint_state();
+                    else if( selShotDex == 2 )  meshSelect = false;
                 }else{ 
                     CURJOINT = JOINT3;
                 }
@@ -476,6 +490,7 @@ bool key( const SDL_KeyboardEvent& event ){
                 if( !SHIFTPRESS ){
                     shotFlags[3] = !shotFlags[3];
                     if( shotFlags[3] )  targetJointState = scans[3]->get_joint_state();
+                    else if( selShotDex == 3 )  meshSelect = false;
                 }else{ 
                     CURJOINT = JOINT4;
                 }
@@ -605,6 +620,10 @@ bool key( const SDL_KeyboardEvent& event ){
             // ~ Other ~
             case SDLK_b: // Toggle beams
                 toggle( ANIMATBEAMS );
+                break;
+
+            case SDLK_h: // Toggle smooth shading for meshes
+                toggle( SMOOTHMESHL );
                 break;
         
             // <?> : Keys are nice, I guess!
@@ -791,18 +810,14 @@ int main( int argc , char* argv[] ){
 	
 	ErrCheck( "init" );
 	
-	float t0  = 0.0f;
-	float dt = 1.0f / 60.0f;
+	float t0 /* ---- */ = 0.0f;
+	float dt /* ---- */ = 1.0f / 60.0f;
 	float _time_elapsed = dt; // This is fixed time for state updates
 
-	std::vector<float> currQ = { 0,0,0,0,0,0 };
-    stdvec<float>      diffQ = { 0,0,0,0,0,0 };
+	std::vector<float> currQ = { 0,0,0,0,0,0 }; // Joint state to send to the robot
+    stdvec<float>      diffQ = { 0,0,0,0,0,0 }; // Difference between the current and the desired joint state
     float /* ------ */ frameSpeed;
 
-	// bool QUITEARLY = false;
-
-    
-	
 	// while the run flag is active
 	while( run ){
 		
@@ -861,6 +876,7 @@ int main( int argc , char* argv[] ){
                             scanBbox = scans[ selShotDex ]->aabb;
                             trgtBbox = AABB( *scanTargets[ clickDex ] );
 
+                        // Other mouse buttons if you need them
                         case SDL_BUTTON_MIDDLE:
                         case SDL_BUTTON_RIGHT:
                         case SDL_BUTTON_X1:
@@ -905,7 +921,7 @@ int main( int argc , char* argv[] ){
 		UR5.set_joint_state( currQ ); // Send angle to robot
 
         // N-1. Error check
-		ErrCheck( "loop" ); // DEV: Will this slow the program down?
+		// ErrCheck( "loop" ); // DEV: Will this slow the program down?
 
 		// N. Sleep for remainder
 		hb.sleep_remainder(); // Not really needed with VSYNC, but just in case

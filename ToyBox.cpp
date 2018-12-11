@@ -509,11 +509,11 @@ uint PatchMesh::load_texture( string fPath ){
 
 void PatchMesh::set_solid_color( const vec3e& clrSld ){  colorSolid = clrSld;  }
 
-void PatchMesh::draw( float shiny ){
+void PatchMesh::draw( float shiny , bool smoothN ){
 	// 1. For each of the patches
 	uint len = patches.size();
 	if( !hasTextr ){  for( uint i = 0 ; i < len ; i++ ){  draw_trimesh( *patches[i] , colorSolid , shiny );              }  }
-    else{             for( uint i = 0 ; i < len ; i++ ){  draw_textured_trimesh( *patches[i] , shiny , textureHandle );  }  }
+    else{             for( uint i = 0 ; i < len ; i++ ){  draw_textured_trimesh( *patches[i] , shiny , textureHandle , smoothN );  }  }
 }
 
 // ~ Robot ~

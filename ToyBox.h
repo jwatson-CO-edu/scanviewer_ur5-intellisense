@@ -176,7 +176,7 @@ public:
     
     void set_solid_color( const vec3e& clrSld );
     
-    void draw( float shiny );
+    void draw( float shiny , bool smoothN = false );
 
     // ~ Robot ~
     stdvec<float> get_joint_state( bool deg = true ); // Get joint state that shot was taken in either deg or radians

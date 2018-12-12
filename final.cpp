@@ -435,11 +435,13 @@ bool key( const SDL_KeyboardEvent& event ){
                 break;
             case SDLK_KP_2: 
                 assign_camera_pose( preparedCamAngles[1] ); // Scan inspection
+                targetJointState = {0,0,0,0,0,0};
                 break;
             case SDLK_KP_3: 
             case SDLK_KP_4: 
             case SDLK_KP_5: 
             case SDLK_KP_6: 
+                break;
 
             case SDLK_1: 
                 if( !SHIFTPRESS ){

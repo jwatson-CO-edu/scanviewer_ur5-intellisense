@@ -15,5 +15,5 @@ NAME=final
 # zip -R $NAME.zip '*.c' '*.h' '*.cpp' '*.txt' '*.pdf' 'makefile' '*.sh' '*.MINPACK' '*.LGPL' '*.MPL2' '*.README' 'INSTALL' '*.md' '*.in' '*.GPL' '*.BSD' 'signature_of_eigen3_matrix_library' 'README' 'COPYING' '*.hh' '*.cmake' 'go_mean' '*.cxx' '*.html' '*.js' '*.cc' '*.cu' '*.f' '*.py' '*.dat' '*.natvis' '*.png' '*.dox' '*.css'
 
 # Recursive zip , excluding slected directories
-zip -r $NAME.zip * -x test/\* build/\* eigen/.hg/\* .git/\* HW07/\* robot_control/.ipynb_checkpoints/\*
+zip -r $NAME.zip * -x test/\* build/\* eigen/.hg/\* .git/\* HW07/\* robot_control/.ipynb_checkpoints/\* textures/\*
 # There are too many types and names in the Eigen lib to match them all.  Many files do not have extensions
